@@ -48,7 +48,7 @@ window.SCAI_DATA = {
 
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
-    { date: "2026-09-07", tag: "Site", title: "Welcome to scAI Index", desc: "Why we are tracking single-cell foundation models and LLMs for scRNA-seq analysis.", url: "blog/posts/2026-09-07-welcome.html" },
+    { date: "2026-09-07", tag: "Site", title: "Welcome to scAI Index", desc: "Why we are tracking single-cell foundation models and LLMs for scRNA-seq analysis.", url: "/blog/posts/2026-09-07-welcome.html" },
     { date: "2026-09-07", tag: "Methodology", title: "How the leaderboard metrics are defined (draft)", desc: "Working draft of metric definitions — to be finalized with real benchmark data.", url: "#" },
     { date: "2026-09-07", tag: "Data", title: "Sample data disclaimer", desc: "All current leaderboard values are placeholders pending literature research.", url: "#" }
   ]
