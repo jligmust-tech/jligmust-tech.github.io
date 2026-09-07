@@ -1,0 +1,6 @@
+{
+ "title": "🐴 Blog — scAI Index",
+ "scai_data": "object",
+ "postlist": "<div class=\"post\"><div class=\"byline\"><span class=\"tag\">Site</span><span>2026-09-07</span></div><h3><a href=\"blog/posts/2026-09-07-welcome.html\">Welcome to scAI Index</a></h3><p>Why we are tracking single-cell foundation models and LLMs for scRNA-seq analysis.</p></div><div class=\"post\"><div class=\"byline\"><span class=\"tag\">Methodology</span><span>2026-09-07</span></div><h3>How the leaderboard metrics are defined (draft)</h3><p>Working draft of metric definitions — to be finalized with real benchmark data.</p></div><div class=\"post\"><div class=\"byline\"><span class=\"tag\">Data</span><span>2026-09-07</span></div><h3>Sample data disclaimer</h3><p>All current leaderboard values are placeholders pending literature research.</p></div>",
+ "scripts": "http://127.0.0.1:8000/assets/js/data.js,"
+}
