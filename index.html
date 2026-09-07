@@ -1,22 +1,80 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>jligmust-tech</title>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; display: flex;
-           align-items: center; justify-content: center; height: 100vh;
-           margin: 0; background: #fafafa; color: #222; }
-    main { text-align: center; }
-    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    p { color: #666; }
-  </style>
+  <title>scAI Index — Single-Cell & LLM Model Analysis</title>
+  <meta name="description" content="Independent analysis of single-cell foundation models and general LLMs applied to single-cell tasks.">
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
-  <main>
-    <h1>jligmust-tech.github.io</h1>
-    <p>Under construction.</p>
-  </main>
+<body data-page="index">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="models.html" data-page="models">Models</a>
+        <a href="blog.html" data-page="blog">Blog</a>
+        <a href="about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Independent analysis of single-cell AI</h1>
+      <p>Understand the single-cell foundation model landscape and how general LLMs perform on single-cell tasks — to choose the right model for your analysis.</p>
+    </div>
+
+    <div class="banner">Sample data — all leaderboard values are placeholders for framework demo, pending literature research.</div>
+
+    <section class="block">
+      <div class="grid3">
+        <div class="stat">
+          <div class="label">Top Foundation Model</div>
+          <div class="value">scGPT <small>· Cell-Type Anno 0.84</small></div>
+          <div class="note">Sample — by annotation score</div>
+        </div>
+        <div class="stat">
+          <div class="label">Top General LLM</div>
+          <div class="value">Claude 3.5 Sonnet <small>· Gene-Set 0.80</small></div>
+          <div class="note">Sample — by gene-set analysis</div>
+        </div>
+        <div class="stat">
+          <div class="label">Latest</div>
+          <div class="value">CellPLM <small>· 2024</small></div>
+          <div class="note">Sample — newest addition</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="card">
+        <h2>Latest Updates</h2>
+        <p class="sub">News, evaluations, and methodology notes.</p>
+        <ul class="feed" id="updates"></ul>
+        <p style="margin:10px 0 0"><a href="blog.html">View all posts →</a></p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="card">
+        <h2>Leaderboards</h2>
+        <p class="sub">Two independent rankings on one hub.</p>
+        <p><a href="leaderboard.html">Single-Cell Foundation Models</a> — scGPT, Geneformer, scFoundation, CellPLM, UCE and more, ranked by annotation &amp; batch-correction quality.</p>
+        <p><a href="leaderboard.html">General LLMs on Single-Cell Tasks</a> — GPT, Claude, DeepSeek, Gemini and Llama evaluated on scRNA-seq interpretation tasks.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Framework preview — data not yet verified</span>
+    </div>
+  </footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

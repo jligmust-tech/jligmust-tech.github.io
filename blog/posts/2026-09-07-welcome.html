@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to scAI Index — Blog</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../blog.html" data-page="blog">Blog</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Site</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-07</span>
+      </div>
+      <h1>Welcome to scAI Index</h1>
+
+      <p>This site tracks two fast-moving categories of models relevant to single-cell research:</p>
+
+      <ol>
+        <li><b>Single-cell foundation models</b> — transformer-based models pretrained on scRNA-seq atlases (scGPT, Geneformer, scFoundation, CellPLM, UCE, …).</li>
+        <li><b>General LLMs applied to single-cell tasks</b> — GPT, Claude, DeepSeek, Gemini, Llama used for cell-type annotation, gene-set interpretation, and writing analysis code.</li>
+      </ol>
+
+      <p>Why? Because choosing a model for a single-cell workflow today means comparing papers, repos, and ad-hoc benchmark claims across two very different model families. The goal of scAI Index is to put both on one sortable leaderboard with defined, source-linked metrics.</p>
+
+      <h2>Current status</h2>
+      <p><b>Framework preview.</b> The site structure is live; all scores are placeholder values. The About page tracks the roadmap: finalize metric definitions, then populate data from primary papers with sources attached.</p>
+
+      <h2>How to add a blog post</h2>
+      <p>Copy this file into <code>blog/posts/</code> with a new name, edit the content, then add a matching entry to the <code>posts</code> array in <code>assets/js/data.js</code>. The list on the Blog tab and the updates feed on the home page update automatically.</p>
+    </article>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Framework preview — data not yet verified</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — scAI Index</title>
+  <meta name="description" content="About scAI Index: purpose, methodology, and data policy.">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="about">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="models.html" data-page="models">Models</a>
+        <a href="blog.html" data-page="blog">Blog</a>
+        <a href="about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>About</h1>
+      <p>What this site tracks, how scores are defined, and what is still pending.</p>
+    </div>
+
+    <section class="block">
+      <div class="card">
+        <h2>Purpose</h2>
+        <p class="sub">Why scAI Index exists.</p>
+        <p>Single-cell foundation models (scGPT, Geneformer, scFoundation, CellPLM, …) are proliferating, and general LLMs are increasingly used for scRNA-seq interpretation. This site aggregates both into one comparable, sortable hub.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="card">
+        <h2>Methodology — working draft</h2>
+        <p class="sub">Metric definitions, pending finalization with real data.</p>
+        <ul>
+          <li><b>Cell-Type Annotation ↑</b> — zero-shot cell-type classification accuracy/F1 on benchmark datasets (e.g. <a href="https://cellxgene.cziscience.com/">CellxGene</a> subsets). Higher is better.</li>
+          <li><b>Batch Correction ↑</b> — integration quality across batches (e.g. iLISI / ASW). Higher is better.</li>
+          <li><b>Gene-Set Analysis ↑</b> — LLM ability to interpret gene sets (pathway/enrichment reasoning). Higher is better.</li>
+          <li><b>sc Analysis Code ↑</b> — LLM ability to write correct analysis code (scanpy/seurat workflows). Higher is better.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="card">
+        <h2>Data policy</h2>
+        <p class="sub">Honest about the current state.</p>
+        <p><b>Current status: sample/placeholder data.</b> All scores on this site are framework placeholders and must NOT be cited or relied on. Real values will be researched from primary papers and official repositories, with sources linked, before any number is published as final.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="card">
+        <h2>Roadmap</h2>
+        <p class="sub">Planned work, in order.</p>
+        <ol>
+          <li>Finalize metric definitions (methodology post).</li>
+          <li>Research and populate single-cell foundation model data with sources.</li>
+          <li>Research and populate general LLM single-cell evaluation data with sources.</li>
+          <li>Per-model detail pages.</li>
+          <li>Regular blog updates.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Framework preview — data not yet verified</span>
+    </div>
+  </footer>
+</body>
+</html>

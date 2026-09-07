@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — scAI Index</title>
+  <meta name="description" content="Articles on single-cell foundation models, LLMs for scRNA-seq, and methodology.">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../models.html" data-page="models">Models</a>
+        <a href="../blog.html" data-page="blog">Blog</a>
+        <a href="../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Blog</h1>
+      <p>Updates, methodology notes, and deep dives. New posts live in <code>blog/posts/</code> — add a file, link it in <code>assets/js/data.js</code>, done.</p>
+    </div>
+
+    <div class="card">
+      <div id="postList"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Framework preview — data not yet verified</span>
+    </div>
+  </footer>
+
+  <script src="../assets/js/data.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var h = "";
+      (window.SCAI_DATA.posts || []).forEach(function (p) {
+        h += '<div class="post"><div class="byline"><span class="tag">' + p.tag + '</span><span>' + p.date + '</span></div>';
+        h += p.url && p.url !== "#"
+          ? '<h3><a href="' + p.url + '">' + p.title + '</a></h3>'
+          : '<h3>' + p.title + '</h3>';
+        h += '<p>' + p.desc + '</p></div>';
+      });
+      document.getElementById("postList").innerHTML = h;
+    });
+  </script>
+</body>
+</html>
