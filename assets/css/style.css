@@ -152,6 +152,7 @@ article.post-body code { background: var(--surface-2); padding: 2px 6px; border-
 .guide-lead { max-width: 820px; margin: 0 0 16px; font-size: 16px; color: #2d3748; }
 .guide-policy { background: #eefaf4; border: 1px solid #b7e4c7; color: #276749; padding: 12px 14px; border-radius: var(--radius); margin-bottom: 12px; font-size: 13.5px; }
 .guide-callout { background: var(--accent-soft); border: 1px solid #c6def4; color: #234e70; padding: 12px 14px; border-radius: var(--radius); margin-bottom: 22px; font-size: 13.5px; }
+.guide-choice { background: #fff; border-left: 3px solid var(--accent); color: #2d3748; padding: 11px 14px; margin-top: 16px; font-size: 13.5px; }
 .guide-card { padding: 18px 20px 20px; }
 .guide-card .tblwrap { margin: 0 -4px; }
 .guide-table { min-width: 900px; font-size: 13px; }

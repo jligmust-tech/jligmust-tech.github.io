@@ -28,6 +28,7 @@
         <nav aria-label="Research report sections">
           <a href="#report-scope">Stage 1 scope</a>
           <a href="#report-reading">Reading order</a>
+          <a href="#report-selection">Selection guide</a>
           <a href="#report-datasets">Benchmark datasets</a>
           <a href="#report-suites">Evaluation suites</a>
           <a href="#report-embeddings">Embedding plan</a>
@@ -60,6 +61,10 @@
         <li><b>CellOT and PerturbNet</b> cover distributional prediction. CellOT uses neural optimal transport for unpaired treated/control populations; <a href="https://www.nature.com/articles/s41592-023-01969-x">Perturbation response with neural optimal transport</a> is the primary reference. PerturbNet is a deep generative model for unseen chemical and genetic perturbations; its <a href="https://doi.org/10.1038/s44320-025-00131-3">paper</a> and <a href="https://github.com/welch-lab/PerturbNet">code</a> should be evaluated with distributional metrics, not only mean expression.</li>
         <li><b>STATE, LPM and Scouter</b> form the biology-aware extension. <a href="https://github.com/ArcInstitute/state">STATE</a> separates a set-level cell-context embedding from a transition model and ships <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a>. <a href="https://doi.org/10.1038/s43588-025-00870-1">LPM</a> is a large perturbation model designed around generalizable perturbation representations. <a href="https://www.nature.com/articles/s43588-025-00912-8">Scouter</a> uses GenePT text embeddings from gene descriptions, with reproducibility code at <a href="https://github.com/PancakeZoy/scouter">GitHub</a>.</li>
       </ol>
+
+      <h2 id="report-selection">How to choose a model or agent tool</h2>
+      <p>Choose by the endpoint and the kind of evidence you need, not by model size alone. For response prediction, use <b>GEARS</b> as the default genetic baseline, <b>CPA/chemCPA</b> for dose or context composition, <b>CellOT</b>/<b>STATE</b>/<b>PerturbNet</b> for distributions, and <b>scGPT</b>/<b>scFoundation</b>/<b>LPM</b>/<b>Scouter</b> when the central question is representation or biology-aware embeddings.</p>
+      <p>For agents, use <b>scBench</b> for concrete single-cell workflows, <b>BixBench</b> for long computational-biology trajectories, <b>BioAgent Bench</b> for robustness under failure modes, <b>LAB-Bench</b> for broad biology reasoning, and <b>ClawBio</b> when a local-first, MCP-compatible execution layer is the requirement. The <a href="../../research.html#research-model-selection">full model selector</a> and <a href="../../research.html#research-agent-selection">agent/tool selector</a> list the public evidence, pros, cons and selection conditions for each entry.</p>
 
       <h2 id="report-datasets">Benchmark datasets: build a ladder, not a single split</h2>
       <p>The data layer should mix breadth with canonical, interpretable studies. <a href="https://scperturb.org/">scPerturb</a> harmonizes 44 public perturbation-response datasets across RNA, protein and ATAC, while <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11701531/">PerturBase</a> expands the catalog to 122 datasets from 46 studies. These are indexes and harmonization resources, not permission to pool every study without an overlap and batch audit.</p>

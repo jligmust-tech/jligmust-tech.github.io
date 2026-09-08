@@ -552,6 +552,79 @@ window.SCAI_DATA = {
         ]
       }
     ],
+    modelSelection: [
+      {
+        name: "GEARS", bestFor: "Default genetic baseline; single and combinatorial perturbations", pros: "Public, interpretable gene-graph prior; directly targets unseen perturbations; easy to anchor a benchmark", cons: "Knowledge-graph coverage can shape the result; mainly point-expression prediction; systematic variation must be controlled", choose: "You need a canonical, reproducible first model for genetic response prediction", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41587-023-01905-6" },
+          { label: "code", url: "https://github.com/snap-stanford/GEARS" }
+        ]
+      },
+      {
+        name: "CPA / chemCPA", bestFor: "Dose, cell type, species, drug and combination transfer", pros: "Clear compositional latent factors; chemCPA adds chemical representations; strong fit for covariate-aware OOD questions", cons: "Factorization assumptions may miss complex interactions; chemical coverage and representation quality become part of the comparison", choose: "Dose or context composition is central to the study", links: [
+          { label: "CPA paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10258562/" },
+          { label: "chemCPA code", url: "https://github.com/theislab/chemCPA" }
+        ]
+      },
+      {
+        name: "scGen", bestFor: "Simple latent-shift reference across studies or contexts", pros: "Conceptually simple VAE/vector arithmetic; useful low-complexity historical baseline", cons: "Can under-represent nonlinear, dose-dependent or combinatorial responses; not a direct biology-knowledge model", choose: "You want to test whether a complex model beats a simple response direction", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-019-0494-8" },
+          { label: "code", url: "https://github.com/theislab/scgen" }
+        ]
+      },
+      {
+        name: "scGPT", bestFor: "Foundation-model representation or perturbation-token probe", pros: "High-visibility contextual gene/cell representation; directly useful for a frozen-backbone comparison", cons: "Results depend on tokenization, perturbation head, masking and pretraining overlap; not automatically comparable to task-specific models", choose: "You want to isolate the value of a general scFM representation", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-024-02201-0" },
+          { label: "code", url: "https://github.com/bowang-lab/scGPT" }
+        ]
+      },
+      {
+        name: "scFoundation", bestFor: "Testing whether a larger pretrained gene representation helps a perturbation head", pros: "Large public scFM checkpoint family; useful controlled representation-versus-head comparison", cons: "Often evaluated through a downstream GEARS-style head; scale does not prove perturbation signal; overlap and compute must be disclosed", choose: "You need a large-pretraining probe with a controlled downstream predictor", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-024-02305-7" },
+          { label: "code", url: "https://github.com/biomap-research/scFoundation" }
+        ]
+      },
+      {
+        name: "CellOT", bestFor: "Unpaired treated/control population distributions", pros: "Models heterogeneous distributions rather than only a mean; neural optimal transport gives a distinct baseline", cons: "Needs an appropriate unpaired/distributional setup; less direct for combinatorial gene perturbation and embedding ablations", choose: "The endpoint is a cell-state distribution or population shift", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-023-01969-x" }
+        ]
+      },
+      {
+        name: "STATE", bestFor: "Set-level virtual-cell prediction across contexts", pros: "Separates state embedding from transition modeling; explicit unseen-context and few-shot perturbation framing", cons: "More complex set-level evaluation; newer evidence and data-overlap assumptions need careful auditing", choose: "You need a virtual-cell model that represents both context and response transition", links: [
+          { label: "paper", url: "https://www.biorxiv.org/content/10.1101/2025.06.26.661135v1.full" },
+          { label: "code", url: "https://github.com/ArcInstitute/state" },
+          { label: "Cell-Eval", url: "https://github.com/ArcInstitute/cell-eval" }
+        ]
+      },
+      {
+        name: "PerturbNet", bestFor: "Generative chemical or genetic response distributions", pros: "Continuous perturbation-to-cell-state map; supports unseen chemical and genetic perturbation questions", cons: "Generative outputs need distribution-aware metrics and uncertainty checks; harder to compare with point predictors", choose: "You care about heterogeneous response distributions, not just centroid accuracy", links: [
+          { label: "paper", url: "https://doi.org/10.1038/s44320-025-00131-3" },
+          { label: "code", url: "https://github.com/welch-lab/PerturbNet" }
+        ]
+      },
+      {
+        name: "LPM", bestFor: "Large perturbation-aware representation and biology-discovery probes", pros: "Designed around perturbation/readout/context structure; connects response prediction with downstream biological discovery", cons: "Scale and screen composition can dominate; discovery claims should be separated from common benchmark performance", choose: "The primary question is whether a perturbation-aware embedding preserves biology", links: [
+          { label: "paper", url: "https://doi.org/10.1038/s43588-025-00870-1" },
+          { label: "code", url: "https://github.com/perturblib/perturblib" }
+        ]
+      },
+      {
+        name: "Scouter", bestFor: "Biology-aware unseen-gene baseline", pros: "Makes a gene-description/text prior explicit; compact comparison against learned transcriptomic representations", cons: "Text annotations can encode bias or leakage; focused on unseen genetic perturbations; needs GO/STRING and shuffle controls", choose: "You want to test the incremental value of an explicit biology/text prior", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s43588-025-00912-8" },
+          { label: "code", url: "https://github.com/PancakeZoy/scouter" }
+        ]
+      },
+      {
+        name: "scVIDR", bestFor: "Chemical dose-response transfer", pros: "Explicit dose-dependent latent regression; useful for dose and cross-context baselines", cons: "Narrower chemical/dose scope; VAE assumptions may not capture distributional or combinatorial genetic effects", choose: "Dose is the main axis of generalization", links: [
+          { label: "paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10436058/" },
+          { label: "code", url: "https://github.com/BhattacharyaLab/scVIDR" }
+        ]
+      },
+      {
+        name: "scLong", bestFor: "Exploratory large-scale single/double-gene perturbation modeling", pros: "Targets scale and perturbation-response scoring; relevant to synergy/suppressor analyses", cons: "Emerging evidence; independent reproduction and comparable public evaluation should precede ranking", choose: "You are extending a stable Stage 1 protocol toward larger perturbation screens", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41467-026-69102-y" }
+        ]
+      }
+    ],
     benchmarkDatasets: [
       {
         name: "scPerturb", type: "Multi-study atlas", coverage: "44 public perturbation-response datasets; RNA, protein and ATAC", use: "Primary data index; stratify by technology, context and perturbation", links: [
@@ -705,6 +778,36 @@ window.SCAI_DATA = {
       {
         name: "Broader scFM and virtual-cell catalog", status: "Backlog", note: "GeneCompass, scMulan, CellPLM, UCE, scPRINT, CellFM, CellOS, AIDO Cell, AlphaCell and related models from the awesome list; add only when perturbation-specific protocols are pinned", links: [
           { label: "awesome list", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }
+        ]
+      }
+    ],
+    agentSelection: [
+      {
+        name: "scBench", kind: "Single-cell workflow benchmark", bestFor: "Selecting or stress-testing agents for practical scRNA-seq analysis", pros: "195 verifiable problems; deterministic graders; covers six platforms and six workflow categories", cons: "Narrower than general bioinformatics; pass/fail structure does not capture every scientific-quality or safety issue", choose: "The agent must perform concrete single-cell analysis tasks with checkable outputs", links: [
+          { label: "benchmark", url: "https://github.com/latchbio/scbench" }
+        ]
+      },
+      {
+        name: "BixBench", kind: "Computational-biology agent benchmark", bestFor: "Long, multi-step dataset exploration and biological interpretation", pros: "Real published notebook-derived tasks; tests dataset exploration, code execution, hypotheses and validation", cons: "Requires an execution environment and can be costly to reproduce; not specific to single-cell or perturbation response", choose: "You need a broad end-to-end computational-biology capability test", links: [
+          { label: "benchmark", url: "https://github.com/Future-House/BixBench" },
+          { label: "paper", url: "https://arxiv.org/abs/2503.00096" }
+        ]
+      },
+      {
+        name: "BioAgent Bench", kind: "End-to-end bioinformatics benchmark", bestFor: "Pipeline completion and robustness under controlled failure modes", pros: "Concrete output artifacts; covers RNA-seq, variant calling and metagenomics; tests corrupted inputs, decoys and prompt bloat", cons: "Broad rather than sc-specific; LLM-based grading adds an evaluation layer; privacy and proprietary-reference constraints still matter", choose: "Robustness and safe handling of realistic pipeline failures are first-class requirements", links: [
+          { label: "paper", url: "https://arxiv.org/abs/2601.21800" }
+        ]
+      },
+      {
+        name: "LAB-Bench", kind: "Broad biology capability benchmark", bestFor: "Literature, figures, databases and sequence reasoning", pros: "Broad biology research coverage; useful for knowledge and reasoning pre-screening", cons: "Mostly question-answering rather than executable workflows; weak evidence for reproducibility or tool-use reliability", choose: "You want to measure biology knowledge before investing in full agent execution tests", links: [
+          { label: "paper", url: "https://arxiv.org/abs/2407.10362" },
+          { label: "code/data", url: "https://github.com/Future-House/lab-bench" }
+        ]
+      },
+      {
+        name: "ClawBio", kind: "Local-first skill library and MCP server", bestFor: "Running reusable bioinformatics skills in a local, reproducible tool loop", pros: "Modular skills; local-first and MCP-compatible; demo data and reproducibility-oriented packaging", cons: "A tool library, not a standardized benchmark; skill maturity is heterogeneous; hosted/API skills require separate privacy review", choose: "You need an extensible local tool layer rather than another model leaderboard", links: [
+          { label: "repository", url: "https://github.com/ClawBio/ClawBio" },
+          { label: "MCP docs", url: "https://docs.clawbio.ai/reference/mcp" }
         ]
       }
     ]

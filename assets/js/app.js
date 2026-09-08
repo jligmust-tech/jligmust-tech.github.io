@@ -325,6 +325,9 @@
     h += guideSection("research-models", "Stage 1 model priority", "Start here for perturbation-response and post-perturbation gene-expression experiments.", guideTable(guide.stage1Models, [
       { key: "rank", label: "Priority" }, { key: "name", label: "Model" }, { key: "role", label: "Role" }, { key: "scope", label: "Perturbation scope" }, { key: "embedding", label: "Representation / biology prior" }, { key: "generalization", label: "Generalization focus" }, { key: "links", label: "Sources" }
     ]));
+    h += guideSection("research-model-selection", "Model selection guide", "Use the task first, then read the strengths and trade-offs before choosing a model family.", guideTable(guide.modelSelection, [
+      { key: "name", label: "Model" }, { key: "bestFor", label: "Best fit" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "choose", label: "Choose it when" }, { key: "links", label: "Public evidence" }
+    ]) + "<div class='guide-choice'><strong>Quick selector:</strong> GEARS for a default genetic baseline; CPA/chemCPA for dose or context composition; CellOT, STATE or PerturbNet for distributional responses; scGPT or scFoundation for frozen scFM probes; LPM or Scouter for biology-aware embedding questions; scVIDR for dose-focused chemical transfer.</div>");
     h += guideSection("research-datasets", "Benchmark datasets and access", "A compact dataset ladder: broad atlases for robustness, canonical studies for interpretable splits, and large perturbation atlases for modern virtual-cell models.", guideTable(guide.benchmarkDatasets, [
       { key: "name", label: "Dataset" }, { key: "type", label: "Type" }, { key: "coverage", label: "Coverage" }, { key: "use", label: "Recommended use" }, { key: "links", label: "Access / paper" }
     ]));
@@ -340,6 +343,9 @@
     h += guideSection("research-roadmap", "Stage 2 and backlog", "Broader virtual-cell and perturbation-trained models to add after the common evaluation protocol is stable.", guideTable(guide.roadmap, [
       { key: "name", label: "Model / direction" }, { key: "status", label: "Status" }, { key: "note", label: "Why later" }, { key: "links", label: "Sources" }
     ]));
+    h += guideSection("research-agent-selection", "Bioinformatics agent & tool selection guide", "Benchmarks measure different capabilities; pair an execution benchmark with a local tool layer when reproducibility and privacy matter.", guideTable(guide.agentSelection, [
+      { key: "name", label: "Agent / tool" }, { key: "kind", label: "Type" }, { key: "bestFor", label: "Best fit" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "choose", label: "Choose it when" }, { key: "links", label: "Public evidence" }
+    ]) + "<div class='guide-choice'><strong>Quick selector:</strong> scBench for concrete single-cell workflows; BixBench for long computational-biology trajectories; BioAgent Bench for robustness and failure handling; LAB-Bench for broad biology reasoning; ClawBio for a local-first, MCP-compatible execution layer. These are not interchangeable scores.</div>");
     h += "<div id='research-next' class='guide-next'><h2>Suggested first information route</h2><p>Start with the public-source ledger: record each model's paper, code, perturbation scope, representation, benchmark context and limitations. Then route each research question through the canonical datasets and evaluation suites above. The P0 embedding items are evaluation specifications for future work, not runs performed by this site.</p><p class='sub'>The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
     el.innerHTML = h;
   }
