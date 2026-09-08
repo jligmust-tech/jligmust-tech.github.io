@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How the leaderboard metrics are defined — scAI Index</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Methodology</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-08</span>
+      </div>
+      <h1>How the leaderboard metrics are defined</h1>
+
+      <p>The leaderboard keeps several evidence types visible instead of collapsing them into one unsupported composite score. Each row carries a note describing the dataset, task, and evaluation setting behind its populated values.</p>
+
+      <h2>Single-cell foundation models</h2>
+      <ul>
+        <li><b>Annotation ↑</b> is the reported cell-type annotation accuracy or agreement. The current populated rows include supervised transfer results from the <a href="https://github.com/OmicsML/CellPLM">CellPLM comparison table</a> and an average accuracy reported for <a href="https://www.nature.com/articles/s41467-025-59926-5">CellFM</a>.</li>
+        <li><b>Batch Integration ↑</b> is the reported Avg. Batch value from the <a href="https://bmwang.cn/assets/files/mwang.240122.pdf">UCE integration comparison</a>. It is not the same measurement as annotation accuracy.</li>
+        <li><b>Parameters / Pretrain Cells</b> are source-reported scale fields. Versions are separated where a model family has materially different checkpoints.</li>
+      </ul>
+
+      <h2>General LLMs</h2>
+      <ul>
+        <li><b>Annotation Agreement ↑</b> is binary agreement by cell with manual labels in the <a href="https://www.nature.com/articles/s41467-025-64511-x">AnnDictionary</a> Tabula Sapiens v2 evaluation.</li>
+        <li><b>Gene-Set Terms ↑</b> is the proportion of biological-process terms recovered in that same evaluation.</li>
+        <li><b>Workflow Accuracy ↑</b> is the accuracy reported by <a href="https://github.com/latchbio/scbench">scBench</a> across executable scRNA-seq workflow problems. It is a workflow/agent score, not isolated code-generation accuracy.</li>
+      </ul>
+
+      <h2>Nulls are intentional</h2>
+      <p>A dash means that no compatible published value was found in the checked sources. It does not mean zero, and it does not imply that a model was tested and failed. Scores from different studies should be compared only within a shared dataset and protocol.</p>
+    </article>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -24,7 +24,7 @@
   <div class="wrap">
     <div class="hero">
       <h1>About</h1>
-      <p>What this site tracks, how scores are defined, and what is still pending.</p>
+      <p>What this site tracks, how current scores are defined, and where evidence is still missing.</p>
     </div>
 
     <section class="block">
@@ -37,13 +37,15 @@
 
     <section class="block">
       <div class="card">
-        <h2>Methodology — working draft</h2>
-        <p class="sub">Metric definitions, pending finalization with real data.</p>
+        <h2>Methodology — current snapshot</h2>
+        <p class="sub">Definitions used by the data currently shown.</p>
         <ul>
-          <li><b>Cell-Type Annotation ↑</b> — zero-shot cell-type classification accuracy/F1 on benchmark datasets (e.g. <a href="https://cellxgene.cziscience.com/">CellxGene</a> subsets). Higher is better.</li>
-          <li><b>Batch Correction ↑</b> — integration quality across batches (e.g. iLISI / ASW). Higher is better.</li>
-          <li><b>Gene-Set Analysis ↑</b> — LLM ability to interpret gene sets (pathway/enrichment reasoning). Higher is better.</li>
-          <li><b>sc Analysis Code ↑</b> — LLM ability to write correct analysis code (scanpy/seurat workflows). Higher is better.</li>
+          <li><b>Annotation ↑</b> — reported cell-type annotation accuracy or binary agreement; the setting may be supervised or use a frozen backbone and is stated in the row notes. Higher is better.</li>
+          <li><b>Batch Integration ↑</b> — Avg. Batch from a single-cell integration benchmark such as scIB; it is not interchangeable with annotation accuracy. Higher is better.</li>
+          <li><b>Annotation Agreement ↑</b> — LLM binary agreement by cell with manual labels in the AnnDictionary Tabula Sapiens v2 evaluation. Higher is better.</li>
+          <li><b>Gene-Set Terms ↑</b> — proportion of biological-process terms recovered in the AnnDictionary evaluation. Higher is better.</li>
+          <li><b>Workflow Accuracy ↑</b> — scBench accuracy over verifiable executable scRNA-seq workflow tasks; this is a workflow/agent proxy, not isolated code generation. Higher is better.</li>
+          <li><b>Parameters / Pretrain Cells</b> — source-reported model scale; versions are separate where relevant.</li>
         </ul>
       </div>
     </section>
@@ -52,7 +54,7 @@
       <div class="card">
         <h2>Data policy</h2>
         <p class="sub">Honest about the current state.</p>
-        <p><b>Current status: sample/placeholder data.</b> All scores on this site are framework placeholders and must NOT be cited or relied on. Real values will be researched from primary papers and official repositories, with sources linked, before any number is published as final.</p>
+        <p><b>Current status: source-linked snapshot.</b> Every populated value has a source in the row data. A null/dash means no compatible published value was found, not zero. Because source papers use different datasets and protocols, values should not be treated as a universal ranking; inspect the notes and source links.</p>
       </div>
     </section>
 
@@ -61,11 +63,10 @@
         <h2>Roadmap</h2>
         <p class="sub">Planned work, in order.</p>
         <ol>
-          <li>Finalize metric definitions (methodology post).</li>
-          <li>Research and populate single-cell foundation model data with sources.</li>
-          <li>Research and populate general LLM single-cell evaluation data with sources.</li>
-          <li>Per-model detail pages.</li>
-          <li>Regular blog updates.</li>
+          <li>Harmonized benchmark ingestion on shared datasets and protocols.</li>
+          <li>Per-model detail pages and downloadable evidence.</li>
+          <li>Versioned updates as new peer-reviewed evaluations appear.</li>
+          <li>Methodology and data blog posts.</li>
         </ol>
       </div>
     </section>
@@ -74,7 +75,7 @@
   <footer>
     <div class="inner">
       <span>© 2026 scAI Index · Independent analysis</span>
-      <span>Framework preview — data not yet verified</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
     </div>
   </footer>
 </body>

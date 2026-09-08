@@ -2,6 +2,36 @@
 (function () {
   "use strict";
 
+  function esc(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function firstScoreKey(sec) {
+    for (var i = 0; i < sec.columns.length; i++) {
+      if (sec.columns[i].score) return sec.columns[i].key;
+    }
+    return null;
+  }
+
+  function externalLink(url, label) {
+    return "<a href='" + esc(url) + "' target='_blank' rel='noopener noreferrer'>" + esc(label) + "</a>";
+  }
+
+  function evidenceLinks(model) {
+    var links = [];
+    if (model.url) links.push(externalLink(model.url, "model"));
+    (model.sources || []).forEach(function (url, i) {
+      if (url !== model.url) links.push(externalLink(url, "S" + (i + 1)));
+    });
+    if (!links.length) return "";
+    return "<span class='model-links' title='" + esc(model.notes || "") + "'>" + links.join(" ") + "</span>";
+  }
+
   /* Nav active state from body[data-page] */
   document.addEventListener("DOMContentLoaded", function () {
     var page = document.body.getAttribute("data-page");
@@ -24,9 +54,8 @@
 
   /* ---------- Leaderboard: two sections, sortable table ---------- */
   function initLeaderboard(el) {
-    var sections = ["scFoundation", "generalLLM"];
     var current = "scFoundation";
-    var sortKey = null, sortDir = -1;
+    var sortKey = firstScoreKey(SCAI_DATA[current]), sortDir = -1;
 
     var h = "";
     h += '<div class="card">';
@@ -44,12 +73,10 @@
         el.querySelectorAll("#seg button").forEach(function (x) { x.classList.remove("active"); });
         b.classList.add("active");
         current = b.getAttribute("data-sec");
-        sortKey = null; sortDir = -1;
+        sortKey = firstScoreKey(SCAI_DATA[current]); sortDir = -1;
         renderTable();
       });
     });
-
-    function fmt(v) { return (typeof v === "number") ? v.toFixed(2) : (v || "—"); }
 
     function renderTable() {
       var sec = SCAI_DATA[current];
@@ -58,8 +85,8 @@
       var th = "";
       th += "<th class='sortable' data-key='name'>Model <span class='arrow'>▲▼</span></th>";
       sec.columns.forEach(function (c) {
-        var cls = c.score ? "sortable num" : "sortable num";
-        th += "<th class='" + cls + "' data-key='" + c.key + "'>" + c.label + " <span class='arrow'>▲▼</span></th>";
+        var cls = "sortable num";
+        th += "<th class='" + cls + "' data-key='" + esc(c.key) + "'>" + esc(c.label) + " <span class='arrow'>▲▼</span></th>";
       });
       document.getElementById("thead").innerHTML = "<tr>" + th + "</tr>";
 
@@ -67,8 +94,16 @@
       if (sortKey) {
         rows.sort(function (a, b) {
           var va = a[sortKey], vb = b[sortKey];
-          if (typeof va === "string") return sortDir * va.localeCompare(vb);
-          return sortDir * ((va || -1) - (vb || -1));
+          var aMissing = va === null || va === undefined || va === "";
+          var bMissing = vb === null || vb === undefined || vb === "";
+          if (aMissing || bMissing) {
+            if (aMissing && bMissing) return 0;
+            return aMissing ? 1 : -1;
+          }
+          if (typeof va === "string" || typeof vb === "string") {
+            return sortDir * String(va).localeCompare(String(vb));
+          }
+          return sortDir * (va - vb);
         });
       }
 
@@ -76,13 +111,13 @@
       rows.forEach(function (m, i) {
         var rankCls = i === 0 ? "r1" : i === 1 ? "r2" : i === 2 ? "r3" : "";
         tb += "<tr><td><span class='rank " + rankCls + "'>" + (i + 1) + "</span> ";
-        tb += "<span class='model-name'>" + m.name + "</span><br><span class='model-org'>" + m.org + "</span></td>";
+        tb += "<span class='model-name'>" + (m.url ? externalLink(m.url, m.name) : esc(m.name)) + "</span><br><span class='model-org'>" + esc(m.org) + "</span><br>" + evidenceLinks(m) + "</td>";
         sec.columns.forEach(function (c) {
           var v = m[c.key];
           var cls = c.score ? "score" : "";
-          var val = (typeof v === "number") ? v.toFixed(2) : (v || "—");
+          var val = (typeof v === "number" && c.score) ? v.toFixed(2) : (v || "—");
           if (v === undefined || v === null || v === "") val = "<span class='na'>—</span>";
-          tb += "<td class='num " + cls + "'>" + val + "</td>";
+          tb += "<td class='num " + cls + "'>" + (typeof val === "string" && val.indexOf("<span") === 0 ? val : esc(val)) + "</td>";
         });
         tb += "</tr>";
       });
@@ -109,14 +144,15 @@
     Object.keys(SCAI_DATA).forEach(function (secKey) {
       var sec = SCAI_DATA[secKey];
       if (!sec.models) return;
-      h += "<h2 style='margin:26px 0 12px'>" + sec.title + "</h2><div class='cards'>";
+      h += "<h2 style='margin:26px 0 12px'>" + esc(sec.title) + "</h2><div class='cards'>";
       sec.models.forEach(function (m) {
-        h += "<div class='mcard'><h3>" + m.name + "</h3><div class='meta'>" + m.org + " · " + m.year + "</div>";
+        h += "<div class='mcard'><h3>" + (m.url ? externalLink(m.url, m.name) : esc(m.name)) + "</h3><div class='meta'>" + esc(m.org) + " · " + esc(m.year) + "</div>";
+        h += evidenceLinks(m);
         h += "<div class='stats'>";
         sec.columns.forEach(function (c) {
           var v = m[c.key];
-          var val = (typeof v === "number") ? v.toFixed(2) : (v || "—");
-          h += "<div>" + c.label.replace(" ↑", "") + "<b>" + val + "</b></div>";
+          var val = (typeof v === "number" && c.score) ? v.toFixed(2) : (v || "—");
+          h += "<div>" + esc(c.label.replace(" ↑", "")) + "<b>" + esc(val) + "</b></div>";
         });
         h += "</div></div>";
       });
@@ -129,8 +165,8 @@
   function renderUpdates(feed) {
     var h = "";
     SCAI_DATA.posts.slice(0, 5).forEach(function (p) {
-      h += "<li><span class='date'>" + p.date + "</span><span class='tag'>" + p.tag + "</span> ";
-      h += p.url && p.url !== "#" ? "<a href='" + p.url + "'>" + p.title + "</a>" : "<span>" + p.title + "</span>";
+      h += "<li><span class='date'>" + esc(p.date) + "</span><span class='tag'>" + esc(p.tag) + "</span> ";
+      h += p.url && p.url !== "#" ? "<a href='" + esc(p.url) + "'>" + esc(p.title) + "</a>" : "<span>" + esc(p.title) + "</span>";
       h += "</li>";
     });
     feed.innerHTML = h;
