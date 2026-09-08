@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contribute — scAI Index</title>
+  <meta name="description" content="Submit public single-cell studies, benchmark results, and evidence updates to scAI Index.">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="contribute">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="models.html" data-page="models">Models</a>
+        <a href="research.html" data-page="research">Research Guide</a>
+        <a href="blog/" data-page="blog">Blog</a>
+        <a href="references.html" data-page="references">References</a>
+        <a href="contribute.html" data-page="contribute">Contribute</a>
+        <a href="about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Contribution sections">
+          <a href="#contribute-overview">Overview</a>
+          <a href="#contribute-routes">Submission routes</a>
+          <a href="#contribute-status">Status model</a>
+          <a href="#contribute-study">New study fields</a>
+          <a href="#contribute-result">Result fields</a>
+          <a href="#contribute-review">Review checklist</a>
+          <a href="#contribute-policy">Data policy</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+      <div class="hero" id="contribute-overview">
+        <h1>Contribute public research records</h1>
+        <p>Help extend the research router with new studies, benchmark resources, and reproducible result records.</p>
+      </div>
+
+      <div class="banner">Public contributions only — the site does not run models. Do not attach private databases, proprietary downloads, credentials, model weights, or raw execution dumps; concise source-linked result summaries are welcome.</div>
+
+      <section class="block" id="contribute-routes">
+        <div class="card">
+          <h2>Submission routes</h2>
+          <p class="sub">Use a GitHub issue for guided review, or download a CSV template for a planned pull request.</p>
+          <div class="contribute-actions">
+            <a class="contribute-action" href="https://github.com/jligmust-tech/jligmust-tech.github.io/issues/new?template=new-study.md&amp;title=%5BNew%20study%5D%20">Submit a new study →</a>
+            <a class="contribute-action" href="https://github.com/jligmust-tech/jligmust-tech.github.io/issues/new?template=result-submission.md&amp;title=%5BResult%5D%20">Submit a result →</a>
+            <a class="contribute-action secondary" href="assets/data/study_submissions.csv" download="study_submissions.csv">Study CSV template</a>
+            <a class="contribute-action secondary" href="assets/data/result_submissions.csv" download="result_submissions.csv">Result CSV template</a>
+          </div>
+          <p class="sub contribute-note">Issue submissions are discussion records. A maintainer adds accepted records to the versioned CSV only after the public-source and protocol checks below.</p>
+        </div>
+      </section>
+
+      <section class="block" id="contribute-status">
+        <div class="card">
+          <h2>Time-aware status model</h2>
+          <p class="sub">Publication status answers “what is publicly released?” Evidence status answers “how much has this site checked?” They must not be collapsed.</p>
+          <div class="tblwrap">
+            <table class="status-table">
+              <thead><tr><th>Field</th><th>Meaning</th><th>Required timestamp rule</th></tr></thead>
+              <tbody>
+                <tr><td><strong>publication_status</strong></td><td>Unpublished, preprint, under review, published, or public release.</td><td>Do not infer publication from a repository update.</td></tr>
+                <tr><td><strong>evidence_status</strong></td><td>Submitted, public-source verified, protocol-comparable, needs clarification, not comparable, or accepted.</td><td>Every change updates <strong>status_updated_at</strong>.</td></tr>
+                <tr><td><strong>submitted_at</strong></td><td>When the contributor sent the record.</td><td>Set once; retain the original submission time.</td></tr>
+                <tr><td><strong>status_updated_at</strong></td><td>When the current status was last checked or changed.</td><td>Required for every record, including unpublished records.</td></tr>
+                <tr><td><strong>published_at</strong></td><td>When a publication or formal public release exists.</td><td>Leave blank while unpublished or under review.</td></tr>
+                <tr><td><strong>last_verified_at</strong></td><td>When the linked public source was last checked.</td><td>Update when links, versions, or artifacts are rechecked.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="guide-choice"><strong>Example:</strong> <span class="evidence-badge">Unpublished · status checked 2026-09-08</span> means the item is publicly submitted but has no publication date. It is not treated as published evidence. Status changes are retained in the public <a href="assets/data/submission_status_history.csv">status-history export</a>.</p>
+        </div>
+      </section>
+
+      <section class="block" id="contribute-study">
+        <div class="card">
+          <h2>New study or benchmark fields</h2>
+          <p class="sub">Use <a href="assets/data/study_submissions.csv">study_submissions.csv</a> or the <a href="https://github.com/jligmust-tech/jligmust-tech.github.io/blob/main/.github/ISSUE_TEMPLATE/new-study.md">new-study issue template</a>.</p>
+          <p>Provide the study name and type, publication and evidence statuses, all required timestamps, public paper/repository/dataset URLs, task definition, holdout or split, metrics, baselines, and a short contributor note. A preprint, public repository, challenge page, or public dataset landing page can be valid public evidence even when no peer-reviewed publication exists.</p>
+        </div>
+      </section>
+
+      <section class="block" id="contribute-result">
+        <div class="card">
+          <h2>Benchmark result fields</h2>
+          <p class="sub">Use <a href="assets/data/result_submissions.csv">result_submissions.csv</a> or the <a href="https://github.com/jligmust-tech/jligmust-tech.github.io/blob/main/.github/ISSUE_TEMPLATE/result-submission.md">result-submission issue template</a>.</p>
+          <p>Provide the model and version/commit, dataset or suite, exact split, endpoint, metric and score, uncertainty or repeat count, baseline, pretraining-overlap disclosure, public code/configuration URL, source URL, license note, and all status timestamps. Scores remain separate from the official leaderboard until the dataset, split, metric, baseline, and source are comparable.</p>
+        </div>
+      </section>
+
+      <section class="block" id="contribute-review">
+        <div class="card">
+          <h2>Review checklist</h2>
+          <p class="sub">Maintainers should be able to audit a contribution without requesting private files.</p>
+          <ol>
+            <li>Confirm that every evidence link is public, stable enough to cite, and relevant to the claim.</li>
+            <li>Check publication status independently from repository or preprint activity; record <code>status_updated_at</code>.</li>
+            <li>Check that dataset, holdout, endpoint, metric, baseline, and model version are explicit.</li>
+            <li>Check pretraining/test overlap and mark unknown disclosure as unknown rather than assuming no overlap.</li>
+            <li>Keep source-reported, community-submitted, protocol-comparable, and verified records visibly distinct.</li>
+            <li>Reject private data, proprietary downloads, credentials, unverifiable scores, and claims that require running a model.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="block" id="contribute-policy">
+        <div class="card">
+          <h2>Data policy</h2>
+          <p class="sub">The contribution layer extends the public research map; it does not become a raw-data repository.</p>
+          <p>Accepted records contain metadata, links, citations, and contributor-provided summaries or scores. They do not contain downloaded datasets, private database exports, model weights, access tokens, or executable jobs. Community submissions are versioned through public GitHub history and remain clearly labeled in the site’s tables and future plots.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Public contribution workflow · evidence timestamps</span>
+    </div>
+  </footer>
+</body>
+</html>

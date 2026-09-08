@@ -12,6 +12,8 @@ Stage 1.5 adds a public [source registry](assets/data/source_registry.csv) with 
 
 The Research Guide also includes a Stage 2 triage queue for newer virtual-cell directions and bioinformatics agents/tools. Stage 2 now includes the Virtual Cell Challenge 2025, SCALE, PerturbDiff, Lingshu-Cell, Biomni, FlowAgent, a public genomic-skills catalog and BioSkillSafety. Entries carry evidence maturity, pros/cons and a next-verification step; they are reading priorities, not model-performance claims. The public exports are [virtual-cell triage](assets/data/stage2_virtual_cell.csv) and [agent/tool triage](assets/data/stage2_agent_tools.csv).
 
+The [Contribute page](contribute.html) provides public study and result templates plus GitHub issue routes. Publication status and evidence status are separate, and unpublished submissions must carry `submitted_at`, `status_updated_at`, and a blank `published_at`; changes are retained in the [status-history export](assets/data/submission_status_history.csv). Community records remain separate from the official leaderboard until source and protocol review.
+
 To preview locally:
 
 ```text

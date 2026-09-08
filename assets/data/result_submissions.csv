@@ -1,0 +1,1 @@
+submission_id,study_or_benchmark,model_name,model_version,model_commit,publication_status,evidence_status,submitted_at,status_updated_at,published_at,last_verified_at,dataset_or_suite,split_or_holdout,endpoint,metric,score,score_unit,uncertainty,repeat_count,baseline,pretraining_overlap,code_or_config_url,source_url,license_note,contributor_note,review_note
