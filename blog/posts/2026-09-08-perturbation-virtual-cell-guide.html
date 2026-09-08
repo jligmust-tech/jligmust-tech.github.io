@@ -31,6 +31,7 @@
           <a href="#report-selection">Selection guide</a>
           <a href="#report-datasets">Benchmark datasets</a>
           <a href="#report-suites">Evaluation suites</a>
+          <a href="#report-protocol">Protocol hardening</a>
           <a href="#report-embeddings">Embedding plan</a>
           <a href="#report-route">First information route</a>
           <a href="#report-roadmap">Roadmap</a>
@@ -82,6 +83,10 @@
       <p>Pair it with <a href="https://www.nature.com/articles/s41587-025-02777-8">Systema</a> and its <a href="https://github.com/mlbio-epfl/systema">code</a>. Systema shows that systematic differences between perturbed and control cells can make ordinary metrics look better than the underlying perturbation-specific prediction. It therefore recommends perturbed-reference metrics and simple perturbed-mean or matching-mean baselines. A model should have to beat those baselines on the perturbation-specific signal, not merely reproduce an average shift.</p>
       <p><a href="https://github.com/altoslabs/perturbench">PerturBench</a> is a useful engineering harness for common data, splits and metrics, with a <a href="https://openreview.net/forum?id=PPPDuyiZaG">NeurIPS Datasets and Benchmarks paper</a>. <a href="https://proceedings.mlr.press/v267/wenteler25a.html">PertEval-scFM</a> and its <a href="https://github.com/aaronwtr/PertEval">evaluation suite</a> are valuable when the question is narrower: does a frozen foundation-model representation improve a lightweight perturbation predictor?</p>
       <p>For set-valued predictions, use <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a>. Its disjoint self-split estimates a data ceiling from the noise in the real cells, which keeps a low score from being misread as a model failure when the measured response itself is unstable.</p>
+
+      <h2 id="report-protocol">How to read benchmark evidence</h2>
+      <p>The new <a href="../../research.html#research-evidence">benchmark evidence matrix</a> stores the comparison unit explicitly: model or suite, dataset, split/holdout, metric, baseline, evidence status and public source. This prevents a source-reported score from being silently promoted into a universal ranking. The downloadable <a href="../../assets/data/benchmark_evidence.csv">CSV ledger</a> is intentionally compact and uses “protocol-specific”, “representation probe”, “distributional evaluator” and “common-suite benchmark anchor” labels where scores answer different questions.</p>
+      <p>Before any future run, choose the holdout question: perturbation-exclusive for unseen interventions, context-exclusive for transfer across biological context, or combined perturbation × context for novel pairings. For population-level predictions, use a set/distribution split and report the evaluator profile and empirical ceiling. The <a href="../../research.html#research-guardrails">guardrail checklist</a> requires control-mean, perturbed-mean and matching-mean baselines where applicable, plus systematic-variation diagnostics and shuffled-label or random-expression controls for embedding probes.</p>
 
       <h2 id="report-embeddings">Stage 1 embedding plan</h2>
       <p>The first embedding study should treat representation quality as a set of biological probes, not a single embedding score:</p>

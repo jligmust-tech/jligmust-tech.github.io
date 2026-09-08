@@ -726,6 +726,75 @@ window.SCAI_DATA = {
         ]
       }
     ],
+    benchmarkEvidence: [
+      {
+        name: "scPerturBench", type: "Common benchmark suite", task: "Single-cell perturbation-response prediction", datasets: "29 public datasets; genetic and chemical settings", split: "Cellular-context generalization (i.i.d./OOD) and perturbation generalization; report each scenario separately", metrics: "MSE; PCC-Δ; E-distance; Wasserstein; KL divergence; Common-DEGs", baselines: "Four baseline models in the suite; retain simple mean baselines where available", status: "Common-suite benchmark anchor", comparability: "Comparable within this suite; not a universal cross-paper ranking", code: "Public", data: "Public repository plus Figshare/Zenodo archives", notes: "Use the released split manifests and keep dataset, scenario and metric columns separate.", links: [{ label: "code/results", url: "https://github.com/bm2-lab/scPerturBench" }]
+      },
+      {
+        name: "Systema", type: "Anti-shortcut protocol", task: "Perturbation-specific genetic response beyond systematic variation", datasets: "Adamson, Norman and repository-listed perturbation datasets", split: "Train/test splits with unseen genetic perturbations; preserve the repository configuration", metrics: "Perturbed-reference Pearson-Δ; RMSE-Δ; centroid accuracy; systematic-variation diagnostics", baselines: "nonctl-mean and matching-mean; add control-aware baselines", status: "Anti-shortcut guardrail", comparability: "Protocol-specific; use to qualify ordinary reference-based metrics", code: "Public", data: "Public study links and repository instructions", notes: "A high score can be misleading when a model reproduces systematic variation instead of the perturbation effect.", links: [{ label: "code", url: "https://github.com/mlbio-epfl/systema" }, { label: "paper", url: "https://www.nature.com/articles/s41587-025-02777-8" }]
+      },
+      {
+        name: "PertEval-scFM / PertEval", type: "Representation probe", task: "Zero-shot perturbation-effect prediction from frozen scFM embeddings", datasets: "Protocol-defined perturbation datasets; pin the exact configuration", split: "Zero-shot and distribution-shift evaluations; no random-cell split substitution", metrics: "Lightweight-probe perturbation metrics reported by the framework", baselines: "Simple probe and baseline models from the evaluation protocol", status: "Representation probe", comparability: "Comparable only within the PertEval protocol", code: "Public", data: "Public code and protocol-linked inputs", notes: "Useful for isolating embedding value from decoder or task-head value; distribution shift is a central stress test.", links: [{ label: "paper", url: "https://proceedings.mlr.press/v267/wenteler25a.html" }, { label: "code", url: "https://github.com/aaronwtr/PertEval" }]
+      },
+      {
+        name: "PerturBench", type: "Benchmarking framework", task: "Configurable perturbation prediction", datasets: "Diverse processed public datasets", split: "Framework-defined dataset/split evaluators; inspect whether cross-context or combination holdouts are enabled", metrics: "RMSE; cosine similarity; configurable evaluators", baselines: "Framework baselines plus control and mean-response baselines", status: "Engineering harness", comparability: "Comparable within the same framework configuration", code: "Public", data: "Public processed datasets via linked archives", notes: "Use as an extensible harness, not as a single universal leaderboard number.", links: [{ label: "code", url: "https://github.com/altoslabs/perturbench" }, { label: "paper", url: "https://openreview.net/forum?id=PPPDuyiZaG" }]
+      },
+      {
+        name: "Cell-Eval", type: "Distributional evaluator", task: "Set- and distribution-level response evaluation", datasets: "Predicted versus real AnnData response sets", split: "Set/distribution comparison; inspect the selected profile and any disjoint self-split ceiling", metrics: "Differential expression plus profile-selected response metrics", baselines: "Empirical/data ceilings and simple response baselines when configured", status: "Distributional evaluator", comparability: "Best for set-valued outputs; not interchangeable with point-prediction scores", code: "Public", data: "User-supplied public AnnData inputs", notes: "Report the metric profile and the empirical ceiling alongside model scores.", links: [{ label: "code", url: "https://github.com/ArcInstitute/cell-eval" }]
+      },
+      {
+        name: "scPertEval", type: "Protocol and calibration toolkit", task: "Benchmark-protocol calibration for perturbation responses", datasets: "Seven public perturbation datasets in the toolkit assessment", split: "Protocol taxonomy covers representation, metric, score transform and reporting choices", metrics: "DRF; BDS; per-gene differential expression; calibrated score profiles", baselines: "Positive and negative controls; calibration and bound-discrimination checks", status: "Protocol calibration", comparability: "Meta-evaluation of protocols, not a model leaderboard", code: "Public", data: "Public processed-data guide and linked sources", notes: "Use it to document metric choice and calibration before interpreting model deltas.", links: [{ label: "code", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval" }, { label: "datasets", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval/blob/main/docs/user-guide/datasets.md" }]
+      },
+      {
+        name: "GEARS", type: "Perturbation-response model", task: "Unseen single and combinatorial genetic perturbations", datasets: "Adamson and Norman canonical perturbation studies", split: "Held-out perturbations and combinations as defined by the paper/repository", metrics: "Paper-defined; pin the exact metric and split before comparison", baselines: "Paper baselines plus a matched common-suite control/mean baseline", status: "Source-reported model result", comparability: "Not directly comparable outside a matched protocol", code: "Public", data: "Public study landing pages and repository instructions", notes: "Treat the original result as a reading anchor; re-use the common suite protocol for any new comparison.", links: [{ label: "code", url: "https://github.com/snap-stanford/GEARS" }]
+      },
+      {
+        name: "CPA / chemCPA", type: "Compositional response model", task: "Compositional genetic or chemical response across dose/context", datasets: "Paper-specific perturbation datasets; pin the exact dataset version", split: "Dose, cell-context, species, drug or combination holdouts as configured", metrics: "Paper-defined; record exact normalization and aggregation", baselines: "Matched common-suite baselines and paper baselines", status: "Protocol-specific model result", comparability: "Comparable only after dataset, split and metric alignment", code: "Public", data: "Public paper-linked datasets and repositories", notes: "Strong candidate when the scientific question is compositional intervention transfer.", links: [{ label: "CPA paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10258562/" }]
+      },
+      {
+        name: "CellOT", type: "Distributional response model", task: "Unpaired treated/control distribution transport", datasets: "Paper-specific chemical or drug-response studies", split: "Unpaired treated/control or cross-condition settings; pin the source configuration", metrics: "Distribution-aware metrics; exact metric depends on the paper or suite", baselines: "Mean/transport baselines with the same preprocessing", status: "Distributional model", comparability: "Not directly comparable to point predictors without output-type alignment", code: "Public", data: "Public paper-linked sources", notes: "Evaluate population-level distribution fidelity separately from per-cell reconstruction.", links: [{ label: "paper", url: "https://www.nature.com/articles/s41592-023-01969-x" }]
+      },
+      {
+        name: "scGPT / scFoundation probes", type: "Foundation-model probe", task: "Perturbation-aware embedding or frozen-backbone response probe", datasets: "Task- and configuration-specific public perturbation sets", split: "Zero-shot or held-out perturbation/context; pin pretraining overlap", metrics: "Probe-dependent; report the task metric and probe capacity", baselines: "Simple expression, matched-control and linear-probe baselines", status: "Representation probe", comparability: "Comparable only within the matched probe protocol", code: "Public", data: "Public repositories and task-linked datasets", notes: "Separate representation value from the response decoder, fine-tuning budget and pretraining overlap.", links: [{ label: "scGPT", url: "https://github.com/bowang-lab/scGPT" }, { label: "PertEval", url: "https://github.com/aaronwtr/PertEval" }]
+      }
+    ],
+    evaluationProtocols: [
+      {
+        priority: "P0", name: "Perturbation-exclusive holdout", definition: "Every cell carrying a held-out perturbation is excluded from training, validation and tuning.", question: "Can the model infer a response to an intervention it has not seen?", risk: "Perturbation identity or close combination partners can leak through random cell splits.", status: "Required Stage 1 protocol"
+      },
+      {
+        priority: "P0", name: "Context-exclusive holdout", definition: "Hold out a cell type, donor, tissue, species, disease state or batch context while retaining the perturbation only where the protocol allows it.", question: "Can the model transfer a response across biological context?", risk: "Shared donor, cell-state or batch signatures can make a nominal OOD split effectively IID.", status: "Required Stage 1 protocol"
+      },
+      {
+        priority: "P0", name: "Combined perturbation × context holdout", definition: "Hold out the intervention-context pair and document whether each marginal appears elsewhere in training.", question: "Can the model compose known factors under a genuinely novel pairing?", risk: "Reporting only marginal overlap hides the difficulty of the pairwise generalization task.", status: "Required Stage 1 protocol"
+      },
+      {
+        priority: "P1", name: "Distributional / set-valued split", definition: "Evaluate predicted populations against disjoint real response sets and report the profile, empirical ceiling and aggregation level.", question: "Does the model reproduce the response distribution rather than one average profile?", risk: "A point metric can reward mean matching while missing subpopulation structure.", status: "Use for Cell-Eval / CellOT-style outputs"
+      },
+      {
+        priority: "P1", name: "Pretraining-overlap audit", definition: "Record public pretraining corpora, perturbation identifiers, cell contexts and any benchmark data overlap before interpreting a zero-shot score.", question: "Is the test actually unseen for the representation?", risk: "A frozen embedding can look generalizable when the relevant intervention or context was present during pretraining.", status: "Required disclosure"
+      }
+    ],
+    benchmarkGuardrails: [
+      {
+        name: "Control-mean baseline", purpose: "Minimum response baseline", implementation: "Predict the matched control mean or the control-conditioned response for each held-out group.", interpretation: "If a complex model cannot beat it, treat the claimed biological gain as unsupported.", status: "Required"
+      },
+      {
+        name: "Perturbed-mean baseline", purpose: "Detect dataset/systematic-variation shortcuts", implementation: "Use the average of observed perturbed cells under the permitted training information, following the Systema protocol.", interpretation: "A small margin over this baseline suggests the task may be dominated by dataset-level structure.", status: "Required for genetic response"
+      },
+      {
+        name: "Matching-mean baseline", purpose: "Control for matched context", implementation: "Match cell context and nuisance factors without using the held-out perturbation response.", interpretation: "Use the gap to separate perturbation-specific signal from context matching.", status: "Required when available"
+      },
+      {
+        name: "Random-expression / shuffled-label baseline", purpose: "Embedding sanity check", implementation: "Break perturbation labels or use a simple expression representation while preserving the split and probe budget.", interpretation: "A biology-aware embedding should beat the control under the same information budget.", status: "Required for embedding probes"
+      },
+      {
+        name: "Systematic-variation diagnostic", purpose: "Anti-shortcut check", implementation: "Report perturbed-reference deltas, centroid accuracy and the systematic-variation diagnostics alongside ordinary correlation or RMSE.", interpretation: "Do not call ordinary reference-based agreement a perturbation-specific win without this check.", status: "Required"
+      },
+      {
+        name: "Empirical data ceiling", purpose: "Upper-bound interpretation", implementation: "Use disjoint self-splits or the evaluator's empirical ceiling profile for the same data and metric.", interpretation: "A model close to the ceiling may have little room for improvement even if the absolute score is modest.", status: "Required for set-valued evaluation"
+      }
+    ],
     embeddingTasks: [
       {
         priority: "P0", task: "Perturbation-aware cell embeddings", probe: "Can a cell embedding retrieve the same perturbation across held-out contexts, while separating control from response?", biology: "Perturbation identity retrieval, cell-state classification, cross-context kNN, response-state clustering", guardrail: "Use held-out perturbations and contexts; report matched-control and random-expression baselines"

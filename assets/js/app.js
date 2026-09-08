@@ -221,9 +221,9 @@
     function renderStoredAnnotations() {
       var target = el.querySelector("#plotAnnotations");
       if (!annotationRows.length) { target.innerHTML = "<p class='sub'>No stored annotations are available.</p>"; return; }
-      var h = "<div class='tblwrap'><table class='annotation-table'><thead><tr><th>Scope</th><th>Model</th><th>Model family</th><th>Annotation</th><th>Plot role</th><th>Selection note</th><th>Public source</th></tr></thead><tbody>";
+      var h = "<div class='tblwrap'><table class='annotation-table'><thead><tr><th>Scope</th><th>Model</th><th>Model family</th><th>Annotation</th><th>Plot role</th><th>Selection note</th><th>Benchmark coverage</th><th>Evidence status</th><th>Public source</th></tr></thead><tbody>";
       annotationRows.forEach(function (row) {
-        h += "<tr><td>" + esc(row.section) + "</td><td><strong>" + esc(row.name) + "</strong></td><td>" + esc(row.model_family) + "</td><td>" + esc(row.annotation) + "</td><td>" + esc(row.plot_role) + "</td><td>" + esc(row.selection_note) + "</td><td>" + (row.source ? externalLink(row.source, "source") : "<span class='na'>—</span>") + "</td></tr>";
+        h += "<tr><td>" + esc(row.section) + "</td><td><strong>" + esc(row.name) + "</strong></td><td>" + esc(row.model_family) + "</td><td>" + esc(row.annotation) + "</td><td>" + esc(row.plot_role) + "</td><td>" + esc(row.selection_note) + "</td><td>" + esc(row.benchmark_coverage || "Not pinned") + "</td><td><span class='evidence-badge'>" + esc(row.evidence_status || "Source-specific") + "</span></td><td>" + (row.source ? externalLink(row.source, "source") : "<span class='na'>—</span>") + "</td></tr>";
       });
       target.innerHTML = h + "</tbody></table></div>";
     }
@@ -377,6 +377,8 @@
       if (row.annotation) h += "<p class='plot-detail-annotation'><strong>Annotation:</strong> " + esc(row.annotation) + "</p>";
       if (row.plot_role) h += "<p class='plot-detail-note'><strong>Plot role:</strong> " + esc(row.plot_role) + "</p>";
       if (row.selection_note) h += "<p class='plot-detail-note'><strong>Selection note:</strong> " + esc(row.selection_note) + "</p>";
+      if (row.benchmark_coverage) h += "<p class='plot-detail-note'><strong>Benchmark coverage:</strong> " + esc(row.benchmark_coverage) + "</p>";
+      if (row.evidence_status) h += "<p class='plot-detail-note'><strong>Evidence status:</strong> <span class='evidence-badge'>" + esc(row.evidence_status) + "</span></p>";
       h += "<p class='plot-detail-note'><strong>Source note:</strong> " + esc(point.model.notes || "No source note recorded.") + "</p>";
       h += "<div class='plot-detail-links'><strong>Public evidence:</strong> " + (sourceLinks(point) || "<span class='na'>—</span>") + "</div>";
       detail.innerHTML = h;
@@ -486,6 +488,15 @@
     ]));
     h += guideSection("research-suites", "Benchmark suites and evaluation", "Use at least one broad comparison suite plus an anti-shortcut or biology-grounded evaluation.", guideTable(guide.evaluationSuites, [
       { key: "name", label: "Suite" }, { key: "focus", label: "Focus" }, { key: "metrics", label: "Metrics / signal" }, { key: "recommendation", label: "Use in study" }, { key: "links", label: "Sources" }
+    ]));
+    h += guideSection("research-evidence", "Benchmark evidence matrix", "A protocol-level ledger for model × dataset × split × metric evidence. A row is comparable only within the stated protocol and source boundary.", guideTable(guide.benchmarkEvidence, [
+      { key: "name", label: "Resource" }, { key: "type", label: "Type" }, { key: "task", label: "Task" }, { key: "datasets", label: "Dataset / suite" }, { key: "split", label: "Split / holdout" }, { key: "metrics", label: "Metrics" }, { key: "baselines", label: "Baselines" }, { key: "status", label: "Evidence status" }, { key: "comparability", label: "Comparability" }, { key: "code", label: "Code" }, { key: "data", label: "Data" }, { key: "notes", label: "Notes" }, { key: "links", label: "Public source" }
+    ]) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/benchmark_evidence.csv' download='benchmark_evidence.csv'>Download the benchmark evidence matrix CSV</a>. Treat each row as a source-linked protocol record, not a universal score.</div>");
+    h += guideSection("research-protocol", "Split and holdout protocol guide", "Make the generalization question explicit before comparing perturbation-response or embedding models.", guideTable(guide.evaluationProtocols, [
+      { key: "priority", label: "Priority" }, { key: "name", label: "Protocol" }, { key: "definition", label: "Definition" }, { key: "question", label: "Question answered" }, { key: "risk", label: "Leakage / interpretation risk" }, { key: "status", label: "Status" }
+    ]));
+    h += guideSection("research-guardrails", "Baseline and anti-shortcut checklist", "Use these controls before interpreting a model delta as biological progress.", guideTable(guide.benchmarkGuardrails, [
+      { key: "name", label: "Guardrail" }, { key: "purpose", label: "Purpose" }, { key: "implementation", label: "Implementation" }, { key: "interpretation", label: "Interpretation" }, { key: "status", label: "Status" }
     ]));
     h += guideSection("research-citations", "Citation register", "Primary public records behind the Stage 1 routing layer. Publication status is shown so peer-reviewed evidence is not conflated with preprints.", guideTable(guide.citations, [
       { key: "citation", label: "Citation" }, { key: "status", label: "Status" }, { key: "why", label: "Why it is here" }, { key: "links", label: "Public source" }

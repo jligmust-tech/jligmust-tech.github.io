@@ -160,11 +160,13 @@ td.num, th.num { text-align: right; }
 .plot-storage-heading h3 { margin: 0 0 4px; font-size: 15px; }
 .plot-storage-heading .sub { margin: 0; max-width: 700px; }
 .csv-link { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #b6d3ef; border-radius: 6px; background: var(--accent-soft); font-size: 12px; font-weight: 600; white-space: nowrap; }
-.annotation-table { min-width: 1040px; font-size: 13px; }
+.annotation-table { min-width: 1320px; font-size: 13px; }
 .annotation-table th, .annotation-table td { white-space: normal; vertical-align: top; line-height: 1.45; }
 .annotation-table td { min-width: 130px; }
 .annotation-table td:first-child { min-width: 130px; }
 .annotation-table td:nth-child(2) { min-width: 110px; }
+.annotation-table td:nth-child(7) { min-width: 180px; }
+.annotation-table td:nth-child(8) { min-width: 150px; }
 .annotation-table td:last-child { min-width: 82px; white-space: nowrap; }
 .plot-error { color: #9a3412; }
 
@@ -205,6 +207,8 @@ article.post-body code { background: var(--surface-2); padding: 2px 6px; border-
 .guide-table td:first-child { min-width: 76px; }
 .guide-table td strong { color: var(--text); }
 .guide-table tbody tr:last-child td { border-bottom: none; }
+#research-evidence .guide-table { min-width: 1700px; }
+#research-protocol .guide-table, #research-guardrails .guide-table { min-width: 980px; }
 .guide-links { min-width: 118px !important; white-space: nowrap !important; }
 .guide-links a { display: inline-block; margin: 0 7px 5px 0; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); font-size: 11px; font-weight: 600; }
 .priority-badge { display: inline-flex; min-width: 34px; justify-content: center; padding: 3px 7px; border-radius: 999px; background: #fff7e6; color: #7c5300; font-size: 11px; font-weight: 700; }
