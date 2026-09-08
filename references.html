@@ -22,13 +22,26 @@
     </div>
   </nav>
 
-  <div class="wrap">
-    <div class="hero">
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Reference sections">
+          <a href="#references-overview">Overview</a>
+          <a href="#references-collections">Paper collections</a>
+          <a href="#references-benchmarks">Benchmarks &amp; data</a>
+          <a href="#references-sources">Per-model sources</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <div class="hero" id="references-overview">
       <h1>References &amp; Resources</h1>
       <p>Curated sources behind this site. Every leaderboard score links back to its primary source; this page collects the hubs.</p>
     </div>
 
-    <section class="block">
+    <section class="block" id="references-collections">
       <div class="card">
         <h2>Paper &amp; model collections</h2>
         <p class="sub">Curated lists of single-cell foundation model literature.</p>
@@ -38,7 +51,7 @@
       </div>
     </section>
 
-    <section class="block">
+    <section class="block" id="references-benchmarks">
       <div class="card">
         <h2>Benchmarks &amp; data</h2>
         <p class="sub">Evaluation resources used to contextualize the reported snapshots.</p>
@@ -52,13 +65,14 @@
       </div>
     </section>
 
-    <section class="block">
+    <section class="block" id="references-sources">
       <div class="card">
         <h2>Per-model sources</h2>
         <p class="sub">Each model's official repository / paper / HuggingFace card.</p>
         <p>Model-level source links are attached to every row on the <a href="leaderboard.html">leaderboard</a> and to each card on the <a href="models.html">Models</a> page. Score provenance (which dataset and metric) is stated in the model notes.</p>
       </div>
     </section>
+    </main>
   </div>
 
   <footer>

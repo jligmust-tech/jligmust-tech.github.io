@@ -22,8 +22,21 @@
     </div>
   </nav>
 
-  <div class="wrap">
-    <div class="hero">
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Leaderboard sections">
+          <a href="#leaderboard-overview">Overview</a>
+          <a href="#leaderboard-tables">Leaderboard tables</a>
+          <a href="#leaderboard-plot">Global comparison</a>
+          <a href="#plot-annotations">Stored annotations</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <div class="hero" id="leaderboard-overview">
       <h1>Leaderboard</h1>
       <p>Click any column header to sort. Higher is better for ↑ metrics. Scores are source-specific snapshots; unsupported values are shown as —. Use the global comparison below to start with the best-covered view, switch scopes or axes, and inspect each model’s annotation.</p>
     </div>
@@ -31,6 +44,7 @@
     <div class="banner">Source-linked snapshot — metrics from different studies are not a universal ranking. The global plot defaults to publication year versus an annotation score because those fields have the broadest coverage; parameter and cell-count axes use logarithmic scaling and omit unknown values.</div>
 
     <div id="leaderboard"></div>
+    </main>
   </div>
 
   <footer>

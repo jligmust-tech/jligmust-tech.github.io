@@ -80,7 +80,7 @@
     var annotationRows = [], annotationsById = {}, plotLockedKey = null;
 
     var h = "";
-    h += '<div class="card">';
+    h += '<div class="card" id="leaderboard-tables">';
     h += '<div class="segment" id="seg">';
     h += '<button data-sec="scFoundation" class="active">Single-Cell Foundation Models</button>';
     h += '<button data-sec="generalLLM">General LLMs on sc Tasks</button>';
@@ -88,13 +88,13 @@
     h += '<p class="sub" id="secDesc" style="margin-top:12px"></p>';
     h += '<div class="tblwrap"><table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>';
     h += '</div>';
-    h += '<div class="card plot-card">';
+    h += '<div class="card plot-card" id="leaderboard-plot">';
     h += '<div class="plot-heading"><div><h2>Global model comparison</h2><p class="sub">Start with the populated global view, then switch to model size or pretraining scale. Missing values are omitted and source-specific metrics stay labeled.</p></div><span class="plot-badge">interactive</span></div>';
     h += '<div class="plot-controls"><label>Data scope<select id="plotScope"><option value="all">All catalogued models</option><option value="scFoundation">Single-cell foundation models</option><option value="generalLLM">General LLMs on sc tasks</option></select></label><label>X axis<select id="plotX"></select></label><label>Y axis<select id="plotY"></select></label></div>';
     h += '<div class="plot-legend" aria-label="Plot legend"><span><i class="legend-dot foundation"></i>Single-cell foundation</span><span><i class="legend-dot llm"></i>General LLM</span></div>';
     h += '<p class="sub plot-note" id="plotNote"></p><div class="scatter-wrap"><svg id="scatterPlot" class="scatter-plot" viewBox="0 0 960 430" role="img" aria-label="Global model comparison scatter plot"></svg></div>';
     h += '<div class="plot-detail" id="plotDetail" aria-live="polite"><strong>Point details</strong><span>Hover or focus a point for model information; click a point to keep it open.</span></div><button type="button" class="plot-clear" id="plotClear" hidden>Clear selection</button>';
-    h += '<div class="plot-storage"><div class="plot-storage-heading"><div><h3>Stored plot annotations</h3><p class="sub">The chart annotations are maintained separately in a public CSV so the metadata can be reviewed, edited and versioned independently.</p></div><a class="csv-link" href="assets/data/model_annotations.csv" download="model_annotations.csv">Download CSV</a></div><div id="plotAnnotations"><p class="sub">Loading the stored annotation table…</p></div></div>';
+    h += '<div class="plot-storage" id="plot-annotations"><div class="plot-storage-heading"><div><h3>Stored plot annotations</h3><p class="sub">The chart annotations are maintained separately in a public CSV so the metadata can be reviewed, edited and versioned independently.</p></div><a class="csv-link" href="assets/data/model_annotations.csv" download="model_annotations.csv">Download CSV</a></div><div id="plotAnnotations"><p class="sub">Loading the stored annotation table…</p></div></div>';
     h += '</div>';
     el.innerHTML = h;
 
@@ -400,7 +400,8 @@
     Object.keys(SCAI_DATA).forEach(function (secKey) {
       var sec = SCAI_DATA[secKey];
       if (!sec.models) return;
-      h += "<h2 style='margin:26px 0 12px'>" + esc(sec.title) + "</h2><div class='cards'>";
+      var sectionId = secKey === "scFoundation" ? "models-foundation" : "models-general-llm";
+      h += "<h2 id='" + sectionId + "' style='margin:26px 0 12px'>" + esc(sec.title) + "</h2><div class='cards'>";
       sec.models.forEach(function (m) {
         h += "<div class='mcard'><h3>" + (m.url ? externalLink(m.url, m.name) : esc(m.name)) + "</h3><div class='meta'>" + esc(m.org) + " · " + esc(m.year) + "</div>";
         h += evidenceLinks(m);

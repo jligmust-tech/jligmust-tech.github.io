@@ -22,13 +22,27 @@
     </div>
   </nav>
 
-  <div class="wrap">
-    <div class="hero">
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="About sections">
+          <a href="#about-overview">Overview</a>
+          <a href="#about-purpose">Purpose</a>
+          <a href="#about-methodology">Methodology</a>
+          <a href="#about-policy">Data policy</a>
+          <a href="#about-roadmap">Roadmap</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <div class="hero" id="about-overview">
       <h1>About</h1>
       <p>What this site tracks, how current scores are defined, and where evidence is still missing.</p>
     </div>
 
-    <section class="block">
+    <section class="block" id="about-purpose">
       <div class="card">
         <h2>Purpose</h2>
         <p class="sub">Why scAI Index exists.</p>
@@ -36,7 +50,7 @@
       </div>
     </section>
 
-    <section class="block">
+    <section class="block" id="about-methodology">
       <div class="card">
         <h2>Methodology — current snapshot</h2>
         <p class="sub">Definitions used by the data currently shown.</p>
@@ -51,7 +65,7 @@
       </div>
     </section>
 
-    <section class="block">
+    <section class="block" id="about-policy">
       <div class="card">
         <h2>Data policy</h2>
         <p class="sub">Honest about the current state.</p>
@@ -59,7 +73,7 @@
       </div>
     </section>
 
-    <section class="block">
+    <section class="block" id="about-roadmap">
       <div class="card">
         <h2>Roadmap</h2>
         <p class="sub">Planned work, in order.</p>
@@ -72,6 +86,7 @@
         </ol>
       </div>
     </section>
+    </main>
   </div>
 
   <footer>

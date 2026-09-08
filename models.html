@@ -22,8 +22,20 @@
     </div>
   </nav>
 
-  <div class="wrap">
-    <div class="hero">
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Model catalog sections">
+          <a href="#models-overview">Overview</a>
+          <a href="#models-foundation">Foundation models</a>
+          <a href="#models-general-llm">General LLMs</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <div class="hero" id="models-overview">
       <h1>Models</h1>
       <p>Quick-reference cards with source links and provenance notes for every model row.</p>
     </div>
@@ -31,6 +43,7 @@
     <div class="banner">Source-linked model metadata; score availability varies by benchmark and evaluation protocol.</div>
 
     <div id="modelCards"></div>
+    </main>
   </div>
 
   <footer>
