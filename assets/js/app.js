@@ -18,6 +18,25 @@
     return null;
   }
 
+  function parseScaleNumber(value) {
+    var match = String(value == null ? "" : value).replace(/,/g, "").match(/([0-9]+(?:\.[0-9]+)?)\s*([KMBT])?/i);
+    if (!match) return null;
+    var multiplier = { K: 1e3, M: 1e6, B: 1e9, T: 1e12 }[String(match[2] || "").toUpperCase()] || 1;
+    return parseFloat(match[1]) * multiplier;
+  }
+
+  function formatScaleNumber(value) {
+    if (value == null || !isFinite(value)) return "—";
+    var units = [[1e12, "T"], [1e9, "B"], [1e6, "M"], [1e3, "K"]];
+    for (var i = 0; i < units.length; i++) {
+      if (Math.abs(value) >= units[i][0]) {
+        var scaled = value / units[i][0];
+        return (scaled >= 100 ? scaled.toFixed(0) : scaled >= 10 ? scaled.toFixed(1) : scaled.toFixed(2)).replace(/\.00$/, "") + units[i][1];
+      }
+    }
+    return value.toFixed(0);
+  }
+
   function externalLink(url, label) {
     return "<a href='" + esc(url) + "' target='_blank' rel='noopener noreferrer'>" + esc(label) + "</a>";
   }
@@ -68,7 +87,17 @@
     h += '<p class="sub" id="secDesc" style="margin-top:12px"></p>';
     h += '<div class="tblwrap"><table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>';
     h += '</div>';
+    h += '<div class="card plot-card">';
+    h += '<div class="plot-heading"><div><h2>Model size vs performance</h2><p class="sub">Explore the source-linked snapshot as a scatter plot. Choose the axes; missing values are omitted.</p></div></div>';
+    h += '<div class="plot-controls"><label>X axis<select id="plotX"></select></label><label>Y axis<select id="plotY"></select></label></div>';
+    h += '<p class="sub plot-note" id="plotNote"></p><div class="scatter-wrap"><svg id="scatterPlot" class="scatter-plot" viewBox="0 0 960 430" role="img" aria-label="Model size versus performance scatter plot"></svg></div>';
+    h += '</div>';
     el.innerHTML = h;
+
+    var xSelect = el.querySelector("#plotX");
+    var ySelect = el.querySelector("#plotY");
+    xSelect.addEventListener("change", renderPlot);
+    ySelect.addEventListener("change", renderPlot);
 
     el.querySelectorAll("#seg button").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -136,7 +165,80 @@
           renderTable();
         });
       });
+      configurePlotAxes(sec);
+      renderPlot();
     }
+
+    function configurePlotAxes(sec) {
+      var xOptions = [];
+      if (sec.models.some(function (m) { return parseScaleNumber(m.params) != null; })) xOptions.push({ key: "params", label: "Model size (parameters)" });
+      if (sec.models.some(function (m) { return parseScaleNumber(m.cells) != null; })) xOptions.push({ key: "cells", label: "Pretraining cells" });
+      xOptions.push({ key: "year", label: "Publication year" });
+      var yOptions = sec.columns.filter(function (c) { return c.score; }).map(function (c) { return { key: c.key, label: c.label.replace(/\s*↑$/, "") }; });
+      var selectedX = xSelect.value, selectedY = ySelect.value;
+      xSelect.innerHTML = xOptions.map(function (x) { return "<option value='" + esc(x.key) + "'>" + esc(x.label) + "</option>"; }).join("");
+      ySelect.innerHTML = yOptions.map(function (y) { return "<option value='" + esc(y.key) + "'>" + esc(y.label) + "</option>"; }).join("");
+      xSelect.value = xOptions.some(function (x) { return x.key === selectedX; }) ? selectedX : (xOptions.some(function (x) { return x.key === "params"; }) ? "params" : xOptions[0].key);
+      ySelect.value = yOptions.some(function (y) { return y.key === selectedY; }) ? selectedY : (yOptions[0] ? yOptions[0].key : "");
+    }
+
+    function renderPlot() {
+      var sec = SCAI_DATA[current];
+      var xKey = xSelect.value, yKey = ySelect.value;
+      var xOption = xKey === "params" ? "Model size (parameters)" : xKey === "cells" ? "Pretraining cells" : "Publication year";
+      var yOption = ((sec.columns.find(function (c) { return c.key === yKey; }) || {}).label || yKey).replace(/\s*↑$/, "");
+      var isLog = xKey === "params" || xKey === "cells";
+      var items = sec.models.map(function (m) {
+        var x = xKey === "year" ? Number(m.year) : parseScaleNumber(m[xKey]);
+        var y = typeof m[yKey] === "number" ? m[yKey] : null;
+        return { model: m, x: x, y: y };
+      }).filter(function (p) { return p.x != null && isFinite(p.x) && p.x > 0 && p.y != null && isFinite(p.y); });
+      var svg = el.querySelector("#scatterPlot");
+      var note = el.querySelector("#plotNote");
+      if (!items.length) {
+        svg.innerHTML = "<text x='480' y='210' text-anchor='middle' fill='#64748b'>No models have both selected values.</text>";
+        note.textContent = "No plotted points for this axis combination.";
+        return;
+      }
+      var left = 82, right = 24, top = 30, bottom = 68, width = 960, height = 430;
+      var plotW = width - left - right, plotH = height - top - bottom;
+      var rawMin = Math.min.apply(null, items.map(function (p) { return p.x; }));
+      var rawMax = Math.max.apply(null, items.map(function (p) { return p.x; }));
+      var xMin = isLog ? Math.log10(rawMin) : rawMin, xMax = isLog ? Math.log10(rawMax) : rawMax;
+      if (xMin === xMax) { xMin -= 1; xMax += 1; }
+      var xPad = (xMax - xMin) * 0.06; xMin -= xPad; xMax += xPad;
+      var yMin = 0, yMax = 1;
+      function xPos(value) { var v = isLog ? Math.log10(value) : value; return left + ((v - xMin) / (xMax - xMin)) * plotW; }
+      function yPos(value) { return top + (1 - (value - yMin) / (yMax - yMin)) * plotH; }
+      function xLabel(value) { return xKey === "year" ? String(Math.round(value)) : formatScaleNumber(value); }
+      var h = "<title>" + esc(xOption + " vs " + yOption) + "</title><desc>Each point is a model with a published numeric value for both selected axes.</desc>";
+      [0, 0.25, 0.5, 0.75, 1].forEach(function (tick) {
+        var y = yPos(tick);
+        h += "<line x1='" + left + "' y1='" + y.toFixed(1) + "' x2='" + (width - right) + "' y2='" + y.toFixed(1) + "' stroke='#e2e8f0'/>";
+        h += "<text x='" + (left - 12) + "' y='" + (y + 4).toFixed(1) + "' text-anchor='end' fill='#64748b' font-size='12'>" + tick.toFixed(2) + "</text>";
+      });
+      var xTicks = [];
+      for (var i = 0; i < 5; i++) {
+        var tickValue = isLog ? Math.pow(10, xMin + ((xMax - xMin) * i / 4)) : xMin + ((xMax - xMin) * i / 4);
+        xTicks.push(tickValue);
+      }
+      xTicks.forEach(function (tickValue) {
+        var x = xPos(tickValue);
+        h += "<line x1='" + x.toFixed(1) + "' y1='" + top + "' x2='" + x.toFixed(1) + "' y2='" + (height - bottom) + "' stroke='#f1f5f9'/>";
+        h += "<text x='" + x.toFixed(1) + "' y='" + (height - bottom + 23) + "' text-anchor='middle' fill='#64748b' font-size='12'>" + esc(xLabel(tickValue)) + "</text>";
+      });
+      h += "<line x1='" + left + "' y1='" + (height - bottom) + "' x2='" + (width - right) + "' y2='" + (height - bottom) + "' stroke='#94a3b8'/><line x1='" + left + "' y1='" + top + "' x2='" + left + "' y2='" + (height - bottom) + "' stroke='#94a3b8'/>";
+      h += "<text x='" + (left + plotW / 2) + "' y='" + (height - 15) + "' text-anchor='middle' fill='#475569' font-size='13'>" + esc(xOption + (isLog ? " · log scale" : "")) + "</text>";
+      h += "<text x='18' y='" + (top + plotH / 2) + "' transform='rotate(-90 18 " + (top + plotH / 2) + ")' text-anchor='middle' fill='#475569' font-size='13'>" + esc(yOption) + " (higher is better)</text>";
+      items.forEach(function (p) {
+        var x = xPos(p.x), y = yPos(p.y);
+        var tip = p.model.name + " — " + xOption + ": " + xLabel(p.x) + "; " + yOption + ": " + p.y.toFixed(3);
+        h += "<circle cx='" + x.toFixed(1) + "' cy='" + y.toFixed(1) + "' r='6' fill='#3182ce' fill-opacity='0.82' stroke='#ffffff' stroke-width='2'><title>" + esc(tip) + "</title></circle>";
+      });
+      svg.innerHTML = h;
+      note.textContent = items.length + " of " + sec.models.length + " models plotted. Parameter and cell-count axes use a logarithmic scale; each point requires a published size and score.";
+    }
+
     renderTable();
   }
 

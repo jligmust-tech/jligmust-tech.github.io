@@ -695,6 +695,14 @@ window.SCAI_DATA = {
         ]
       },
       {
+        name: "Bioinformatics-specific agents & AI tools (2024–2026)", status: "Stage 2 — backlog topic", note: "Survey domain-specific agents, tool/skill/MCP libraries and execution benchmarks; separate answer quality, code quality, pipeline execution, biological interpretation, reproducibility and safety evidence", links: [
+          { label: "BixBench", url: "https://github.com/Future-House/BixBench" },
+          { label: "scBench", url: "https://github.com/latchbio/scbench" },
+          { label: "BioAgent Bench", url: "https://arxiv.org/abs/2601.21800" },
+          { label: "ClawBio", url: "https://github.com/ClawBio/ClawBio" }
+        ]
+      },
+      {
         name: "Broader scFM and virtual-cell catalog", status: "Backlog", note: "GeneCompass, scMulan, CellPLM, UCE, scPRINT, CellFM, CellOS, AIDO Cell, AlphaCell and related models from the awesome list; add only when perturbation-specific protocols are pinned", links: [
           { label: "awesome list", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }
         ]

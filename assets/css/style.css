@@ -100,6 +100,17 @@ td.num, th.num { text-align: right; }
 .score { font-weight: 600; }
 .na { color: var(--muted); opacity: 0.6; }
 
+/* Leaderboard comparison plot */
+.plot-card { margin-top: 18px; }
+.plot-heading h2 { margin: 0 0 6px; font-size: 17px; }
+.plot-heading .sub { margin-bottom: 14px; }
+.plot-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+.plot-controls label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.plot-controls select { display: block; min-width: 190px; margin-top: 4px; padding: 7px 28px 7px 9px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text); font: inherit; font-size: 13px; }
+.plot-note { margin: 0 0 8px; }
+.scatter-wrap { overflow-x: auto; border-top: 1px solid var(--border); padding-top: 8px; }
+.scatter-plot { display: block; width: 100%; min-width: 720px; height: auto; }
+
 /* Model cards grid */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
 .mcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; }
