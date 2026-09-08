@@ -327,8 +327,227 @@ window.SCAI_DATA = {
     ]
   },
 
+  // ---- Stage 1 research guide: perturbation response and virtual-cell models ----
+  researchGuide: {
+    title: "Perturbation & Virtual-Cell Research Guide",
+    intro: "A source-linked reading and benchmarking map for models that predict post-perturbation gene expression or cell-state distributions. Stage 1 prioritizes perturbation response and biology-aware embeddings; the roadmap keeps broader virtual-cell directions visible without mixing them into the core ranking.",
+    stage1Models: [
+      {
+        rank: 1, name: "GEARS", role: "Canonical genetic baseline", scope: "Single and combinatorial genetic perturbations", embedding: "Gene–gene knowledge graph from coexpression and GO; perturbation embeddings", generalization: "Unseen genes and combinations; verify split assumptions and training coverage", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41587-023-01905-6" },
+          { label: "code", url: "https://github.com/snap-stanford/GEARS" }
+        ]
+      },
+      {
+        rank: 2, name: "CPA / chemCPA", role: "Compositional latent baseline", scope: "Genetic and chemical perturbations, dose, cell type, species, combinations", embedding: "Factorized cell, perturbation, and covariate latents; chemCPA adds chemical representations", generalization: "Compositional OOD across dose, context, species, drug and combination", links: [
+          { label: "CPA paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10258562/" },
+          { label: "chemCPA code", url: "https://github.com/theislab/chemCPA" }
+        ]
+      },
+      {
+        rank: 3, name: "scGen", role: "Classic latent-shift baseline", scope: "Genetic, drug, infection and cross-study perturbations", embedding: "VAE latent-space vector arithmetic from control to response", generalization: "Cross cell type, study and species transfer; useful historical baseline", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-019-0494-8" },
+          { label: "code", url: "https://github.com/theislab/scgen" }
+        ]
+      },
+      {
+        rank: 4, name: "scGPT", role: "High-visibility scFM probe", scope: "Perturbation-token gene-expression prediction", embedding: "Contextualized gene/cell representations plus perturbation-token conditioning", generalization: "Benchmark as a backbone/probe under explicit perturbation and context holdouts", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-024-02201-0" },
+          { label: "code", url: "https://github.com/bowang-lab/scGPT" }
+        ]
+      },
+      {
+        rank: 5, name: "scFoundation", role: "Large scFM + perturbation head", scope: "Post-perturbation expression via pretrained gene embeddings", embedding: "Pretrained gene embeddings supplied to a GEARS-style perturbation model", generalization: "Useful controlled test of whether a larger pretrained representation helps", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-024-02305-7" },
+          { label: "code", url: "https://github.com/biomap-research/scFoundation" }
+        ]
+      },
+      {
+        rank: 6, name: "CellOT", role: "Distributional / unpaired baseline", scope: "Chemical and drug response distributions", embedding: "Neural optimal transport maps control distributions to treated distributions", generalization: "OOD across patients and species; separates distributional from point prediction", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-023-01969-x" }
+        ]
+      },
+      {
+        rank: 7, name: "STATE", role: "Modern virtual-cell transition + embedding model", scope: "Genetic, chemical and signaling perturbations across cell contexts", embedding: "Set-level State Embedding (SE) plus State Transition (ST) model", generalization: "Explicit zero-shot unseen-context and few-shot unseen-perturbation splits", links: [
+          { label: "paper", url: "https://www.biorxiv.org/content/10.1101/2025.06.26.661135v1.full" },
+          { label: "code", url: "https://github.com/ArcInstitute/state" },
+          { label: "Cell-Eval", url: "https://github.com/ArcInstitute/cell-eval" }
+        ]
+      },
+      {
+        rank: 8, name: "PerturbNet", role: "Generative distribution model", scope: "Unseen chemical and genetic perturbations", embedding: "Continuous perturbation-to-cell-state map with generative decoding", generalization: "Unseen perturbations; evaluate distributions, not only centroids", links: [
+          { label: "paper", url: "https://doi.org/10.1038/s44320-025-00131-3" },
+          { label: "code", url: "https://github.com/welch-lab/PerturbNet" }
+        ]
+      },
+      {
+        rank: 9, name: "LPM", role: "Large perturbation model", scope: "Genetic and chemical screens", embedding: "Perturbation-aware representations compared with Geneformer, scGPT and GenePT", generalization: "Unseen perturbation outcomes across screens; strong candidate for embedding ablations", links: [
+          { label: "paper", url: "https://doi.org/10.1038/s43588-025-00870-1" },
+          { label: "code", url: "https://github.com/perturblib/perturblib" }
+        ]
+      },
+      {
+        rank: 10, name: "Scouter", role: "Biology-aware gene-embedding baseline", scope: "Unseen genetic perturbations", embedding: "GenePT embeddings from NCBI gene descriptions + compressor–generator network", generalization: "Unseen gene response prediction; isolates the value of text-derived biology priors", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s43588-025-00912-8" },
+          { label: "code", url: "https://github.com/PancakeZoy/scouter" }
+        ]
+      },
+      {
+        rank: 11, name: "scVIDR", role: "Dose-response baseline", scope: "Single and multiple-dose chemical perturbations", embedding: "VAE latent representation with dose-dependent regression", generalization: "Cross dose, cell type, study and species", links: [
+          { label: "paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10436058/" },
+          { label: "code", url: "https://github.com/BhattacharyaLab/scVIDR" }
+        ]
+      },
+      {
+        rank: 12, name: "scLong", role: "Emerging large-scale perturbation FM", scope: "Single and double gene perturbations plus response scoring", embedding: "Large pretrained transcriptomic representation with perturbation prediction head", generalization: "Promising scale and synergy/suppressor analysis; hold for independent reproduction", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41467-026-69102-y" }
+        ]
+      }
+    ],
+    benchmarkDatasets: [
+      {
+        name: "scPerturb", type: "Multi-study atlas", coverage: "44 public perturbation-response datasets; RNA, protein and ATAC", use: "Primary data index; stratify by technology, context and perturbation", links: [
+          { label: "website", url: "https://scperturb.org/" },
+          { label: "paper", url: "https://www.nature.com/articles/s41592-023-02144-y" },
+          { label: "RNA Zenodo", url: "https://doi.org/10.5281/zenodo.7041848" }
+        ]
+      },
+      {
+        name: "PerturBase", type: "Multi-study atlas", coverage: "122 datasets from 46 studies; about 5 million cells", use: "Broader coverage for held-out study/context stress tests", links: [
+          { label: "paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC11701531/" },
+          { label: "website", url: "http://www.perturbase.cn/" }
+        ]
+      },
+      {
+        name: "Norman et al.", type: "Combinatorial CRISPRi", coverage: "Two-gene perturbations in K562", use: "Combination generalization; test 0/2, 1/2 and 2/2 unseen gene components", links: [
+          { label: "GEO GSE133344", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133344" },
+          { label: "scPerturb", url: "https://scperturb.org/" }
+        ]
+      },
+      {
+        name: "Adamson et al.", type: "Genetic Perturb-seq", coverage: "Single-gene perturbations in K562", use: "Canonical unseen-perturbation split; explicitly report systematic variation", links: [
+          { label: "GEO GSE90546", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90546" },
+          { label: "scPerturb", url: "https://scperturb.org/" }
+        ]
+      },
+      {
+        name: "Replogle et al.", type: "Genome-scale CRISPRi", coverage: "Large K562 and RPE1 screens", use: "Scale and context generalization; prefer processed access through GWPS/scPerturb", links: [
+          { label: "GWPS access", url: "https://gwps.wi.mit.edu/" },
+          { label: "scPerturb", url: "https://scperturb.org/" }
+        ]
+      },
+      {
+        name: "sci-Plex", type: "Multiplexed chemical", coverage: "Drug responses across cell lines", use: "Chemical response and dose/context generalization", links: [
+          { label: "GEO GSE139944", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE139944" },
+          { label: "scPerturb", url: "https://scperturb.org/" }
+        ]
+      },
+      {
+        name: "Tahoe-100M", type: "Large chemical atlas", coverage: "100,648,790 profiles across 50 cancer cell lines and 1,100 small-molecule perturbations", use: "Modern context-aware drug response; use only when compute and licensing/access assumptions are explicit", links: [
+          { label: "dataset", url: "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md" },
+          { label: "Hugging Face", url: "https://huggingface.co/datasets/tahoebio/Tahoe-100M" }
+        ]
+      },
+      {
+        name: "OP3 / Open Problems", type: "Community benchmark", coverage: "146 compounds in PBMCs with a living benchmark framing", use: "Chemical response challenge-style evaluation and public infrastructure", links: [
+          { label: "paper", url: "https://proceedings.neurips.cc/paper_files/paper/2024/file/24c4d51f3ef48dd2dbab78243ecb26a1-Paper-Datasets_and_Benchmarks_Track.pdf" },
+          { label: "Kaggle data", url: "https://www.kaggle.com/competitions/open-problems-single-cell-perturbations/data/" }
+        ]
+      }
+    ],
+    evaluationSuites: [
+      {
+        name: "scPerturBench", focus: "27 methods, 29 datasets; context and perturbation generalization", metrics: "MSE, PCC-Δ, E-distance, Wasserstein, KL divergence, Common-DEGs", recommendation: "Best starting point for a broad, reproducible comparison; retain simple baselines and inspect split manifests", links: [
+          { label: "code/results", url: "https://github.com/bm2-lab/scPerturBench" },
+          { label: "paper", url: "https://pubmed.ncbi.nlm.nih.gov/41381899/" }
+        ]
+      },
+      {
+        name: "Systema", focus: "Perturbation-specific effects beyond systematic variation", metrics: "Perturbed-reference Pearson-Δ, RMSE-Δ, centroid accuracy and systematic-variation diagnostics", recommendation: "Mandatory guardrail for genetic benchmarks; compare against perturbed-mean and matching-mean baselines", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41587-025-02777-8" },
+          { label: "code", url: "https://github.com/mlbio-epfl/systema" }
+        ]
+      },
+      {
+        name: "PerturBench", focus: "Standardized model/data/metric framework", metrics: "RMSE, cosine and configurable dataset/split evaluators", recommendation: "Good engineering harness for adding new models and predefined cross-context/combination splits", links: [
+          { label: "code", url: "https://github.com/altoslabs/perturbench" },
+          { label: "NeurIPS paper", url: "https://openreview.net/forum?id=PPPDuyiZaG" }
+        ]
+      },
+      {
+        name: "PertEval-scFM / PertEval", focus: "Zero-shot scFM and perturbation-representation probes", metrics: "Representation-dependent perturbation effect prediction with lightweight probes", recommendation: "Use for isolating embedding value from decoder/architecture value", links: [
+          { label: "paper", url: "https://proceedings.mlr.press/v267/wenteler25a.html" },
+          { label: "code", url: "https://github.com/aaronwtr/PertEval" }
+        ]
+      },
+      {
+        name: "Cell-Eval", focus: "Single-cell response metrics and data ceilings", metrics: "Per-perturbation and aggregate metric profiles plus disjoint self-split ceilings", recommendation: "Use when predictions are distributions or sets of cells; report the empirical ceiling before comparing models", links: [
+          { label: "code", url: "https://github.com/ArcInstitute/cell-eval" },
+          { label: "STATE", url: "https://github.com/ArcInstitute/state" }
+        ]
+      },
+      {
+        name: "scDrugPerturb-Bench", focus: "Drug-response effects, cell-state distributions and mechanisms", metrics: "Expression agreement plus literature-supported mechanism evaluation", recommendation: "Stage 1 extension for biology-grounded chemical perturbation evaluation", links: [
+          { label: "code", url: "https://github.com/mindflow-cn/scDrugPerturb-Bench" }
+        ]
+      }
+    ],
+    embeddingTasks: [
+      {
+        priority: "P0", task: "Perturbation-aware cell embeddings", probe: "Can a cell embedding retrieve the same perturbation across held-out contexts, while separating control from response?", biology: "Perturbation identity retrieval, cell-state classification, cross-context kNN, response-state clustering", guardrail: "Use held-out perturbations and contexts; report matched-control and random-expression baselines"
+      },
+      {
+        priority: "P0", task: "Perturbation embeddings", probe: "Do perturbation vectors place functionally related interventions near one another?", biology: "GO/Reactome enrichment, known gene–gene interactions, pathway and genetic-interaction retrieval", guardrail: "Do not score only by cosine similarity; compare against GenePT, GO/STRING and shuffled-label controls"
+      },
+      {
+        priority: "P1", task: "Effect-size and direction embeddings", probe: "Does the representation preserve the perturbation-specific delta rather than the average treatment shift?", biology: "Top-DEG recovery, sign/direction accuracy, Pearson-Δ, perturbation-specific centroid accuracy", guardrail: "Use Systema-style perturbed references and quantify systematic variation"
+      },
+      {
+        priority: "P1", task: "Context transfer embeddings", probe: "Can the representation transfer a perturbation response to an unseen cell type, donor, species or disease state?", biology: "Cross-context retrieval and linear-probe performance under zero/few-shot splits", guardrail: "Pre-register overlap between pretraining data and test contexts; avoid random-cell splits"
+      },
+      {
+        priority: "P2", task: "Mechanism and uncertainty", probe: "Do embeddings expose plausible mechanisms and calibrated uncertainty for weakly supported predictions?", biology: "Pathway recovery, genetic interaction class, confidence-vs-error and empirical data-ceiling gap", guardrail: "Treat interpretability as a separate endpoint from expression reconstruction"
+      }
+    ],
+    roadmap: [
+      {
+        name: "Tahoe-x1", status: "Stage 2 — perturbation-trained scale", note: "3B-parameter perturbation-trained single-cell FM; evaluate after the Stage 1 baselines and data-overlap audit", links: [
+          { label: "code", url: "https://github.com/tahoebio/tahoe-x1" },
+          { label: "preprint", url: "https://www.biorxiv.org/content/10.1101/2025.10.23.683759v1.full" }
+        ]
+      },
+      {
+        name: "GeneJEPA", status: "Stage 2 — predictive transcriptome embeddings", note: "JEPA-style latent prediction trained on Tahoe-100M; promising embedding candidate, but keep separate from direct response models", links: [
+          { label: "code", url: "https://github.com/BiostateAI/GeneJEPA" }
+        ]
+      },
+      {
+        name: "X-Cell", status: "Stage 2 — diffusion virtual cell", note: "Genome-scale perturbation prediction across cellular contexts; prioritize after the common benchmark harness is stable", links: [
+          { label: "project", url: "https://xaira-therapeutics.github.io/X-Cell/" },
+          { label: "paper PDF", url: "https://www.cdn.xaira.com/papers/X_CELL_V1_0316_final.pdf" }
+        ]
+      },
+      {
+        name: "SCALE / OCOO-T", status: "Stage 2 — emerging virtual-cell models", note: "Large-scale endpoint transport and set-level/diffusion approaches; track releases and independent evaluation before ranking", links: [
+          { label: "SCALE", url: "https://arxiv.org/abs/2603.17380" },
+          { label: "OCOO-T", url: "https://www.biorxiv.org/content/10.64898/2026.06.08.731000v1.full" }
+        ]
+      },
+      {
+        name: "Broader scFM and virtual-cell catalog", status: "Backlog", note: "GeneCompass, scMulan, CellPLM, UCE, scPRINT, CellFM, CellOS, AIDO Cell, AlphaCell and related models from the awesome list; add only when perturbation-specific protocols are pinned", links: [
+          { label: "awesome list", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }
+        ]
+      }
+    ]
+  },
+
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
+    {
+      date: "2026-09-08", tag: "Research", title: "Stage 1 guide to perturbation models, virtual cells, and biology-aware embeddings",
+      desc: "A ranked model core, benchmark datasets and suites, and a protocol for evaluating perturbation-aware embeddings without mistaking systematic variation for biology.",
+      url: "/blog/posts/2026-09-08-perturbation-virtual-cell-guide.html"
+    },
     {
       date: "2026-09-08", tag: "Data", title: "First source-linked leaderboard snapshot",
       desc: "The placeholder rows have been replaced with source-linked model metadata and published evaluation snapshots; unsupported metrics remain null.",

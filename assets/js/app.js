@@ -49,6 +49,8 @@
       if (grid) renderModelCards(grid);
       var feed = document.getElementById("updates");
       if (feed) renderUpdates(feed);
+      var guide = document.getElementById("researchGuide");
+      if (guide) renderResearchGuide(guide);
     }
   });
 
@@ -170,5 +172,64 @@
       h += "</li>";
     });
     feed.innerHTML = h;
+  }
+
+  /* ---------- Research guide (research.html) ---------- */
+  function guideLinks(links) {
+    return (links || []).map(function (link) {
+      return externalLink(link.url, link.label);
+    }).join(" ");
+  }
+
+  function guideTable(rows, columns) {
+    var h = "<div class='tblwrap'><table class='guide-table'><thead><tr>";
+    columns.forEach(function (c) { h += "<th>" + esc(c.label) + "</th>"; });
+    h += "</tr></thead><tbody>";
+    rows.forEach(function (row) {
+      h += "<tr>";
+      columns.forEach(function (c) {
+        var value = row[c.key];
+        if (c.key === "links") {
+          h += "<td class='guide-links'>" + guideLinks(value) + "</td>";
+        } else if (c.key === "rank" || c.key === "priority") {
+          h += "<td><span class='priority-badge'>" + esc(value) + "</span></td>";
+        } else if (c.key === "name" || c.key === "task") {
+          h += "<td><strong>" + esc(value) + "</strong></td>";
+        } else {
+          h += "<td>" + esc(value) + "</td>";
+        }
+      });
+      h += "</tr>";
+    });
+    h += "</tbody></table></div>";
+    return h;
+  }
+
+  function guideSection(title, sub, body) {
+    return "<section class='block'><div class='card guide-card'><h2>" + esc(title) + "</h2><p class='sub'>" + esc(sub) + "</p>" + body + "</div></section>";
+  }
+
+  function renderResearchGuide(el) {
+    var guide = SCAI_DATA.researchGuide;
+    if (!guide) return;
+    var h = "<p class='guide-lead'>" + esc(guide.intro) + "</p>";
+    h += "<div class='guide-callout'><strong>How to read the rank:</strong> curation priority for a Stage 1 benchmark and reading list, based on task relevance, visibility, reproducible implementation and representation value. It is not a universal performance ranking.</div>";
+    h += guideSection("Stage 1 model priority", "Start here for perturbation-response and post-perturbation gene-expression experiments.", guideTable(guide.stage1Models, [
+      { key: "rank", label: "Priority" }, { key: "name", label: "Model" }, { key: "role", label: "Role" }, { key: "scope", label: "Perturbation scope" }, { key: "embedding", label: "Representation / biology prior" }, { key: "generalization", label: "Generalization focus" }, { key: "links", label: "Sources" }
+    ]));
+    h += guideSection("Benchmark datasets and access", "A compact dataset ladder: broad atlases for robustness, canonical studies for interpretable splits, and large perturbation atlases for modern virtual-cell models.", guideTable(guide.benchmarkDatasets, [
+      { key: "name", label: "Dataset" }, { key: "type", label: "Type" }, { key: "coverage", label: "Coverage" }, { key: "use", label: "Recommended use" }, { key: "links", label: "Access / paper" }
+    ]));
+    h += guideSection("Benchmark suites and evaluation", "Use at least one broad comparison suite plus an anti-shortcut or biology-grounded evaluation.", guideTable(guide.evaluationSuites, [
+      { key: "name", label: "Suite" }, { key: "focus", label: "Focus" }, { key: "metrics", label: "Metrics / signal" }, { key: "recommendation", label: "Use in study" }, { key: "links", label: "Sources" }
+    ]));
+    h += guideSection("Perturbation-aware embedding agenda", "Prioritized probes for biology embeddings; P0 is the Stage 1 implementation target.", guideTable(guide.embeddingTasks, [
+      { key: "priority", label: "Priority" }, { key: "task", label: "Embedding task" }, { key: "probe", label: "Question" }, { key: "biology", label: "Biology-facing readout" }, { key: "guardrail", label: "Guardrail" }
+    ]));
+    h += guideSection("Stage 2 and backlog", "Broader virtual-cell and perturbation-trained models to add after the common evaluation protocol is stable.", guideTable(guide.roadmap, [
+      { key: "name", label: "Model / direction" }, { key: "status", label: "Status" }, { key: "note", label: "Why later" }, { key: "links", label: "Sources" }
+    ]));
+    h += "<div class='guide-next'><h2>Suggested first experiment</h2><p>Run control→response prediction on Norman, Adamson, Replogle K562/RPE1 and sci-Plex with control/perturbed-mean, matching-mean, linear/PCA and the Stage 1 model core. Hold out perturbations and contexts by group, report expression, distributional and biology metrics separately, then add the P0 embedding probes with GenePT/GO/STRING and shuffled controls.</p><p class='sub'>The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
+    el.innerHTML = h;
   }
 })();

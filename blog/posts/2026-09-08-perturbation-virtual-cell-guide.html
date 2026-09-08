@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 1 guide to perturbation models, virtual cells, and biology-aware embeddings — scAI Index</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-08</span>
+      </div>
+      <h1>Stage 1 guide to perturbation models, virtual cells, and biology-aware embeddings</h1>
+
+      <p>This report turns the perturbation and virtual-cell literature into a practical starting map. The immediate target is not a new universal leaderboard. It is a defensible benchmark study: predict post-perturbation expression or cell-state distributions, test generalization to unseen perturbations and contexts, and determine whether a representation captures biology rather than an experimental shortcut.</p>
+
+      <h2>What belongs in Stage 1?</h2>
+      <p>Stage 1 covers models that take a control state plus a perturbation and produce a predicted response. The response may be a point estimate of gene expression, a distribution of cells, or a structured embedding that is decoded by a lightweight predictor. This keeps the comparison scientifically coherent while allowing different model families to be tested on the same splits.</p>
+      <p>The accompanying <a href="../../research.html">Research Guide</a> ranks the initial reading list by curation priority: direct task relevance, community visibility, reproducible code, and value for studying perturbation-aware representations. The rank is not a claim that one model is best across datasets.</p>
+
+      <h2>Recommended reading order</h2>
+      <ol>
+        <li><b>GEARS</b> is the canonical genetic baseline. It combines a gene–gene knowledge graph with a perturbation model and explicitly targets unseen single and combinatorial perturbations. The <a href="https://www.nature.com/articles/s41587-023-01905-6">Nature Biotechnology paper</a> and <a href="https://github.com/snap-stanford/GEARS">official implementation</a> are the right entry point. Its own repository also documents important limits: multi-cell-type transfer and combinatorial prediction require care about training coverage.</li>
+        <li><b>CPA and chemCPA</b> provide the compositional latent-variable view. CPA factorizes cell type, perturbation and covariates, while chemCPA adds chemical representations for unseen drugs. The <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10258562/">CPA paper</a> is useful for dose, cell-type, species and combination extrapolation; the <a href="https://github.com/theislab/chemCPA">chemCPA repository</a> is the practical code anchor.</li>
+        <li><b>scGen</b> is the classic latent-shift baseline. Its VAE performs vector arithmetic between control and perturbed latent states, making it a useful test of whether a more elaborate model adds value beyond a simple response direction. See the <a href="https://www.nature.com/articles/s41592-019-0494-8">Nature Methods paper</a> and <a href="https://github.com/theislab/scgen">official code</a>.</li>
+        <li><b>scGPT and scFoundation</b> are the main foundation-model probes. Treat them as representations plus a perturbation head, and make the head, tokenization, gene masking and data overlap explicit. The relevant primary sources are the <a href="https://www.nature.com/articles/s41592-024-02201-0">scGPT paper and code</a> and the <a href="https://www.nature.com/articles/s41592-024-02305-7">scFoundation paper</a> with its <a href="https://github.com/biomap-research/scFoundation">repository</a>.</li>
+        <li><b>CellOT and PerturbNet</b> cover distributional prediction. CellOT uses neural optimal transport for unpaired treated/control populations; <a href="https://www.nature.com/articles/s41592-023-01969-x">Perturbation response with neural optimal transport</a> is the primary reference. PerturbNet is a deep generative model for unseen chemical and genetic perturbations; its <a href="https://doi.org/10.1038/s44320-025-00131-3">paper</a> and <a href="https://github.com/welch-lab/PerturbNet">code</a> should be evaluated with distributional metrics, not only mean expression.</li>
+        <li><b>STATE, LPM and Scouter</b> form the biology-aware extension. <a href="https://github.com/ArcInstitute/state">STATE</a> separates a set-level cell-context embedding from a transition model and ships <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a>. <a href="https://doi.org/10.1038/s43588-025-00870-1">LPM</a> is a large perturbation model designed around generalizable perturbation representations. <a href="https://www.nature.com/articles/s43588-025-00912-8">Scouter</a> uses GenePT text embeddings from gene descriptions, with reproducibility code at <a href="https://github.com/PancakeZoy/scouter">GitHub</a>.</li>
+      </ol>
+
+      <h2>Benchmark datasets: build a ladder, not a single split</h2>
+      <p>The data layer should mix breadth with canonical, interpretable studies. <a href="https://scperturb.org/">scPerturb</a> harmonizes 44 public perturbation-response datasets across RNA, protein and ATAC, while <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11701531/">PerturBase</a> expands the catalog to 122 datasets from 46 studies. These are indexes and harmonization resources, not permission to pool every study without an overlap and batch audit.</p>
+      <ul>
+        <li><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133344">Norman</a>: combinatorial two-gene perturbations in K562; use it to test whether a model composes unseen gene components.</li>
+        <li><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90546">Adamson</a>: a canonical single-gene Perturb-seq screen; use it for held-out perturbations and systematic-variation checks.</li>
+        <li><a href="https://gwps.wi.mit.edu/">Replogle</a>: large K562 and RPE1 screens; use the processed access route and distinguish cell-line/context generalization from within-context prediction.</li>
+        <li><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE139944">sci-Plex</a>: multiplexed chemical responses across cell lines; use it for dose and chemical-context transfer.</li>
+        <li><a href="https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md">Tahoe-100M</a>: a modern large chemical atlas with more than 100 million profiles across 50 cancer cell lines. It is valuable for scale and context-aware models, but compute, access and pretraining overlap must be recorded explicitly.</li>
+        <li><a href="https://proceedings.neurips.cc/paper_files/paper/2024/file/24c4d51f3ef48dd2dbab78243ecb26a1-Paper-Datasets_and_Benchmarks_Track.pdf">OP3 / Open Problems</a>: a community benchmark framing around 146 compounds in PBMCs, with public data through the <a href="https://www.kaggle.com/competitions/open-problems-single-cell-perturbations/data/">Kaggle challenge</a>.</li>
+      </ul>
+
+      <h2>Which benchmark suites should anchor the study?</h2>
+      <p><a href="https://github.com/bm2-lab/scPerturBench">scPerturBench</a> is the broadest starting point in this map: 27 methods, 29 datasets, genetic and chemical perturbations, and separate context- and perturbation-generalization scenarios. Its <a href="https://pubmed.ncbi.nlm.nih.gov/41381899/">Nature Methods paper</a> is especially useful for the split and metric inventory.</p>
+      <p>Pair it with <a href="https://www.nature.com/articles/s41587-025-02777-8">Systema</a> and its <a href="https://github.com/mlbio-epfl/systema">code</a>. Systema shows that systematic differences between perturbed and control cells can make ordinary metrics look better than the underlying perturbation-specific prediction. It therefore recommends perturbed-reference metrics and simple perturbed-mean or matching-mean baselines. A model should have to beat those baselines on the perturbation-specific signal, not merely reproduce an average shift.</p>
+      <p><a href="https://github.com/altoslabs/perturbench">PerturBench</a> is a useful engineering harness for common data, splits and metrics, with a <a href="https://openreview.net/forum?id=PPPDuyiZaG">NeurIPS Datasets and Benchmarks paper</a>. <a href="https://proceedings.mlr.press/v267/wenteler25a.html">PertEval-scFM</a> and its <a href="https://github.com/aaronwtr/PertEval">evaluation suite</a> are valuable when the question is narrower: does a frozen foundation-model representation improve a lightweight perturbation predictor?</p>
+      <p>For set-valued predictions, use <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a>. Its disjoint self-split estimates a data ceiling from the noise in the real cells, which keeps a low score from being misread as a model failure when the measured response itself is unstable.</p>
+
+      <h2>Stage 1 embedding plan</h2>
+      <p>The first embedding study should treat representation quality as a set of biological probes, not a single embedding score:</p>
+      <ul>
+        <li><b>P0 — perturbation-aware cell embedding:</b> retrieve the same perturbation across held-out contexts; separate control from response; classify response state with a frozen linear probe; and cluster cells by response state. Evaluate with perturbation holdouts and context holdouts.</li>
+        <li><b>P0 — perturbation embedding:</b> test whether nearby vectors correspond to GO/Reactome-related interventions, known gene–gene interactions, or genetic-interaction classes. Compare GenePT, GO/STRING and shuffled-label controls so that a text prior is not treated as learned perturbation biology by default.</li>
+        <li><b>P1 — effect-size embedding:</b> evaluate the perturbation-specific delta, not only the post-treatment state. Report top-DEG recovery, sign/direction accuracy, Pearson-Δ, centroid accuracy and RMSE-Δ.</li>
+        <li><b>P1 — context transfer:</b> transfer a response to an unseen cell type, donor, species or disease state, with pretraining/test overlap disclosed. Do not use random cell splits as the only evidence.</li>
+        <li><b>P2 — mechanism and uncertainty:</b> test pathway recovery, genetic-interaction prediction, confidence calibration and the gap to the Cell-Eval data ceiling. Interpretability and reconstruction should remain separate endpoints.</li>
+      </ul>
+
+      <h2>Suggested first protocol</h2>
+      <ol>
+        <li>Choose Norman, Adamson, Replogle K562/RPE1 and sci-Plex as the canonical set; add scPerturb/PerturBase studies only through a versioned manifest.</li>
+        <li>Define perturbation-exclusive, context-exclusive and both-exclusive splits before training. For Norman, report 0/2, 1/2 and 2/2 unseen gene-component splits.</li>
+        <li>Run control mean, perturbed mean, matching mean and a linear/PCA baseline before GEARS, CPA/chemCPA, scGen, scGPT, scFoundation, CellOT, STATE and the extended models.</li>
+        <li>Separate point metrics, distributional metrics and biology metrics. Report uncertainty over perturbations, not only one aggregate mean.</li>
+        <li>Run the P0 embedding probes with explicit biological priors and shuffled controls. Audit leakage from perturbation tokens, gene identity and pretraining data overlap.</li>
+        <li>Use <a href="https://www.nature.com/articles/s41587-025-02777-8">Systema</a> to quantify systematic variation and <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a> to estimate the attainable ceiling for set-level predictions.</li>
+      </ol>
+
+      <h2>What stays on the roadmap?</h2>
+      <p>The awesome single-cell foundation-model list is broad, and its perturbation/virtual-cell sections now include newer directions such as Tahoe-x1, GeneJEPA, X-Cell, SCALE and OCOO-T. These are important, but they should enter after the Stage 1 harness is stable. <a href="https://github.com/tahoebio/tahoe-x1">Tahoe-x1</a> scales perturbation-trained modeling, <a href="https://github.com/BiostateAI/GeneJEPA">GeneJEPA</a> targets predictive transcriptome embeddings, and <a href="https://xaira-therapeutics.github.io/X-Cell/">X-Cell</a> pursues diffusion-based genome-scale perturbation prediction. The <a href="https://github.com/OmicsML/awesome-foundation-model-single-cell-papers">awesome repo</a> remains the living catalog for broader scFMs and virtual-cell proposals; the Research Guide keeps them visible as a backlog without implying that they have passed a common benchmark.</p>
+
+      <p><a href="../../research.html">Open the full Research Guide →</a></p>
+    </article>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked research map · protocol-aware evaluation</span>
+    </div>
+  </footer>
+</body>
+</html>
