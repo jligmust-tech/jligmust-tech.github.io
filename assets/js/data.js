@@ -510,6 +510,34 @@ window.SCAI_DATA = {
           { label: "repository", url: "https://github.com/bioagent-bench/bioagent-bench" },
           { label: "preprint", url: "https://arxiv.org/abs/2601.21800" }
         ]
+      },
+      {
+        citation: "SCALE (2026). Scalable conditional atlas-level endpoint transport.", status: "Emerging preprint", why: "Large-scale perturbation-response transport and endpoint-level evaluation on public atlas settings", links: [
+          { label: "arXiv", url: "https://arxiv.org/abs/2603.17380" }
+        ]
+      },
+      {
+        citation: "PerturbDiff (2026). Functional diffusion for single-cell perturbation modeling.", status: "Emerging preprint + public code", why: "Distributional single-cell perturbation modeling with a public project and implementation path", links: [
+          { label: "paper", url: "https://arxiv.org/abs/2602.19685" },
+          { label: "code", url: "https://github.com/DeepGraphLearning/PerturbDiff" }
+        ]
+      },
+      {
+        citation: "Lingshu-Cell (2026). A generative cellular world model.", status: "Emerging preprint + public code", why: "Public code paths for genetic, cytokine and Cell-Eval-oriented virtual-cell evaluation", links: [
+          { label: "paper", url: "https://arxiv.org/abs/2603.25240" },
+          { label: "code", url: "https://github.com/alibaba-damo-academy/Lingshu-Cell" }
+        ]
+      },
+      {
+        citation: "Biomni (2025). A general-purpose biomedical AI agent.", status: "Public system + preprint", why: "Broad biomedical planning, retrieval and code-execution agent candidate for tool-layer comparison", links: [
+          { label: "code", url: "https://github.com/snap-stanford/Biomni" },
+          { label: "preprint", url: "https://doi.org/10.1101/2025.05.30.656746" }
+        ]
+      },
+      {
+        citation: "BioSkillSafety (2026). A systematic benchmark for evaluating agent skill safety in bioinformatics.", status: "Emerging public benchmark", why: "Bioinformatics-specific safety taxonomy and adversarial skill evaluation for agent/tool selection", links: [
+          { label: "OpenReview PDF", url: "https://openreview.net/pdf?id=fa4Obft2xN" }
+        ]
       }
     ],
     stage1Models: [
@@ -791,6 +819,32 @@ window.SCAI_DATA = {
         name: "scGPT / scFoundation probes", type: "Foundation-model probe", task: "Perturbation-aware embedding or frozen-backbone response probe", datasets: "Task- and configuration-specific public perturbation sets", split: "Zero-shot or held-out perturbation/context; pin pretraining overlap", metrics: "Probe-dependent; report the task metric and probe capacity", baselines: "Simple expression, matched-control and linear-probe baselines", status: "Representation probe", comparability: "Comparable only within the matched probe protocol", code: "Public", data: "Public repositories and task-linked datasets", notes: "Separate representation value from the response decoder, fine-tuning budget and pretraining overlap.", links: [{ label: "scGPT", url: "https://github.com/bowang-lab/scGPT" }, { label: "PertEval", url: "https://github.com/aaronwtr/PertEval" }]
       }
     ],
+    benchmarkProtocols: [
+      {
+        id: "BP-01", name: "Unseen genetic perturbation response", scope: "Single-gene response prediction", datasets: "Adamson; Norman; Replogle", access: "Public GEO studies and scPerturBench links", holdout: "Perturbation-exclusive; held-out interventions absent from train/validation/tuning", endpoint: "Point gene-expression delta from control to perturbed state", metrics: "PCC-Δ; RMSE-Δ; top-DEG overlap; centroid accuracy", baselines: "Control mean; perturbed mean; matching mean", overlap: "Audit perturbation IDs; guide genes; combination partners and pretraining corpora", models: "GEARS; scGen; CPA; scGPT/scFoundation probes", status: "Protocol-ready; no run", links: [{ label: "Adamson", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90546" }, { label: "Norman", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133344" }, { label: "suite", url: "https://github.com/bm2-lab/scPerturBench" }], notes: "Default genetic comparison row; keep source-reported scores separate from future common-protocol results."
+      },
+      {
+        id: "BP-02", name: "Combinatorial component extrapolation", scope: "Two-gene genetic perturbation composition", datasets: "Norman", access: "Public GEO study and benchmark suite references", holdout: "Report 0/2; 1/2 and 2/2 unseen gene-component cases separately", endpoint: "Response to a combination whose components may be absent or individually seen", metrics: "PCC-Δ; RMSE-Δ; DE overlap; interaction-direction accuracy", baselines: "Control mean; perturbed mean; additive single-gene composition", overlap: "Record whether each component and the exact pair occur in training", models: "GEARS; CPA; Chreode; other compositional response models", status: "Protocol-ready; no run", links: [{ label: "Norman", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133344" }, { label: "GEARS", url: "https://github.com/snap-stanford/GEARS" }], notes: "Do not collapse component-overlap regimes into one combination score."
+      },
+      {
+        id: "BP-03", name: "Unseen-context transfer", scope: "Cell type or cell-line generalization", datasets: "Replogle K562/RPE1; scPerturBench context splits", access: "Public Replogle access route and suite documentation", holdout: "Context-exclusive; hold out cell type, cell line, donor, tissue or species as defined", endpoint: "Perturbation response under a context not used for training", metrics: "PCC-Δ; RMSE-Δ; DE overlap; context-stratified centroid accuracy", baselines: "Context-matched control mean; matching mean; linear/additive baseline", overlap: "Audit donor, cell-line, batch, perturbation and pretraining-context overlap", models: "CPA; STATE; LPM; X-Cell; frozen scFM probes", status: "Protocol-ready; no run", links: [{ label: "Replogle access", url: "https://gwps.wi.mit.edu/" }, { label: "scPerturBench", url: "https://github.com/bm2-lab/scPerturBench" }], notes: "Report the held-out context identity and any allowed perturbation overlap."
+      },
+      {
+        id: "BP-04", name: "Chemical and dose composition", scope: "Chemical perturbation response", datasets: "sci-Plex; Tahoe-100M", access: "Public GEO and atlas landing pages", holdout: "Compound-exclusive; dose-exclusive or cell-line-exclusive; state which factor is unseen", endpoint: "Dose- and context-conditioned expression response", metrics: "PCC-Δ; RMSE-Δ; DE overlap; dose-response calibration", baselines: "Control mean; matching mean; CPA/chemCPA-style additive baseline", overlap: "Check compound identities; dose levels; cell lines and pretraining atlas overlap", models: "CPA/chemCPA; scVIDR; Tahoe-x1; OCOO-T", status: "Protocol-ready; no run", links: [{ label: "sci-Plex", url: "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE139944" }, { label: "Tahoe-100M", url: "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md" }], notes: "Do not mix dose transfer with novel-compound transfer in one headline."
+      },
+      {
+        id: "BP-05", name: "Set-valued response fidelity", scope: "Population distribution prediction", datasets: "Cell-Eval-compatible public response sets; Tahoe-100M or VCC when permitted", access: "Public evaluator and linked dataset landing pages", holdout: "Disjoint real response sets; report aggregation level and empirical self-split ceiling", endpoint: "Predicted cell population or response distribution", metrics: "Cell-Eval profile; differential expression; distribution distance; empirical ceiling gap", baselines: "Control/perturbed mean; transport baseline; empirical data ceiling", overlap: "Disclose response-set reuse; preprocessing and any training exposure to evaluator inputs", models: "CellOT; PerturbNet; STATE; X-Cell; PerturbDiff", status: "Protocol-ready; no run", links: [{ label: "Cell-Eval", url: "https://github.com/ArcInstitute/cell-eval" }, { label: "Tahoe-100M", url: "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md" }], notes: "Point-prediction metrics are insufficient when the model output is a population distribution."
+      },
+      {
+        id: "BP-06", name: "Frozen embedding response probe", scope: "Perturbation-aware representation", datasets: "PertEval protocol-defined public perturbation sets", access: "Public paper, repository and linked inputs", holdout: "Zero-shot perturbation and context shift; no random-cell split substitution", endpoint: "Lightweight predictor from frozen cell or perturbation embeddings", metrics: "Protocol-defined perturbation-effect score; PCC-Δ; RMSE-Δ; DE overlap", baselines: "Random expression; simple expression; linear probe; matched-control representation", overlap: "Record pretraining perturbation/context overlap and probe parameter budget", models: "scGPT; scFoundation; GeneJEPA; LPM; Scouter", status: "Protocol-ready; no run", links: [{ label: "paper", url: "https://proceedings.mlr.press/v267/wenteler25a.html" }, { label: "repository", url: "https://github.com/aaronwtr/PertEval" }], notes: "The decoder and probe budget must be fixed before interpreting embedding value."
+      },
+      {
+        id: "BP-07", name: "Functional perturbation retrieval", scope: "Biology-aware perturbation embedding", datasets: "Norman; Adamson; public GO, Reactome and STRING resources", access: "Public perturbation studies and functional knowledge resources", holdout: "Hold out perturbations or interaction classes; separate gene identity from functional family", endpoint: "Retrieve functionally related interventions from an embedding space", metrics: "Recall@k; enrichment; pathway recovery; interaction-class accuracy", baselines: "GenePT/text prior; GO/STRING similarity; shuffled-label and identity-only controls", overlap: "Disclose annotation-date and gene-set overlap with pretraining or probe labels", models: "LPM; Scouter; GeneJEPA; scGPT/scFoundation embeddings", status: "Protocol-ready; no run", links: [{ label: "GO", url: "https://geneontology.org/" }, { label: "Reactome", url: "https://reactome.org/" }, { label: "STRING", url: "https://string-db.org/" }], notes: "Functional retrieval is a separate endpoint from expression reconstruction."
+      },
+      {
+        id: "BP-08", name: "Pretraining and benchmark overlap disclosure", scope: "Cross-model evidence audit", datasets: "All Stage 1 datasets and public model training disclosures", access: "Public papers, repositories and dataset manifests", holdout: "No score; record what was seen during pretraining and tuning before comparison", endpoint: "Evidence quality and comparability classification", metrics: "Overlap flags; provenance completeness; split reproducibility", baselines: "Not applicable; use explicit unknown values when disclosure is incomplete", overlap: "Track perturbation IDs; context labels; gene vocabularies; benchmark files and release versions", models: "All Stage 1 and Stage 2 candidates", status: "Required disclosure; no run", links: [{ label: "VCBench", url: "https://github.com/AppliedScientific/VCBench" }, { label: "awesome catalog", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }], notes: "This row prevents a nominal zero-shot result from being read as genuinely unseen evidence."
+      }
+    ],
     sourceRegistry: [
       {
         id: "SR-01", name: "Awesome single-cell foundation-model catalog", type: "Living catalog", publication: "Public GitHub list", accessed: "2026-09-08", status: "Discovery index", artifacts: "Paper, repository and dataset links", role: "Broad model discovery", note: "Use as a map only; promote entries after primary-source and protocol review.", links: [{ label: "catalog", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }]
@@ -848,6 +902,30 @@ window.SCAI_DATA = {
       },
       {
         id: "SR-19", name: "ClawBio", type: "Skill library and tool layer", publication: "Public repository + MCP documentation", accessed: "2026-09-08", status: "Public tool layer", artifacts: "Public skills, local-first packaging and tool documentation", role: "Auditable bioinformatics execution layer", note: "Version each skill and review privacy, provenance and hosted integration boundaries separately.", links: [{ label: "repository", url: "https://github.com/ClawBio/ClawBio" }, { label: "MCP docs", url: "https://docs.clawbio.ai/reference/mcp" }]
+      },
+      {
+        id: "SR-20", name: "Virtual Cell Challenge 2025", type: "Virtual-cell challenge", publication: "Public challenge repository", accessed: "2026-09-08", status: "Public challenge", artifacts: "Challenge task description and public repository", role: "Context-transfer challenge target", note: "Use the challenge-specific H1 CRISPRi task and pin the release split and scoring rules before comparison.", links: [{ label: "repository", url: "https://github.com/ds4cabs/VirtualCellChallenge2025" }]
+      },
+      {
+        id: "SR-21", name: "SCALE", type: "Virtual-cell model", publication: "arXiv preprint", accessed: "2026-09-08", status: "Emerging preprint; source-reported", artifacts: "Public paper and reported atlas-scale evaluation", role: "Large-scale endpoint transport candidate", note: "Extract dataset split, endpoint and metric definitions before placing any source-reported score beside Stage 1 results.", links: [{ label: "arXiv", url: "https://arxiv.org/abs/2603.17380" }]
+      },
+      {
+        id: "SR-22", name: "PerturbDiff", type: "Perturbation-response model", publication: "arXiv preprint + public repository", accessed: "2026-09-08", status: "Emerging preprint + public code", artifacts: "Public project page, repository and paper", role: "Distributional response modeling candidate", note: "Map the target distribution definition and public-input provenance to Cell-Eval before any future protocol work.", links: [{ label: "paper", url: "https://arxiv.org/abs/2602.19685" }, { label: "repository", url: "https://github.com/DeepGraphLearning/PerturbDiff" }, { label: "project", url: "https://katarinayuan.github.io/PerturbDiff-ProjectPage/" }]
+      },
+      {
+        id: "SR-23", name: "Lingshu-Cell", type: "Generative cellular world model", publication: "arXiv preprint + public repository", accessed: "2026-09-08", status: "Emerging preprint + public code", artifacts: "Public code, checkpoint descriptions and evaluation scripts", role: "Genetic/cytokine virtual-cell candidate", note: "Record the exact VCC, PARSE and Cell-Eval configurations; repository dependencies and data availability require separate review.", links: [{ label: "paper", url: "https://arxiv.org/abs/2603.25240" }, { label: "repository", url: "https://github.com/alibaba-damo-academy/Lingshu-Cell" }]
+      },
+      {
+        id: "SR-24", name: "Biomni", type: "General biomedical AI agent", publication: "bioRxiv preprint + public repository", accessed: "2026-09-08", status: "Public system + preprint", artifacts: "Public agent code and paper landing page", role: "Broad biomedical tool-use candidate", note: "The public repository warns that generated code can run with broad system privileges; treat sandboxing and license boundaries as first-class evidence.", links: [{ label: "repository", url: "https://github.com/snap-stanford/Biomni" }, { label: "preprint", url: "https://doi.org/10.1101/2025.05.30.656746" }]
+      },
+      {
+        id: "SR-25", name: "FlowAgent", type: "Multi-agent workflow framework", publication: "Public repository", accessed: "2026-09-08", status: "Public framework + benchmarks", artifacts: "Public framework and documented Benchmarks A–M", role: "Workflow planning/recovery benchmark candidate", note: "Separate framework-level improvements from backbone-model effects and validate claims on a fixed public task set.", links: [{ label: "repository", url: "https://github.com/EnteloBio/flowagent" }]
+      },
+      {
+        id: "SR-26", name: "GoekeLab awesome-genomic-skills", type: "Curated skill/MCP catalog", publication: "Public GitHub catalog", accessed: "2026-09-08", status: "Public catalog", artifacts: "Links to public skills, MCP servers and benchmark resources", role: "Bioinformatics agent discovery index", note: "Curation is not validation; version each selected skill and evaluate its contract, safety and reproducibility separately.", links: [{ label: "catalog", url: "https://github.com/GoekeLab/awesome-genomic-skills" }]
+      },
+      {
+        id: "SR-27", name: "BioSkillSafety", type: "Agent-skill safety benchmark", publication: "OpenReview preprint", accessed: "2026-09-08", status: "Emerging public benchmark", artifacts: "Public taxonomy and adversarial benchmark description", role: "Safety gate for bioinformatics agents", note: "Audit attack cases, judge protocol, permissions and abstention requirements before using it as a selection gate.", links: [{ label: "OpenReview PDF", url: "https://openreview.net/pdf?id=fa4Obft2xN" }]
       }
     ],
     evaluationProtocols: [
@@ -923,9 +1001,11 @@ window.SCAI_DATA = {
         ]
       },
       {
-        name: "SCALE / OCOO-T", status: "Stage 2 — emerging virtual-cell models", note: "Large-scale endpoint transport and set-level/diffusion approaches; track releases and independent evaluation before ranking", links: [
+        name: "SCALE / OCOO-T / PerturbDiff / Lingshu-Cell", status: "Stage 2 — emerging virtual-cell models", note: "Large-scale endpoint transport, set-level/diffusion, and generative cellular-world directions; track releases and independent evaluation before ranking", links: [
           { label: "SCALE", url: "https://arxiv.org/abs/2603.17380" },
-          { label: "OCOO-T", url: "https://www.biorxiv.org/content/10.64898/2026.06.08.731000v1.full" }
+          { label: "OCOO-T", url: "https://www.biorxiv.org/content/10.64898/2026.06.08.731000v1.full" },
+          { label: "PerturbDiff", url: "https://github.com/DeepGraphLearning/PerturbDiff" },
+          { label: "Lingshu-Cell", url: "https://github.com/alibaba-damo-academy/Lingshu-Cell" }
         ]
       },
       {
@@ -933,7 +1013,10 @@ window.SCAI_DATA = {
           { label: "BixBench", url: "https://github.com/Future-House/BixBench" },
           { label: "scBench", url: "https://github.com/latchbio/scbench" },
           { label: "BioAgent Bench", url: "https://arxiv.org/abs/2601.21800" },
-          { label: "ClawBio", url: "https://github.com/ClawBio/ClawBio" }
+          { label: "ClawBio", url: "https://github.com/ClawBio/ClawBio" },
+          { label: "Biomni", url: "https://github.com/snap-stanford/Biomni" },
+          { label: "FlowAgent", url: "https://github.com/EnteloBio/flowagent" },
+          { label: "BioSkillSafety", url: "https://openreview.net/pdf?id=fa4Obft2xN" }
         ]
       },
       {
@@ -966,6 +1049,18 @@ window.SCAI_DATA = {
       },
       {
         priority: "P2", name: "CellForge / VCWorld", year: "2025–2026", kind: "Agentic or world-model direction", task: "Automated virtual-cell design and mechanistic biological simulation", evidence: "Public preprints propose multi-agent architecture design or biological world-model reasoning; direct perturbation benchmark coverage is not pinned", status: "Research direction; keep off Stage 1 ranking", pros: "Connects model design, mechanistic reasoning and virtual-cell simulation", cons: "Broader scope makes it difficult to compare with gene-expression response predictors; strong verification burden", next: "Track datasets, code, mechanistic validation and independently reproducible response metrics", links: [{ label: "CellForge", url: "https://arxiv.org/abs/2508.02276" }, { label: "VCWorld", url: "https://arxiv.org/abs/2512.00306" }]
+      },
+      {
+        priority: "P0", name: "Virtual Cell Challenge 2025", year: "2025", kind: "Context-transfer challenge", task: "Predict H1 human embryonic stem-cell expression responses from perturbation data in other cell types", evidence: "Public challenge repository describes a CRISPRi task with held-out H1 cell-type transfer", status: "Public challenge; protocol-specific", pros: "Clear context OOD question and a concrete public challenge target", cons: "Challenge-specific gene-panel data access and scoring; not a universal leaderboard", next: "Pin the challenge release split, metric and permitted public artifacts before comparing models", links: [{ label: "repository", url: "https://github.com/ds4cabs/VirtualCellChallenge2025" }]
+      },
+      {
+        priority: "P1", name: "SCALE", year: "2026", kind: "Scalable endpoint-transport model", task: "Large-scale genetic, chemical and cytokine perturbation prediction", evidence: "Public arXiv paper reports Tahoe-100M evaluation with set-aware transport and biology-focused metrics", status: "Emerging preprint; source-reported", pros: "Explicit scale and endpoint-transport framing with PDCorr and DE-overlap reporting", cons: "Preprint evidence and source-specific configurations; compute and data-overlap audit burden", next: "Extract exact dataset split, output type and metric definitions before adding any common-suite comparison", links: [{ label: "arXiv", url: "https://arxiv.org/abs/2603.17380" }]
+      },
+      {
+        priority: "P1", name: "PerturbDiff", year: "2026", kind: "Functional diffusion response model", task: "Distributional single-cell perturbation response modeling", evidence: "Public project page, repository and arXiv preprint describe a functional diffusion framework for unpaired responses", status: "Emerging preprint + public code", pros: "Directly targets multimodal response distributions and has a public implementation path", cons: "Source-reported evidence; distributional assumptions and benchmark alignment need independent review", next: "Map its target distribution definition to Cell-Eval and record checkpoint and public-input provenance", links: [{ label: "paper", url: "https://arxiv.org/abs/2602.19685" }, { label: "project", url: "https://katarinayuan.github.io/PerturbDiff-ProjectPage/" }, { label: "repository", url: "https://github.com/DeepGraphLearning/PerturbDiff" }]
+      },
+      {
+        priority: "P1", name: "Lingshu-Cell", year: "2026", kind: "Generative cellular world model", task: "Transcriptome generation for VCC genetic and PBMC cytokine settings", evidence: "Public repository and arXiv preprint expose code paths, checkpoint descriptions and Cell-Eval evaluation scripts", status: "Emerging preprint + public code", pros: "Concrete genetic and cytokine routes with public code and checkpoint metadata", cons: "Requires a substantial CUDA environment and public checkpoint handling; source-specific evaluation remains to be matched", next: "Record the exact VCC/PARSE configuration and compare only after output and split alignment", links: [{ label: "paper", url: "https://arxiv.org/abs/2603.25240" }, { label: "repository", url: "https://github.com/alibaba-damo-academy/Lingshu-Cell" }]
       }
     ],
     stage2AgentTools: [
@@ -986,6 +1081,18 @@ window.SCAI_DATA = {
       },
       {
         priority: "P1", name: "ClawBio", year: "2025–2026", kind: "Local-first skill library and MCP server", bestFor: "Reusable bioinformatics skills in a local, auditable tool loop", evidence: "Public repository and MCP documentation; it is an execution/tool layer, not a standardized performance benchmark", status: "Public tool layer; heterogeneous maturity", pros: "Modular skills, local-first option, MCP compatibility and reproducibility-oriented packaging", cons: "Skill quality varies; hosted/API integrations require separate privacy and provenance review", next: "Version each skill, record input/output contracts and evaluate with scBench/BixBench-style tasks", links: [{ label: "repository", url: "https://github.com/ClawBio/ClawBio" }, { label: "MCP docs", url: "https://docs.clawbio.ai/reference/mcp" }]
+      },
+      {
+        priority: "P0", name: "Biomni", year: "2025", kind: "General biomedical AI agent", bestFor: "Broad biomedical planning, retrieval, tool use and code-based execution", evidence: "Public repository and bioRxiv preprint describe a general-purpose biomedical agent with retrieval, planning and code execution", status: "Public system; safety review required", pros: "Broad biomedical action space and public agent implementation", cons: "Large environment and data-lake dependencies; repository warns about broad system privileges and integrated-tool license boundaries", next: "Map Biomni to scBench, BixBench and BioAgent Bench while recording sandbox permissions and provenance", links: [{ label: "repository", url: "https://github.com/snap-stanford/Biomni" }, { label: "preprint", url: "https://doi.org/10.1101/2025.05.30.656746" }]
+      },
+      {
+        priority: "P1", name: "FlowAgent", year: "2026", kind: "Multi-agent workflow framework", bestFor: "Reproducible planning, recovery, execution and interpretation of bioinformatics pipelines", evidence: "Public repository documents reproducible Benchmarks A–M for planning, recovery, generation, execution fidelity and interpretation", status: "Public framework + benchmarks", pros: "Decomposable workflow layers and explicit benchmark artifacts for plan and output quality", cons: "Framework self-benchmarks need external validation; execution modes and APIs add environment complexity", next: "Compare task-level outputs on a fixed public benchmark and separate framework gains from backbone-model effects", links: [{ label: "repository", url: "https://github.com/EnteloBio/flowagent" }]
+      },
+      {
+        priority: "P1", name: "GoekeLab awesome-genomic-skills", year: "2025–2026", kind: "Curated skill/MCP catalog", bestFor: "Discovering bioinformatics-native skills, MCP servers and benchmark links", evidence: "Public GitHub catalog curates agentic skills, MCPs and benchmarks across genomics and bioinformatics", status: "Public catalog; not a performance benchmark", pros: "Broad discovery coverage and direct links to reusable public resources", cons: "Curation is heterogeneous; inclusion does not validate skill quality, safety or reproducibility", next: "Version each selected skill and evaluate it with workflow and safety benchmarks", links: [{ label: "catalog", url: "https://github.com/GoekeLab/awesome-genomic-skills" }]
+      },
+      {
+        priority: "P1", name: "BioSkillSafety", year: "2026", kind: "Agent-skill safety benchmark", bestFor: "Stress-testing skill-based agents against bioinformatics-specific safety failures", evidence: "Public OpenReview preprint proposes a six-layer taxonomy and adversarial evaluation across biomedical skill repositories", status: "Emerging preprint; source-reported", pros: "Makes safety and skill misuse explicit rather than treating task accuracy as sufficient", cons: "Preprint evidence; adversarial cases and judge protocol need independent audit", next: "Extract the attack taxonomy and map it to tool permissions, abstention and audit-log requirements", links: [{ label: "OpenReview PDF", url: "https://openreview.net/pdf?id=fa4Obft2xN" }]
       }
     ],
     agentSelection: [
@@ -1015,6 +1122,27 @@ window.SCAI_DATA = {
         name: "ClawBio", kind: "Local-first skill library and MCP server", bestFor: "Running reusable bioinformatics skills in a local, reproducible tool loop", pros: "Modular skills; local-first and MCP-compatible; demo data and reproducibility-oriented packaging", cons: "A tool library, not a standardized benchmark; skill maturity is heterogeneous; hosted/API skills require separate privacy review", choose: "You need an extensible local tool layer rather than another model leaderboard", links: [
           { label: "repository", url: "https://github.com/ClawBio/ClawBio" },
           { label: "MCP docs", url: "https://docs.clawbio.ai/reference/mcp" }
+        ]
+      },
+      {
+        name: "Biomni", kind: "General biomedical AI agent", bestFor: "Broad biomedical planning, retrieval and code-based execution", pros: "Broad biomedical action space and public agent implementation", cons: "Large environment and data-lake dependencies; broad system privileges require explicit sandbox and license review", choose: "You need a broad biomedical agent candidate and can enforce a controlled execution boundary", links: [
+          { label: "repository", url: "https://github.com/snap-stanford/Biomni" },
+          { label: "preprint", url: "https://doi.org/10.1101/2025.05.30.656746" }
+        ]
+      },
+      {
+        name: "FlowAgent", kind: "Multi-agent workflow framework", bestFor: "Planning, recovery, execution and interpretation of bioinformatics workflows", pros: "Separates workflow layers and exposes public benchmark artifacts for plan and output quality", cons: "Framework self-benchmarks need external validation; environment and API complexity can affect reproducibility", choose: "You want to compare agent orchestration and recovery behavior on a fixed public task set", links: [
+          { label: "repository", url: "https://github.com/EnteloBio/flowagent" }
+        ]
+      },
+      {
+        name: "GoekeLab awesome-genomic-skills", kind: "Curated skill/MCP catalog", bestFor: "Finding bioinformatics-native skills, MCP servers and benchmark resources", pros: "Broad discovery coverage with direct public links and domain-specific organization", cons: "A catalog is not a quality or safety guarantee; entries are heterogeneous and can change", choose: "You are building a candidate tool inventory before selecting versioned skills for evaluation", links: [
+          { label: "catalog", url: "https://github.com/GoekeLab/awesome-genomic-skills" }
+        ]
+      },
+      {
+        name: "BioSkillSafety", kind: "Agent-skill safety benchmark", bestFor: "Stress-testing bioinformatics agents and skills for unsafe behavior", pros: "Adds skill misuse, permission and adversarial failure modes to the selection criteria", cons: "Emerging preprint; attack cases and judge protocol still need independent audit", choose: "Safety, abstention and auditability are selection gates rather than afterthoughts", links: [
+          { label: "OpenReview PDF", url: "https://openreview.net/pdf?id=fa4Obft2xN" }
         ]
       }
     ]

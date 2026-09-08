@@ -216,6 +216,7 @@ article.post-body code { background: var(--surface-2); padding: 2px 6px; border-
 .guide-table td strong { color: var(--text); }
 .guide-table tbody tr:last-child td { border-bottom: none; }
 #research-evidence .guide-table { min-width: 1700px; }
+#research-protocol-matrix .guide-table { min-width: 1900px; }
 #research-sources .guide-table { min-width: 1600px; }
 #research-protocol .guide-table, #research-guardrails .guide-table { min-width: 980px; }
 #research-stage2-virtual .guide-table, #research-stage2-agents .guide-table { min-width: 1800px; }
