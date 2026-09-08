@@ -8,6 +8,8 @@ The [Research Guide](research.html) adds a Stage 1 public-source router for pert
 
 Stage 1 protocol hardening is tracked in the [benchmark evidence matrix](assets/data/benchmark_evidence.csv): each record keeps the dataset, holdout, metrics, baselines, comparability boundary and public source together. Plot metadata is separately versioned in [model annotations](assets/data/model_annotations.csv), including benchmark coverage and evidence status.
 
+Stage 1.5 adds a public [source registry](assets/data/source_registry.csv) with canonical URLs, access-check dates, publication/release status, evidence maturity, public artifacts, research role and the next verification note. The Research Guide provides display-only search and evidence-status filters for the evidence matrix and source registry; the CSV exports remain the versioned records.
+
 The Research Guide also includes a Stage 2 triage queue for newer virtual-cell directions and bioinformatics agents/tools. Stage 2 entries carry evidence maturity and a next-verification step; they are reading priorities, not model-performance claims. The public exports are [virtual-cell triage](assets/data/stage2_virtual_cell.csv) and [agent/tool triage](assets/data/stage2_agent_tools.csv).
 
 To preview locally:

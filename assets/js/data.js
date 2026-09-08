@@ -790,6 +790,65 @@ window.SCAI_DATA = {
         name: "scGPT / scFoundation probes", type: "Foundation-model probe", task: "Perturbation-aware embedding or frozen-backbone response probe", datasets: "Task- and configuration-specific public perturbation sets", split: "Zero-shot or held-out perturbation/context; pin pretraining overlap", metrics: "Probe-dependent; report the task metric and probe capacity", baselines: "Simple expression, matched-control and linear-probe baselines", status: "Representation probe", comparability: "Comparable only within the matched probe protocol", code: "Public", data: "Public repositories and task-linked datasets", notes: "Separate representation value from the response decoder, fine-tuning budget and pretraining overlap.", links: [{ label: "scGPT", url: "https://github.com/bowang-lab/scGPT" }, { label: "PertEval", url: "https://github.com/aaronwtr/PertEval" }]
       }
     ],
+    sourceRegistry: [
+      {
+        id: "SR-01", name: "Awesome single-cell foundation-model catalog", type: "Living catalog", publication: "Public GitHub list", accessed: "2026-09-08", status: "Discovery index", artifacts: "Paper, repository and dataset links", role: "Broad model discovery", note: "Use as a map only; promote entries after primary-source and protocol review.", links: [{ label: "catalog", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }]
+      },
+      {
+        id: "SR-02", name: "scPerturBench", type: "Benchmark suite", publication: "Nature Methods + public repository", accessed: "2026-09-08", status: "Published + public code", artifacts: "Code, results and linked data archives", role: "Stage 1 common-suite anchor", note: "Pin the release and retain dataset, scenario and metric boundaries.", links: [{ label: "repository", url: "https://github.com/bm2-lab/scPerturBench" }, { label: "paper", url: "https://pubmed.ncbi.nlm.nih.gov/41381899/" }]
+      },
+      {
+        id: "SR-03", name: "Systema", type: "Anti-shortcut protocol", publication: "Nature Biotechnology + public repository", accessed: "2026-09-08", status: "Published + public code", artifacts: "Paper, code and split instructions", role: "Perturbation-specific effect guardrail", note: "Use perturbed-reference metrics and simple perturbed-mean controls before reading model deltas.", links: [{ label: "repository", url: "https://github.com/mlbio-epfl/systema" }, { label: "paper", url: "https://www.nature.com/articles/s41587-025-02777-8" }]
+      },
+      {
+        id: "SR-04", name: "PertEval-scFM / PertEval", type: "Representation benchmark", publication: "PMLR paper + public repository", accessed: "2026-09-08", status: "Published + public code", artifacts: "Paper, code and protocol-linked inputs", role: "Frozen scFM embedding probes", note: "Keep probe capacity, decoder choice and pretraining overlap explicit.", links: [{ label: "paper", url: "https://proceedings.mlr.press/v267/wenteler25a.html" }, { label: "repository", url: "https://github.com/aaronwtr/PertEval" }]
+      },
+      {
+        id: "SR-05", name: "PerturBench", type: "Benchmarking framework", publication: "Public paper and repository", accessed: "2026-09-08", status: "Public framework", artifacts: "Code and linked processed datasets", role: "Reusable evaluation harness", note: "Treat framework outputs as configuration-specific rather than one universal score.", links: [{ label: "repository", url: "https://github.com/altoslabs/perturbench" }, { label: "paper", url: "https://openreview.net/forum?id=PPPDuyiZaG" }]
+      },
+      {
+        id: "SR-06", name: "Cell-Eval", type: "Distributional evaluator", publication: "Public repository", accessed: "2026-09-08", status: "Public evaluator", artifacts: "Code and evaluator documentation", role: "Set- and distribution-level responses", note: "Record the metric profile and empirical ceiling for every future evaluation.", links: [{ label: "repository", url: "https://github.com/ArcInstitute/cell-eval" }]
+      },
+      {
+        id: "SR-07", name: "scPertEval", type: "Protocol and calibration toolkit", publication: "Public preprint, repository and dataset guide", accessed: "2026-09-08", status: "Public protocol + code", artifacts: "Code, protocol notes and public dataset guide", role: "Metric calibration and reporting", note: "Use for protocol selection; do not copy linked data into this site.", links: [{ label: "repository", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval" }, { label: "datasets", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval/blob/main/docs/user-guide/datasets.md" }]
+      },
+      {
+        id: "SR-08", name: "GEARS", type: "Perturbation-response model", publication: "Nature Biotechnology + public repository", accessed: "2026-09-08", status: "Published + public code", artifacts: "Paper, code and public study references", role: "Canonical genetic baseline", note: "Original results are reading anchors; common-protocol comparison still needs split alignment.", links: [{ label: "repository", url: "https://github.com/snap-stanford/GEARS" }, { label: "paper", url: "https://www.nature.com/articles/s41587-023-01905-6" }]
+      },
+      {
+        id: "SR-09", name: "CPA / chemCPA", type: "Compositional response model", publication: "Peer-reviewed paper + public repository", accessed: "2026-09-08", status: "Published + public code", artifacts: "Paper, code and linked study datasets", role: "Dose, context and intervention composition", note: "Pin normalization, dose and context holdouts before comparing source-reported values.", links: [{ label: "CPA paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10258562/" }, { label: "chemCPA", url: "https://github.com/theislab/chemCPA" }]
+      },
+      {
+        id: "SR-10", name: "Tahoe-100M", type: "Perturbation atlas", publication: "Public data landing pages", accessed: "2026-09-08", status: "Public dataset access", artifacts: "Public README and linked dataset access", role: "Large chemical/context benchmark candidate", note: "Track access, compute requirements and pretraining overlap; this site stores links only.", links: [{ label: "atlas README", url: "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md" }, { label: "dataset", url: "https://huggingface.co/datasets/tahoebio/Tahoe-100M" }]
+      },
+      {
+        id: "SR-11", name: "LPM", type: "Perturbation representation model", publication: "Peer-reviewed paper", accessed: "2026-09-08", status: "Published paper", artifacts: "Public DOI record", role: "Biology-aware perturbation embeddings", note: "Use as an embedding candidate; compare with matched frozen-probe protocols.", links: [{ label: "paper", url: "https://doi.org/10.1038/s43588-025-00870-1" }]
+      },
+      {
+        id: "SR-12", name: "Scouter", type: "Biology-aware representation model", publication: "Nature Computational Science + public code", accessed: "2026-09-08", status: "Published + public code", artifacts: "Paper, repository and GenePT-linked representation path", role: "Knowledge-informed embedding candidate", note: "Separate text-knowledge priors from learned perturbation-response evidence.", links: [{ label: "paper", url: "https://www.nature.com/articles/s43588-025-00912-8" }, { label: "repository", url: "https://github.com/PancakeZoy/scouter" }]
+      },
+      {
+        id: "SR-13", name: "VCBench", type: "Virtual-cell benchmark", publication: "Public v1.0.0 repository + preprint", accessed: "2026-09-08", status: "Public benchmark release", artifacts: "Code, capability matrix and contamination manifest", role: "Stage 2 protocol gate", note: "Use matched capability rows only; not every dimension is direct response prediction.", links: [{ label: "repository", url: "https://github.com/AppliedScientific/VCBench" }, { label: "preprint", url: "https://doi.org/10.64898/2026.06.18.733146" }]
+      },
+      {
+        id: "SR-14", name: "sc-virtualcell-bench", type: "Community perturbation benchmark", publication: "Early-phase public repository", accessed: "2026-09-08", status: "Early-phase public code", artifacts: "Repository, Cell-Eval references and baseline list", role: "Stage 2 community benchmark", note: "Pin a commit and audit data provenance before using its model coverage or scores.", links: [{ label: "repository", url: "https://github.com/shrutisshikhare/sc-virtualcell-bench" }, { label: "VCC", url: "https://virtualcellchallenge.org/" }]
+      },
+      {
+        id: "SR-15", name: "scBench", type: "Single-cell workflow benchmark", publication: "Public executable repository", accessed: "2026-09-08", status: "Public benchmark release", artifacts: "Verifiable problems and deterministic grader", role: "Agent workflow evaluation", note: "Pair task scores with biological validity, failure taxonomy and environment records.", links: [{ label: "repository", url: "https://github.com/latchbio/scbench" }]
+      },
+      {
+        id: "SR-16", name: "BixBench", type: "Computational-biology agent benchmark", publication: "Public benchmark + preprint", accessed: "2026-09-08", status: "Public benchmark release", artifacts: "Notebook-derived tasks and benchmark documentation", role: "Long multi-step agent trajectories", note: "Environment parity and intermediate artifacts are part of reproducibility evidence.", links: [{ label: "repository", url: "https://github.com/Future-House/BixBench" }, { label: "paper", url: "https://arxiv.org/abs/2503.00096" }]
+      },
+      {
+        id: "SR-17", name: "BioAgent Bench", type: "Bioinformatics agent benchmark", publication: "Public repository + preprint", accessed: "2026-09-08", status: "Public benchmark; verify tasks", artifacts: "Task data, truth files, Dockerfiles and run scripts", role: "Robustness and failure handling", note: "Audit task-level truth provenance and separate exact-match, scientific validity and robustness.", links: [{ label: "repository", url: "https://github.com/bioagent-bench/bioagent-bench" }, { label: "paper", url: "https://arxiv.org/abs/2601.21800" }]
+      },
+      {
+        id: "SR-18", name: "LAB-Bench", type: "Broad biology capability benchmark", publication: "Public benchmark + paper", accessed: "2026-09-08", status: "Public knowledge benchmark", artifacts: "Question sets and benchmark documentation", role: "Knowledge/reasoning pre-screen", note: "Use as a knowledge layer, not as evidence of safe or reproducible workflow execution.", links: [{ label: "repository", url: "https://github.com/Future-House/lab-bench" }, { label: "paper", url: "https://arxiv.org/abs/2407.10362" }]
+      },
+      {
+        id: "SR-19", name: "ClawBio", type: "Skill library and tool layer", publication: "Public repository + MCP documentation", accessed: "2026-09-08", status: "Public tool layer", artifacts: "Public skills, local-first packaging and tool documentation", role: "Auditable bioinformatics execution layer", note: "Version each skill and review privacy, provenance and hosted integration boundaries separately.", links: [{ label: "repository", url: "https://github.com/ClawBio/ClawBio" }, { label: "MCP docs", url: "https://docs.clawbio.ai/reference/mcp" }]
+      }
+    ],
     evaluationProtocols: [
       {
         priority: "P0", name: "Perturbation-exclusive holdout", definition: "Every cell carrying a held-out perturbation is excluded from training, validation and tuning.", question: "Can the model infer a response to an intervention it has not seen?", risk: "Perturbation identity or close combination partners can leak through random cell splits.", status: "Required Stage 1 protocol"

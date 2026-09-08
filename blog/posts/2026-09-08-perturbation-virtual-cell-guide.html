@@ -32,6 +32,7 @@
           <a href="#report-datasets">Benchmark datasets</a>
           <a href="#report-suites">Evaluation suites</a>
           <a href="#report-protocol">Protocol hardening</a>
+          <a href="#report-registry">Source registry</a>
           <a href="#report-stage2">Stage 2 triage</a>
           <a href="#report-embeddings">Embedding plan</a>
           <a href="#report-route">First information route</a>
@@ -88,6 +89,9 @@
       <h2 id="report-protocol">How to read benchmark evidence</h2>
       <p>The new <a href="../../research.html#research-evidence">benchmark evidence matrix</a> stores the comparison unit explicitly: model or suite, dataset, split/holdout, metric, baseline, evidence status and public source. This prevents a source-reported score from being silently promoted into a universal ranking. The downloadable <a href="../../assets/data/benchmark_evidence.csv">CSV ledger</a> is intentionally compact and uses “protocol-specific”, “representation probe”, “distributional evaluator” and “common-suite benchmark anchor” labels where scores answer different questions.</p>
       <p>Before any future run, choose the holdout question: perturbation-exclusive for unseen interventions, context-exclusive for transfer across biological context, or combined perturbation × context for novel pairings. For population-level predictions, use a set/distribution split and report the evaluator profile and empirical ceiling. The <a href="../../research.html#research-guardrails">guardrail checklist</a> requires control-mean, perturbed-mean and matching-mean baselines where applicable, plus systematic-variation diagnostics and shuffled-label or random-expression controls for embedding probes.</p>
+
+      <h2 id="report-registry">Stage 1.5: lock the public evidence layer</h2>
+      <p>The <a href="../../research.html#research-sources">public source registry</a> is the maintenance layer for this map. Each row records a canonical public URL, the date it was checked, publication or release status, evidence maturity, available public artifacts, its role in the study and the next verification note. The registry distinguishes a living catalog, a published protocol, a benchmark release, a model paper and a tool layer. Its <a href="../../assets/data/source_registry.csv">CSV export</a> is a plain public record; filters in the Research Guide change only the display and never rewrite the source data.</p>
 
       <h2 id="report-stage2">Stage 2: triage newer virtual cells and agent layers</h2>
       <p>Stage 2 is now a selection queue rather than a flat list. <a href="https://github.com/AppliedScientific/VCBench">VCBench</a> is a useful protocol gate because it publishes a capability matrix with pre-registered trivial and non-foundation-model baselines and makes contamination checks explicit. The early-phase <a href="https://github.com/shrutisshikhare/sc-virtualcell-bench">sc-virtualcell-bench</a> is a complementary reading target because it keeps Cell-Eval metrics and strong statistical baselines visible. These are evidence and reproducibility anchors, not new universal scores.</p>

@@ -438,12 +438,37 @@
     }).join(" ");
   }
 
-  function guideTable(rows, columns) {
-    var h = "<div class='tblwrap'><table class='guide-table'><thead><tr>";
+  function guideFilterText(value) {
+    if (Array.isArray(value)) return value.map(guideFilterText).join(" ");
+    if (value && typeof value === "object") return Object.keys(value).map(function (key) { return guideFilterText(value[key]); }).join(" ");
+    return String(value == null ? "" : value);
+  }
+
+  function guideFilterBar(group, rows) {
+    var statuses = [];
+    rows.forEach(function (row) {
+      if (row.status && statuses.indexOf(row.status) === -1) statuses.push(row.status);
+    });
+    statuses.sort();
+    var h = "<div class='guide-filter' data-guide-filter-group='" + esc(group) + "'>";
+    h += "<label>Search table<input type='search' data-guide-search placeholder='Name, dataset, protocol or source'></label>";
+    h += "<label>Evidence status<select data-guide-status><option value=''>All statuses</option>";
+    statuses.forEach(function (status) { h += "<option value='" + esc(status) + "'>" + esc(status) + "</option>"; });
+    h += "</select></label><span class='guide-filter-count' data-guide-filter-count>" + rows.length + " records</span>";
+    h += "<span class='guide-filter-note'>Filters change the display only; the downloadable CSV remains the source record.</span></div>";
+    return h;
+  }
+
+  function guideTable(rows, columns, options) {
+    options = options || {};
+    var filterKey = options.filterKey || "";
+    var h = filterKey ? "<div class='guide-table-block' data-guide-table-block='" + esc(filterKey) + "'>" + guideFilterBar(filterKey, rows) : "";
+    h += "<div class='tblwrap'><table class='guide-table'" + (filterKey ? " data-guide-table='" + esc(filterKey) + "'" : "") + "><thead><tr>";
     columns.forEach(function (c) { h += "<th>" + esc(c.label) + "</th>"; });
     h += "</tr></thead><tbody>";
     rows.forEach(function (row) {
-      h += "<tr>";
+      var rowText = columns.map(function (c) { return guideFilterText(row[c.key]); }).join(" ").toLowerCase();
+      h += "<tr" + (filterKey ? " data-guide-row-text='" + esc(rowText) + "' data-guide-row-status='" + esc(row.status || "") + "'" : "") + ">";
       columns.forEach(function (c) {
         var value = row[c.key];
         if (c.key === "links") {
@@ -461,6 +486,7 @@
       h += "</tr>";
     });
     h += "</tbody></table></div>";
+    if (filterKey) h += "</div>";
     return h;
   }
 
@@ -468,11 +494,36 @@
     return "<section id='" + esc(id) + "' class='block'><div class='card guide-card'><h2>" + esc(title) + "</h2><p class='sub'>" + esc(sub) + "</p>" + body + "</div></section>";
   }
 
+  function bindGuideFilters(el) {
+    el.querySelectorAll("[data-guide-filter-group]").forEach(function (filter) {
+      var block = filter.parentNode;
+      var search = filter.querySelector("[data-guide-search]");
+      var status = filter.querySelector("[data-guide-status]");
+      var count = filter.querySelector("[data-guide-filter-count]");
+      var rows = block.querySelectorAll("tbody tr[data-guide-row-text]");
+      function applyFilter() {
+        var query = (search.value || "").trim().toLowerCase();
+        var selectedStatus = status.value || "";
+        var visible = 0;
+        rows.forEach(function (row) {
+          var matchesText = !query || row.getAttribute("data-guide-row-text").indexOf(query) !== -1;
+          var matchesStatus = !selectedStatus || row.getAttribute("data-guide-row-status") === selectedStatus;
+          row.hidden = !(matchesText && matchesStatus);
+          if (!row.hidden) visible += 1;
+        });
+        count.textContent = visible + " of " + rows.length + " records";
+      }
+      search.addEventListener("input", applyFilter);
+      status.addEventListener("change", applyFilter);
+      applyFilter();
+    });
+  }
+
   function renderResearchGuide(el) {
     var guide = SCAI_DATA.researchGuide;
     if (!guide) return;
     var stage1 = "<p class='guide-lead'>" + esc(guide.intro) + "</p>";
-    stage1 += "<div class='guide-policy'><strong>Stage 1 status:</strong> " + esc(guide.sourcePolicy) + "</div>";
+    stage1 += "<div class='guide-policy'><strong>Stage 1.5 status:</strong> " + esc(guide.sourcePolicy) + "</div>";
     stage1 += "<div class='guide-callout'><strong>How to read the rank:</strong> curation priority for a Stage 1 benchmark and reading list, based on task relevance, visibility, reproducible implementation and representation value. It is not a universal performance ranking.</div>";
     stage1 += guideSection("research-router", "Stage 1 information router", "Choose the research question first; follow the linked public sources before considering any future execution.", guideTable(guide.routes, [
       { key: "route", label: "Research route" }, { key: "question", label: "Question" }, { key: "path", label: "Reading path" }, { key: "inputs", label: "Public inputs" }, { key: "links", label: "Sources" }
@@ -491,7 +542,7 @@
     ]));
     stage1 += guideSection("research-evidence", "Benchmark evidence matrix", "A protocol-level ledger for model × dataset × split × metric evidence. A row is comparable only within the stated protocol and source boundary.", guideTable(guide.benchmarkEvidence, [
       { key: "name", label: "Resource" }, { key: "type", label: "Type" }, { key: "task", label: "Task" }, { key: "datasets", label: "Dataset / suite" }, { key: "split", label: "Split / holdout" }, { key: "metrics", label: "Metrics" }, { key: "baselines", label: "Baselines" }, { key: "status", label: "Evidence status" }, { key: "comparability", label: "Comparability" }, { key: "code", label: "Code" }, { key: "data", label: "Data" }, { key: "notes", label: "Notes" }, { key: "links", label: "Public source" }
-    ]) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/benchmark_evidence.csv' download='benchmark_evidence.csv'>Download the benchmark evidence matrix CSV</a>. Treat each row as a source-linked protocol record, not a universal score.</div>");
+    ], { filterKey: "benchmark-evidence" }) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/benchmark_evidence.csv' download='benchmark_evidence.csv'>Download the benchmark evidence matrix CSV</a>. Treat each row as a source-linked protocol record, not a universal score.</div>");
     stage1 += guideSection("research-protocol", "Split and holdout protocol guide", "Make the generalization question explicit before comparing perturbation-response or embedding models.", guideTable(guide.evaluationProtocols, [
       { key: "priority", label: "Priority" }, { key: "name", label: "Protocol" }, { key: "definition", label: "Definition" }, { key: "question", label: "Question answered" }, { key: "risk", label: "Leakage / interpretation risk" }, { key: "status", label: "Status" }
     ]));
@@ -501,6 +552,9 @@
     stage1 += guideSection("research-citations", "Citation register", "Primary public records behind the Stage 1 routing layer. Publication status is shown so peer-reviewed evidence is not conflated with preprints.", guideTable(guide.citations, [
       { key: "citation", label: "Citation" }, { key: "status", label: "Status" }, { key: "why", label: "Why it is here" }, { key: "links", label: "Public source" }
     ]));
+    stage1 += guideSection("research-sources", "Public source registry", "Canonical public URLs and evidence roles for the Stage 1 reading map. Review this table before treating a paper, repository or benchmark as current evidence.", guideTable(guide.sourceRegistry, [
+      { key: "id", label: "ID" }, { key: "name", label: "Source" }, { key: "type", label: "Type" }, { key: "publication", label: "Publication / release" }, { key: "accessed", label: "Access checked" }, { key: "status", label: "Evidence status" }, { key: "artifacts", label: "Public artifacts" }, { key: "role", label: "Role" }, { key: "note", label: "Verification note" }, { key: "links", label: "Public URLs" }
+    ], { filterKey: "source-registry" }) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/source_registry.csv' download='source_registry.csv'>Download the source registry CSV</a>. Access dates are curation timestamps, not guarantees that a source will remain unchanged.</div>");
     stage1 += guideSection("research-embeddings", "Perturbation-aware embedding agenda", "Prioritized probes for biology embeddings; P0 is the Stage 1 implementation target.", guideTable(guide.embeddingTasks, [
       { key: "priority", label: "Priority" }, { key: "task", label: "Embedding task" }, { key: "probe", label: "Question" }, { key: "biology", label: "Biology-facing readout" }, { key: "guardrail", label: "Guardrail" }
     ]));
@@ -516,7 +570,7 @@
     stage2 += guideSection("research-agent-selection", "Bioinformatics agent & tool selection guide", "Benchmarks measure different capabilities; pair an execution benchmark with a local tool layer when reproducibility and privacy matter.", guideTable(guide.agentSelection, [
       { key: "name", label: "Agent / tool" }, { key: "kind", label: "Type" }, { key: "bestFor", label: "Best fit" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "choose", label: "Choose it when" }, { key: "links", label: "Public evidence" }
     ]) + "<div class='guide-choice'><strong>Quick selector:</strong> scBench for concrete single-cell workflows; BixBench for long computational-biology trajectories; BioAgent Bench for robustness and failure handling; LAB-Bench for broad biology reasoning; ClawBio for a local-first, MCP-compatible execution layer. These are not interchangeable scores.</div>");
-    stage1 += "<div id='research-next' class='guide-next'><h2>Suggested Stage 1 route</h2><p>Start with the public-source ledger, benchmark evidence matrix and split guardrails. Then route each perturbation-response question through the canonical datasets and evaluation suites. The P0 embedding items are evaluation specifications for future work, not runs performed by this site.</p><p class='sub'>Stage 2 has its own tab below. The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
+    stage1 += "<div id='research-next' class='guide-next'><h2>Suggested Stage 1 route</h2><p>Start with the public source registry, benchmark evidence matrix and split guardrails. Then route each perturbation-response question through the canonical datasets and evaluation suites. The P0 embedding items are evaluation specifications for future work, not runs performed by this site.</p><p class='sub'>Stage 2 has its own tab below. The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
     stage2 += "<div id='research-stage2-next' class='guide-next'><h2>Suggested Stage 2 route</h2><p>Start with VCBench and the public community virtual-cell benchmark, then route each model through a matched Cell-Eval or PertEval-style protocol. For agent work, use a knowledge benchmark only as a pre-screen, an executable workflow benchmark for task completion, and a versioned local tool layer for reproducibility. No model runs are performed by this site.</p><p class='sub'>Stage 1 protocol guidance remains available in the neighboring tab.</p></div>";
 
     el.innerHTML = "<div class='research-tabs' role='tablist' aria-label='Research Guide stages'><button type='button' class='research-tab' id='research-tab-stage1' role='tab' aria-controls='research-stage1-panel' aria-selected='true' data-research-tab='stage1'>Stage 1 <span>Benchmark protocol</span></button><button type='button' class='research-tab' id='research-tab-stage2' role='tab' aria-controls='research-stage2-panel' aria-selected='false' data-research-tab='stage2'>Stage 2 <span>Frontier models &amp; agents</span></button></div><div class='research-tab-panel' id='research-stage1-panel' role='tabpanel' aria-labelledby='research-tab-stage1' data-research-panel='stage1'></div><div class='research-tab-panel' id='research-stage2-panel' role='tabpanel' aria-labelledby='research-tab-stage2' data-research-panel='stage2' hidden></div>";
@@ -562,5 +616,6 @@
         if (target) target.scrollIntoView();
       }, 0);
     }
+    bindGuideFilters(el);
   }
 })();
