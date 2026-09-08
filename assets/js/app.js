@@ -193,6 +193,8 @@
           h += "<td class='guide-links'>" + guideLinks(value) + "</td>";
         } else if (c.key === "rank" || c.key === "priority") {
           h += "<td><span class='priority-badge'>" + esc(value) + "</span></td>";
+        } else if (c.key === "status") {
+          h += "<td><span class='evidence-badge'>" + esc(value) + "</span></td>";
         } else if (c.key === "name" || c.key === "task") {
           h += "<td><strong>" + esc(value) + "</strong></td>";
         } else {
@@ -226,6 +228,9 @@
     ]));
     h += guideSection("Benchmark suites and evaluation", "Use at least one broad comparison suite plus an anti-shortcut or biology-grounded evaluation.", guideTable(guide.evaluationSuites, [
       { key: "name", label: "Suite" }, { key: "focus", label: "Focus" }, { key: "metrics", label: "Metrics / signal" }, { key: "recommendation", label: "Use in study" }, { key: "links", label: "Sources" }
+    ]));
+    h += guideSection("Citation register", "Primary public records behind the Stage 1 routing layer. Publication status is shown so peer-reviewed evidence is not conflated with preprints.", guideTable(guide.citations, [
+      { key: "citation", label: "Citation" }, { key: "status", label: "Status" }, { key: "why", label: "Why it is here" }, { key: "links", label: "Public source" }
     ]));
     h += guideSection("Perturbation-aware embedding agenda", "Prioritized probes for biology embeddings; P0 is the Stage 1 implementation target.", guideTable(guide.embeddingTasks, [
       { key: "priority", label: "Priority" }, { key: "task", label: "Embedding task" }, { key: "probe", label: "Question" }, { key: "biology", label: "Biology-facing readout" }, { key: "guardrail", label: "Guardrail" }

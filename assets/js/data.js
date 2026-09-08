@@ -387,6 +387,98 @@ window.SCAI_DATA = {
         ]
       }
     ],
+    citations: [
+      {
+        citation: "Roohani, Y., Huang, K. & Leskovec, J. (2023 online; 2024 volume). Predicting transcriptional outcomes of novel multigene perturbations with GEARS. Nature Biotechnology.", status: "Peer-reviewed", why: "Canonical knowledge-informed baseline for unseen single and combinatorial genetic perturbations", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41587-023-01905-6" },
+          { label: "code", url: "https://github.com/snap-stanford/GEARS" }
+        ]
+      },
+      {
+        citation: "Lotfollahi, M. et al. (2023). Predicting cellular responses to complex perturbations in high-throughput screens. Molecular Systems Biology.", status: "Peer-reviewed", why: "Compositional latent baseline for dose, time, context, species and combination shifts", links: [
+          { label: "paper", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10258562/" },
+          { label: "code", url: "https://github.com/theislab/chemCPA" }
+        ]
+      },
+      {
+        citation: "Lotfollahi, M., Wolf, F. A. & Theis, F. J. (2019). scGen predicts single-cell perturbation responses. Nature Methods.", status: "Peer-reviewed", why: "Historical latent-shift baseline and a useful reference for cross-study response transfer", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-019-0494-8" },
+          { label: "code", url: "https://github.com/theislab/scgen" }
+        ]
+      },
+      {
+        citation: "Cui, H. et al. (2024). scGPT: toward building a foundation model for single-cell multi-omics using generative AI. Nature Methods.", status: "Peer-reviewed", why: "High-visibility scFM whose perturbation-token and embedding settings should be separated in evaluation", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-024-02201-0" },
+          { label: "code", url: "https://github.com/bowang-lab/scGPT" }
+        ]
+      },
+      {
+        citation: "Hao, M. et al. (2024). Large-scale foundation model on single-cell transcriptomics. Nature Methods.", status: "Peer-reviewed", why: "Large pretrained representation and perturbation head for testing whether scale adds response signal", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-024-02305-7" },
+          { label: "code", url: "https://github.com/biomap-research/scFoundation" }
+        ]
+      },
+      {
+        citation: "Bunne, C. et al. (2023). Learning single-cell perturbation responses using neural optimal transport. Nature Methods.", status: "Peer-reviewed", why: "Unpaired distribution-mapping baseline for heterogeneous single-cell responses", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-023-01969-x" }
+        ]
+      },
+      {
+        citation: "Yu, H. et al. (2025). PerturbNet predicts single-cell responses to unseen chemical and genetic perturbations. Molecular Systems Biology.", status: "Peer-reviewed", why: "Generative distribution model spanning chemical, genetic and sequence-level perturbations", links: [
+          { label: "paper", url: "https://doi.org/10.1038/s44320-025-00131-3" },
+          { label: "code", url: "https://github.com/welch-lab/PerturbNet" }
+        ]
+      },
+      {
+        citation: "Miladinovic, D. et al. (2025). In silico biological discovery with large perturbation models. Nature Computational Science.", status: "Peer-reviewed", why: "Perturbation/readout/context factorization and a direct bridge from response prediction to biology-aware embeddings", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s43588-025-00870-1" },
+          { label: "code", url: "https://github.com/perturblib/perturblib" }
+        ]
+      },
+      {
+        citation: "Zhu, O. & Li, J. (2025 online; 2026 volume). Scouter predicts transcriptional responses to genetic perturbations with large language model embeddings. Nature Computational Science.", status: "Peer-reviewed", why: "Compact biology-aware gene-embedding baseline for unseen genetic perturbations", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s43588-025-00912-8" },
+          { label: "code", url: "https://github.com/PancakeZoy/scouter" }
+        ]
+      },
+      {
+        citation: "Roohani, Y. et al. (2026). Predicting cellular responses to perturbation across diverse contexts with State. Cell.", status: "Peer-reviewed", why: "Modern set-level virtual-cell model combining state embeddings with perturbation transitions", links: [
+          { label: "paper", url: "https://doi.org/10.1016/j.cell.2026.07.052" },
+          { label: "code", url: "https://github.com/ArcInstitute/state" },
+          { label: "Cell-Eval", url: "https://github.com/ArcInstitute/cell-eval" }
+        ]
+      },
+      {
+        citation: "Viñas Torné, R. et al. (2025 online; 2026 issue). Systema: a framework for evaluating genetic perturbation response prediction beyond systematic variation. Nature Biotechnology.", status: "Peer-reviewed", why: "Guardrail against systematic-variation shortcuts and reference-sensitive metric inflation", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41587-025-02777-8" },
+          { label: "code", url: "https://github.com/mlbio-epfl/systema" }
+        ]
+      },
+      {
+        citation: "Wei, Z. et al. (2025 online; 2026 issue). Benchmarking algorithms for generalizable single-cell perturbation response prediction. Nature Methods.", status: "Peer-reviewed", why: "Broad comparison of methods, datasets, metrics and generalization scenarios; anchor for benchmark coverage", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-025-02980-0" },
+          { label: "code/results", url: "https://github.com/bm2-lab/scPerturBench" }
+        ]
+      },
+      {
+        citation: "Wenteler, A. et al. (2025). PertEval-scFM: Benchmarking Single-Cell Foundation Models for Perturbation Effect Prediction. ICML / PMLR 267.", status: "Peer-reviewed conference", why: "Zero-shot scFM embedding probe that isolates representation value from the downstream predictor", links: [
+          { label: "paper", url: "https://proceedings.mlr.press/v267/wenteler25a.html" },
+          { label: "code", url: "https://github.com/aaronwtr/PertEval" }
+        ]
+      },
+      {
+        citation: "Schäfer, P. S. L. et al. (2026). Towards Principled Evaluation of Single-Cell Perturbation Prediction Models. bioRxiv preprint.", status: "Preprint", why: "Protocol taxonomy and calibration-oriented companion for choosing what a benchmark actually measures", links: [
+          { label: "preprint", url: "https://doi.org/10.64898/2026.07.23.740433" },
+          { label: "code", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval" },
+          { label: "datasets", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval/blob/main/docs/user-guide/datasets.md" }
+        ]
+      },
+      {
+        citation: "Ahlmann-Eltze, C., Huber, W. & Anders, S. (2025). Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines. Nature Methods.", status: "Peer-reviewed", why: "Important null-result and baseline-design guardrail for claims about model superiority", links: [
+          { label: "paper", url: "https://www.nature.com/articles/s41592-025-02772-6.pdf" }
+        ]
+      }
+    ],
     stage1Models: [
       {
         rank: 1, name: "GEARS", role: "Canonical genetic baseline", scope: "Single and combinatorial genetic perturbations", embedding: "Gene–gene knowledge graph from coexpression and GO; perturbation embeddings", generalization: "Unseen genes and combinations; verify split assumptions and training coverage", links: [

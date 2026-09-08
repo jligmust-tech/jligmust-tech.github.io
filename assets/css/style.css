@@ -139,6 +139,7 @@ article.post-body code { background: var(--surface-2); padding: 2px 6px; border-
 .guide-links { min-width: 118px !important; white-space: nowrap !important; }
 .guide-links a { display: inline-block; margin: 0 7px 5px 0; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); font-size: 11px; font-weight: 600; }
 .priority-badge { display: inline-flex; min-width: 34px; justify-content: center; padding: 3px 7px; border-radius: 999px; background: #fff7e6; color: #7c5300; font-size: 11px; font-weight: 700; }
+.evidence-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .guide-next { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-top: 26px; }
 .guide-next h2 { margin: 0 0 6px; font-size: 18px; }
 .guide-next p { max-width: 850px; }
