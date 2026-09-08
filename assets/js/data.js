@@ -477,6 +477,38 @@ window.SCAI_DATA = {
         citation: "Ahlmann-Eltze, C., Huber, W. & Anders, S. (2025). Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines. Nature Methods.", status: "Peer-reviewed", why: "Important null-result and baseline-design guardrail for claims about model superiority", links: [
           { label: "paper", url: "https://www.nature.com/articles/s41592-025-02772-6.pdf" }
         ]
+      },
+      {
+        citation: "Weidener, L. et al. (2026). VCBench: A Multi-Dimensional Benchmark for Single-Cell Foundation Models.", status: "Preprint + public release", why: "Capability-stratified benchmark with pre-registered baselines, contamination checks and explicit code traceability", links: [
+          { label: "repository", url: "https://github.com/AppliedScientific/VCBench" },
+          { label: "DOI", url: "https://doi.org/10.64898/2026.06.18.733146" }
+        ]
+      },
+      {
+        citation: "Qiu, M. et al. (2026). Chreode: A Cell World Model for One-Step Temporal Dynamics and Perturbation Prediction.", status: "Preprint", why: "Emerging temporal/world-model direction that links state transitions to perturbation prediction", links: [
+          { label: "arXiv", url: "https://arxiv.org/abs/2605.28111" }
+        ]
+      },
+      {
+        citation: "Jiang, D. et al. (2026). OCOO-T: A Simple and Scalable Virtual Cell Model for Transcriptional Perturbation Response Prediction.", status: "Preprint", why: "Flow-matching response model with explicit perturbation, dosage and context conditioning", links: [
+          { label: "arXiv", url: "https://arxiv.org/abs/2606.12838" }
+        ]
+      },
+      {
+        citation: "Tang, X. et al. (2025/2026). CellForge: Agentic Design of Virtual Cell Models.", status: "Preprint", why: "Agentic model-design direction connecting bioinformatics agents with virtual-cell architecture search", links: [
+          { label: "arXiv", url: "https://arxiv.org/abs/2508.02276" }
+        ]
+      },
+      {
+        citation: "Jang, Y. et al. (2026). Towards Autonomous Mechanistic Reasoning in Virtual Cells.", status: "Preprint", why: "Mechanistic action graphs, verifier-based filtering and VC-TRACES as a bridge between agent reasoning and virtual-cell evidence", links: [
+          { label: "arXiv", url: "https://arxiv.org/abs/2604.11661" }
+        ]
+      },
+      {
+        citation: "BioAgent Bench (2026). Benchmark for evaluating LLM agents in bioinformatics.", status: "Public repository + preprint link", why: "End-to-end pipeline benchmark with task artifacts, reference data and robustness-focused perturbations", links: [
+          { label: "repository", url: "https://github.com/bioagent-bench/bioagent-bench" },
+          { label: "preprint", url: "https://arxiv.org/abs/2601.21800" }
+        ]
       }
     ],
     stage1Models: [
@@ -848,6 +880,52 @@ window.SCAI_DATA = {
         name: "Broader scFM and virtual-cell catalog", status: "Backlog", note: "GeneCompass, scMulan, CellPLM, UCE, scPRINT, CellFM, CellOS, AIDO Cell, AlphaCell and related models from the awesome list; add only when perturbation-specific protocols are pinned", links: [
           { label: "awesome list", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }
         ]
+      }
+    ],
+    stage2VirtualCell: [
+      {
+        priority: "P0", name: "VCBench", year: "2026", kind: "Capability-stratified benchmark", task: "Separate perturbation prediction, representation probes and other single-cell FM capabilities", evidence: "Five models × five dimensions against pre-registered trivial and strongest non-FM baselines; evaluator aligned with Cell-Eval", status: "Public v1.0.0; reproducibility candidate", pros: "Explicit baselines, contamination manifest and manuscript-to-code traceability", cons: "Still a benchmark release rather than independent consensus; some dimensions are not direct response prediction", next: "Pin v1.0.0, record dimension/split definitions, then compare only matched capability rows", links: [{ label: "repository", url: "https://github.com/AppliedScientific/VCBench" }, { label: "preprint", url: "https://doi.org/10.64898/2026.06.18.733146" }]
+      },
+      {
+        priority: "P0", name: "sc-virtualcell-bench", year: "2026", kind: "Community perturbation benchmark", task: "Test whether scFM or hybrid models beat strong statistical baselines on response prediction", evidence: "Seven Cell-Eval metrics; mean, linear-additive and KNN baselines; GEARS and frozen scGPT listed in the public project", status: "Early-phase community implementation", pros: "Directly targets the mean-predictor question and keeps lightweight baselines visible", cons: "Repository labels itself early phase; model and result coverage can change, so pin a commit before citing", next: "Audit data provenance, commit hash, model status and exact VCC/Cell-Eval profile", links: [{ label: "repository", url: "https://github.com/shrutisshikhare/sc-virtualcell-bench" }, { label: "VCC", url: "https://virtualcellchallenge.org/" }]
+      },
+      {
+        priority: "P0", name: "Tahoe-x1", year: "2025", kind: "Perturbation-trained single-cell FM", task: "Large-scale chemical perturbation response modeling", evidence: "Public project and preprint describe a 3B-parameter perturbation-trained model; independent common-suite coverage is not pinned", status: "Model candidate; source-specific evidence", pros: "Directly aligned with perturbation-trained scale and modern chemical atlas settings", cons: "Large compute and data-overlap audit burden; source claims are not a common benchmark score", next: "Map its public training/evaluation split to scPerturBench or Cell-Eval before ranking", links: [{ label: "code", url: "https://github.com/tahoebio/tahoe-x1" }, { label: "preprint", url: "https://www.biorxiv.org/content/10.1101/2025.10.23.683759v1.full" }]
+      },
+      {
+        priority: "P0", name: "X-Cell", year: "2026", kind: "Diffusion virtual-cell model", task: "Genome-scale perturbation prediction across cellular contexts", evidence: "Public project and paper PDF; matched public benchmark protocol is not yet pinned in this router", status: "Emerging model; verify protocol", pros: "Targets broad perturbation/context coverage and generative response modeling", cons: "High architecture and compute complexity; source-reported claims should not be mixed with Stage 1 scores", next: "Extract task, dataset, split, metric and checkpoint provenance from the public paper before comparison", links: [{ label: "project", url: "https://xaira-therapeutics.github.io/X-Cell/" }, { label: "paper", url: "https://www.cdn.xaira.com/papers/X_CELL_V1_0316_final.pdf" }]
+      },
+      {
+        priority: "P1", name: "GeneJEPA", year: "2025", kind: "Predictive transcriptome embedding", task: "Learn latent transcriptome dynamics and evaluate perturbation-aware representations", evidence: "Public repository describes JEPA-style predictive embeddings trained on Tahoe-100M; direct matched perturbation score is not pinned", status: "Embedding candidate; protocol-specific", pros: "Natural fit for the perturbation-aware embedding agenda and latent prediction framing", cons: "Embedding quality can be confounded by probe capacity, pretraining overlap and downstream decoder choice", next: "Evaluate frozen embeddings with PertEval-style probes and the Stage 1 overlap audit", links: [{ label: "repository", url: "https://github.com/BiostateAI/GeneJEPA" }]
+      },
+      {
+        priority: "P1", name: "OCOO-T", year: "2026", kind: "Flow-matching virtual-cell model", task: "Transcriptional response prediction for genetic, chemical and cytokine perturbations", evidence: "Public arXiv paper reports evaluations on Tahoe100M, Replogle and PBMC benchmarks; independent reproduction and matched score table are not pinned", status: "Emerging preprint; source-reported", pros: "Simple continuous-expression denoising formulation with explicit perturbation, dosage and context conditioning", cons: "Preprint evidence and source-specific metrics; model simplicity does not guarantee cross-study comparability", next: "Record exact benchmark configurations and test output-type/metric alignment with Cell-Eval", links: [{ label: "paper", url: "https://arxiv.org/abs/2606.12838" }]
+      },
+      {
+        priority: "P1", name: "Chreode", year: "2026", kind: "Temporal cell world model", task: "One-step cell-state transition and perturbation prediction", evidence: "Public arXiv paper describes a shared scVI encoder, DiT dynamics backbone and transfer to GEARS/Norman; results remain source-reported", status: "Emerging preprint; source-reported", pros: "Adds temporal/dynamics structure and an explicit transfer test to perturbation prediction", cons: "Developmental-trajectory pretraining may not transfer uniformly to CRISPR or drug response; submitted status is not peer-reviewed", next: "Separate temporal forecasting from static response prediction and match the holdout definition", links: [{ label: "paper", url: "https://arxiv.org/abs/2605.28111" }]
+      },
+      {
+        priority: "P2", name: "CellForge / VCWorld", year: "2025–2026", kind: "Agentic or world-model direction", task: "Automated virtual-cell design and mechanistic biological simulation", evidence: "Public preprints propose multi-agent architecture design or biological world-model reasoning; direct perturbation benchmark coverage is not pinned", status: "Research direction; keep off Stage 1 ranking", pros: "Connects model design, mechanistic reasoning and virtual-cell simulation", cons: "Broader scope makes it difficult to compare with gene-expression response predictors; strong verification burden", next: "Track datasets, code, mechanistic validation and independently reproducible response metrics", links: [{ label: "CellForge", url: "https://arxiv.org/abs/2508.02276" }, { label: "VCWorld", url: "https://arxiv.org/abs/2512.00306" }]
+      }
+    ],
+    stage2AgentTools: [
+      {
+        priority: "P0", name: "scBench", year: "2024–2026", kind: "Single-cell workflow benchmark", bestFor: "Concrete scRNA-seq analysis tasks with checkable outputs", evidence: "Public executable benchmark with 195 workflow problems and deterministic grading", status: "Public benchmark anchor", pros: "Narrow, concrete and reproducible; directly useful for agent selection", cons: "Does not cover the full scientific-quality, safety or biological-validity envelope", next: "Pair task accuracy with failure taxonomy, data leakage checks and biological correctness review", links: [{ label: "repository", url: "https://github.com/latchbio/scbench" }]
+      },
+      {
+        priority: "P0", name: "BixBench", year: "2025", kind: "Computational-biology agent benchmark", bestFor: "Long, multi-step dataset exploration and interpretation", evidence: "Public benchmark built from real notebook-derived computational-biology tasks", status: "Public benchmark; execution required", pros: "Tests exploration, code execution, hypothesis generation and validation in one trajectory", cons: "Costly to reproduce and broader than single-cell perturbation; environment parity matters", next: "Log tool permissions, environment versions, intermediate artifacts and biological validity separately", links: [{ label: "repository", url: "https://github.com/Future-House/BixBench" }, { label: "paper", url: "https://arxiv.org/abs/2503.00096" }]
+      },
+      {
+        priority: "P0", name: "BioAgent Bench", year: "2026", kind: "End-to-end bioinformatics benchmark", bestFor: "Pipeline completion and robustness to corrupted inputs, decoys and prompt bloat", evidence: "Public repository contains task-specific data, truth files, Dockerfiles and run scripts; the benchmark explicitly warns that truth quality varies by task", status: "Public benchmark; verification required", pros: "Concrete output artifacts and adversarial robustness tests across multiple bioinformatics areas", cons: "Broad rather than sc-specific; LLM judging and reference-data assumptions add another evidence layer", next: "Audit task-level truth provenance and score exact-match, scientific validity and robustness separately", links: [{ label: "repository", url: "https://github.com/bioagent-bench/bioagent-bench" }, { label: "paper", url: "https://arxiv.org/abs/2601.21800" }]
+      },
+      {
+        priority: "P1", name: "PromptBio-Bench", year: "2026", kind: "Bioinformatics agent benchmark", bestFor: "End-to-end data-analysis agents under a standardized prompt/task interface", evidence: "Public bioRxiv record; full benchmark details and release status should be verified before use", status: "Emerging preprint; verify release", pros: "Directly aligned with agentic bioinformatics analysis and community tracking", cons: "Preprint and access status can change; do not treat a title or abstract as validated benchmark evidence", next: "Confirm public task files, scoring protocol, environment and baseline agents", links: [{ label: "preprint", url: "https://www.biorxiv.org/content/10.64898/2026.05.05.723092v1" }]
+      },
+      {
+        priority: "P1", name: "LAB-Bench", year: "2024", kind: "Broad biology capability benchmark", bestFor: "Literature, figures, databases and sequence reasoning pre-screening", evidence: "Public benchmark and paper cover multiple biology reasoning categories", status: "Public knowledge benchmark", pros: "Broad biology coverage and useful pre-screen for knowledge/reasoning capability", cons: "Mostly question answering; weak evidence for reproducible tool execution or safe pipeline operation", next: "Use only as a knowledge layer before workflow benchmarks; record category-level scores", links: [{ label: "repository", url: "https://github.com/Future-House/lab-bench" }, { label: "paper", url: "https://arxiv.org/abs/2407.10362" }]
+      },
+      {
+        priority: "P1", name: "ClawBio", year: "2025–2026", kind: "Local-first skill library and MCP server", bestFor: "Reusable bioinformatics skills in a local, auditable tool loop", evidence: "Public repository and MCP documentation; it is an execution/tool layer, not a standardized performance benchmark", status: "Public tool layer; heterogeneous maturity", pros: "Modular skills, local-first option, MCP compatibility and reproducibility-oriented packaging", cons: "Skill quality varies; hosted/API integrations require separate privacy and provenance review", next: "Version each skill, record input/output contracts and evaluate with scBench/BixBench-style tasks", links: [{ label: "repository", url: "https://github.com/ClawBio/ClawBio" }, { label: "MCP docs", url: "https://docs.clawbio.ai/reference/mcp" }]
       }
     ],
     agentSelection: [

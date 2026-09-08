@@ -209,6 +209,7 @@ article.post-body code { background: var(--surface-2); padding: 2px 6px; border-
 .guide-table tbody tr:last-child td { border-bottom: none; }
 #research-evidence .guide-table { min-width: 1700px; }
 #research-protocol .guide-table, #research-guardrails .guide-table { min-width: 980px; }
+#research-stage2-virtual .guide-table, #research-stage2-agents .guide-table { min-width: 1800px; }
 .guide-links { min-width: 118px !important; white-space: nowrap !important; }
 .guide-links a { display: inline-block; margin: 0 7px 5px 0; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); font-size: 11px; font-weight: 600; }
 .priority-badge { display: inline-flex; min-width: 34px; justify-content: center; padding: 3px 7px; border-radius: 999px; background: #fff7e6; color: #7c5300; font-size: 11px; font-weight: 700; }
