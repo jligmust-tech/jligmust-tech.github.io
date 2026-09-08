@@ -29,6 +29,7 @@
       <h1>Stage 1 guide to perturbation models, virtual cells, and biology-aware embeddings</h1>
 
       <p>This report turns the perturbation and virtual-cell literature into a practical starting map. The immediate target is not a new universal leaderboard. It is a defensible benchmark study: predict post-perturbation expression or cell-state distributions, test generalization to unseen perturbations and contexts, and determine whether a representation captures biology rather than an experimental shortcut.</p>
+      <div class="guide-policy"><strong>Scope note:</strong> this is an information-only curation pass. It uses public links and summaries; no model, benchmark job, private database file or downloaded proprietary dataset is executed or included.</div>
 
       <h2>What belongs in Stage 1?</h2>
       <p>Stage 1 covers models that take a control state plus a perturbation and produce a predicted response. The response may be a point estimate of gene expression, a distribution of cells, or a structured embedding that is decoded by a lightweight predictor. This keeps the comparison scientifically coherent while allowing different model families to be tested on the same splits.</p>
@@ -71,18 +72,18 @@
         <li><b>P2 — mechanism and uncertainty:</b> test pathway recovery, genetic-interaction prediction, confidence calibration and the gap to the Cell-Eval data ceiling. Interpretability and reconstruction should remain separate endpoints.</li>
       </ul>
 
-      <h2>Suggested first protocol</h2>
+      <h2>Suggested first information route</h2>
       <ol>
-        <li>Choose Norman, Adamson, Replogle K562/RPE1 and sci-Plex as the canonical set; add scPerturb/PerturBase studies only through a versioned manifest.</li>
-        <li>Define perturbation-exclusive, context-exclusive and both-exclusive splits before training. For Norman, report 0/2, 1/2 and 2/2 unseen gene-component splits.</li>
-        <li>Run control mean, perturbed mean, matching mean and a linear/PCA baseline before GEARS, CPA/chemCPA, scGen, scGPT, scFoundation, CellOT, STATE and the extended models.</li>
-        <li>Separate point metrics, distributional metrics and biology metrics. Report uncertainty over perturbations, not only one aggregate mean.</li>
-        <li>Run the P0 embedding probes with explicit biological priors and shuffled controls. Audit leakage from perturbation tokens, gene identity and pretraining data overlap.</li>
-        <li>Use <a href="https://www.nature.com/articles/s41587-025-02777-8">Systema</a> to quantify systematic variation and <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a> to estimate the attainable ceiling for set-level predictions.</li>
+        <li>Maintain a public-source ledger for Norman, Adamson, Replogle K562/RPE1, sci-Plex, Tahoe-100M and the broader scPerturb/PerturBase catalogs. Store landing-page links and citations, not local copies.</li>
+        <li>Route genetic, chemical, distributional and embedding questions through the linked model families and benchmark suites. Keep source-reported claims separate from independently comparable results.</li>
+        <li>Record the intended perturbation-exclusive, context-exclusive and both-exclusive split definitions as future evaluation specifications. For Norman, note the 0/2, 1/2 and 2/2 unseen gene-component cases.</li>
+        <li>Record the planned control mean, perturbed mean, matching mean and linear/PCA baselines before the learned models. These are protocol guidance only; this site does not execute them.</li>
+        <li>Link each P0 embedding probe to its biological readout, public prior and shuffled-control requirement. Audit possible leakage from perturbation tokens, gene identity and pretraining overlap.</li>
+        <li>Use <a href="https://www.nature.com/articles/s41587-025-02777-8">Systema</a>, <a href="https://github.com/Virtual-Cell-Research-Community/scPertEval">scPertEval</a> and <a href="https://github.com/ArcInstitute/cell-eval">Cell-Eval</a> as public reading/evaluation references; actual runs remain outside the current scope.</li>
       </ol>
 
       <h2>What stays on the roadmap?</h2>
-      <p>The awesome single-cell foundation-model list is broad, and its perturbation/virtual-cell sections now include newer directions such as Tahoe-x1, GeneJEPA, X-Cell, SCALE and OCOO-T. These are important, but they should enter after the Stage 1 harness is stable. <a href="https://github.com/tahoebio/tahoe-x1">Tahoe-x1</a> scales perturbation-trained modeling, <a href="https://github.com/BiostateAI/GeneJEPA">GeneJEPA</a> targets predictive transcriptome embeddings, and <a href="https://xaira-therapeutics.github.io/X-Cell/">X-Cell</a> pursues diffusion-based genome-scale perturbation prediction. The <a href="https://github.com/OmicsML/awesome-foundation-model-single-cell-papers">awesome repo</a> remains the living catalog for broader scFMs and virtual-cell proposals; the Research Guide keeps them visible as a backlog without implying that they have passed a common benchmark.</p>
+      <p>The awesome single-cell foundation-model list is broad, and its perturbation/virtual-cell sections now include newer directions such as Tahoe-x1, GeneJEPA, X-Cell, SCALE and OCOO-T. These are important, but they should enter after the Stage 1 information router is stable; any future execution would be a separately authorized project. <a href="https://github.com/tahoebio/tahoe-x1">Tahoe-x1</a> scales perturbation-trained modeling, <a href="https://github.com/BiostateAI/GeneJEPA">GeneJEPA</a> targets predictive transcriptome embeddings, and <a href="https://xaira-therapeutics.github.io/X-Cell/">X-Cell</a> pursues diffusion-based genome-scale perturbation prediction. The <a href="https://github.com/OmicsML/awesome-foundation-model-single-cell-papers">awesome repo</a> remains the living catalog for broader scFMs and virtual-cell proposals; the Research Guide keeps them visible as a backlog without implying that they have passed a common benchmark.</p>
 
       <p><a href="../../research.html">Open the full Research Guide →</a></p>
     </article>

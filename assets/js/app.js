@@ -213,7 +213,11 @@
     var guide = SCAI_DATA.researchGuide;
     if (!guide) return;
     var h = "<p class='guide-lead'>" + esc(guide.intro) + "</p>";
+    h += "<div class='guide-policy'><strong>Stage 1 status:</strong> " + esc(guide.sourcePolicy) + "</div>";
     h += "<div class='guide-callout'><strong>How to read the rank:</strong> curation priority for a Stage 1 benchmark and reading list, based on task relevance, visibility, reproducible implementation and representation value. It is not a universal performance ranking.</div>";
+    h += guideSection("Stage 1 information router", "Choose the research question first; follow the linked public sources before considering any future execution.", guideTable(guide.routes, [
+      { key: "route", label: "Research route" }, { key: "question", label: "Question" }, { key: "path", label: "Reading path" }, { key: "inputs", label: "Public inputs" }, { key: "links", label: "Sources" }
+    ]));
     h += guideSection("Stage 1 model priority", "Start here for perturbation-response and post-perturbation gene-expression experiments.", guideTable(guide.stage1Models, [
       { key: "rank", label: "Priority" }, { key: "name", label: "Model" }, { key: "role", label: "Role" }, { key: "scope", label: "Perturbation scope" }, { key: "embedding", label: "Representation / biology prior" }, { key: "generalization", label: "Generalization focus" }, { key: "links", label: "Sources" }
     ]));
@@ -229,7 +233,7 @@
     h += guideSection("Stage 2 and backlog", "Broader virtual-cell and perturbation-trained models to add after the common evaluation protocol is stable.", guideTable(guide.roadmap, [
       { key: "name", label: "Model / direction" }, { key: "status", label: "Status" }, { key: "note", label: "Why later" }, { key: "links", label: "Sources" }
     ]));
-    h += "<div class='guide-next'><h2>Suggested first experiment</h2><p>Run control→response prediction on Norman, Adamson, Replogle K562/RPE1 and sci-Plex with control/perturbed-mean, matching-mean, linear/PCA and the Stage 1 model core. Hold out perturbations and contexts by group, report expression, distributional and biology metrics separately, then add the P0 embedding probes with GenePT/GO/STRING and shuffled controls.</p><p class='sub'>The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
+    h += "<div class='guide-next'><h2>Suggested first information route</h2><p>Start with the public-source ledger: record each model's paper, code, perturbation scope, representation, benchmark context and limitations. Then route each research question through the canonical datasets and evaluation suites above. The P0 embedding items are evaluation specifications for future work, not runs performed by this site.</p><p class='sub'>The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
     el.innerHTML = h;
   }
 })();

@@ -331,6 +331,62 @@ window.SCAI_DATA = {
   researchGuide: {
     title: "Perturbation & Virtual-Cell Research Guide",
     intro: "A source-linked reading and benchmarking map for models that predict post-perturbation gene expression or cell-state distributions. Stage 1 prioritizes perturbation response and biology-aware embeddings; the roadmap keeps broader virtual-cell directions visible without mixing them into the core ranking.",
+    sourcePolicy: "Public-source only: this guide stores summaries and links to public papers, repositories, public dataset landing pages and public benchmark documentation. No private database files, downloaded proprietary data, model weights or model execution are part of Stage 1.",
+    routes: [
+      {
+        route: "Unseen genetic perturbation",
+        question: "Which model families should be read first for single-gene and combinatorial CRISPR response prediction?",
+        path: "GEARS → CPA → scGPT/scFoundation probes → Systema → scPerturBench",
+        inputs: "Norman, Adamson, Replogle K562/RPE1",
+        links: [
+          { label: "GEARS", url: "https://github.com/snap-stanford/GEARS" },
+          { label: "Systema", url: "https://github.com/mlbio-epfl/systema" },
+          { label: "scPerturBench", url: "https://github.com/bm2-lab/scPerturBench" }
+        ]
+      },
+      {
+        route: "Chemical and dose response",
+        question: "Which approaches represent chemical identity, dose and context?",
+        path: "CPA/chemCPA → CellOT → scVIDR → Tahoe-100M",
+        inputs: "sci-Plex, scPerturb, Tahoe-100M",
+        links: [
+          { label: "chemCPA", url: "https://github.com/theislab/chemCPA" },
+          { label: "CellOT paper", url: "https://www.nature.com/articles/s41592-023-01969-x" },
+          { label: "Tahoe-100M", url: "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md" }
+        ]
+      },
+      {
+        route: "Distribution or set-level response",
+        question: "Does the model predict a population distribution rather than only a mean expression vector?",
+        path: "CellOT → PerturbNet → STATE → Cell-Eval",
+        inputs: "Replogle, Tahoe-100M, public Virtual Cell Challenge data",
+        links: [
+          { label: "PerturbNet", url: "https://github.com/welch-lab/PerturbNet" },
+          { label: "STATE", url: "https://github.com/ArcInstitute/state" },
+          { label: "Cell-Eval", url: "https://github.com/ArcInstitute/cell-eval" }
+        ]
+      },
+      {
+        route: "Biology-aware perturbation embeddings",
+        question: "Does a perturbation representation preserve functional biology beyond expression shortcuts?",
+        path: "LPM / Scouter → scGPT/scFoundation probes → PertEval-scFM → GO/Reactome/STRING checks",
+        inputs: "Norman, Adamson, Replogle; public gene-knowledge resources",
+        links: [
+          { label: "LPM", url: "https://doi.org/10.1038/s43588-025-00870-1" },
+          { label: "Scouter", url: "https://www.nature.com/articles/s43588-025-00912-8" },
+          { label: "PertEval", url: "https://github.com/aaronwtr/PertEval" }
+        ]
+      },
+      {
+        route: "Broad public literature scan",
+        question: "Which newer models and virtual-cell directions should be queued without claiming common benchmark evidence?",
+        path: "Awesome catalog → primary paper → official code/data link → Stage 2 backlog",
+        inputs: "Public repositories, papers and benchmark landing pages only",
+        links: [
+          { label: "awesome list", url: "https://github.com/OmicsML/awesome-foundation-model-single-cell-papers" }
+        ]
+      }
+    ],
     stage1Models: [
       {
         rank: 1, name: "GEARS", role: "Canonical genetic baseline", scope: "Single and combinatorial genetic perturbations", embedding: "Gene–gene knowledge graph from coexpression and GO; perturbation embeddings", generalization: "Unseen genes and combinations; verify split assumptions and training coverage", links: [
@@ -449,6 +505,12 @@ window.SCAI_DATA = {
         ]
       },
       {
+        name: "scPertEval public set", type: "Protocol reference set", coverage: "Seven public processed perturbation datasets with plain HTTPS access", use: "Compare evaluation protocols and calibration choices without bundling local data into this site", links: [
+          { label: "datasets guide", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval/blob/main/docs/user-guide/datasets.md" },
+          { label: "code", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval" }
+        ]
+      },
+      {
         name: "OP3 / Open Problems", type: "Community benchmark", coverage: "146 compounds in PBMCs with a living benchmark framing", use: "Chemical response challenge-style evaluation and public infrastructure", links: [
           { label: "paper", url: "https://proceedings.neurips.cc/paper_files/paper/2024/file/24c4d51f3ef48dd2dbab78243ecb26a1-Paper-Datasets_and_Benchmarks_Track.pdf" },
           { label: "Kaggle data", url: "https://www.kaggle.com/competitions/open-problems-single-cell-perturbations/data/" }
@@ -484,6 +546,13 @@ window.SCAI_DATA = {
         name: "Cell-Eval", focus: "Single-cell response metrics and data ceilings", metrics: "Per-perturbation and aggregate metric profiles plus disjoint self-split ceilings", recommendation: "Use when predictions are distributions or sets of cells; report the empirical ceiling before comparing models", links: [
           { label: "code", url: "https://github.com/ArcInstitute/cell-eval" },
           { label: "STATE", url: "https://github.com/ArcInstitute/state" }
+        ]
+      },
+      {
+        name: "scPertEval", focus: "Principled protocol comparison and calibration", metrics: "Protocol taxonomy, calibration against positive/negative controls, dynamic-range and bound-discrimination summaries", recommendation: "Use as an information router for metric choice; link to its public processed-data guide rather than copying files into the repo", links: [
+          { label: "code", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval" },
+          { label: "datasets", url: "https://github.com/Virtual-Cell-Research-Community/scPertEval/blob/main/docs/user-guide/datasets.md" },
+          { label: "paper", url: "https://doi.org/10.64898/2026.07.23.740433" }
         ]
       },
       {
