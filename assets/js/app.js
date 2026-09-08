@@ -471,52 +471,96 @@
   function renderResearchGuide(el) {
     var guide = SCAI_DATA.researchGuide;
     if (!guide) return;
-    var h = "<p class='guide-lead'>" + esc(guide.intro) + "</p>";
-    h += "<div class='guide-policy'><strong>Stage 1 status:</strong> " + esc(guide.sourcePolicy) + "</div>";
-    h += "<div class='guide-callout'><strong>How to read the rank:</strong> curation priority for a Stage 1 benchmark and reading list, based on task relevance, visibility, reproducible implementation and representation value. It is not a universal performance ranking.</div>";
-    h += guideSection("research-router", "Stage 1 information router", "Choose the research question first; follow the linked public sources before considering any future execution.", guideTable(guide.routes, [
+    var stage1 = "<p class='guide-lead'>" + esc(guide.intro) + "</p>";
+    stage1 += "<div class='guide-policy'><strong>Stage 1 status:</strong> " + esc(guide.sourcePolicy) + "</div>";
+    stage1 += "<div class='guide-callout'><strong>How to read the rank:</strong> curation priority for a Stage 1 benchmark and reading list, based on task relevance, visibility, reproducible implementation and representation value. It is not a universal performance ranking.</div>";
+    stage1 += guideSection("research-router", "Stage 1 information router", "Choose the research question first; follow the linked public sources before considering any future execution.", guideTable(guide.routes, [
       { key: "route", label: "Research route" }, { key: "question", label: "Question" }, { key: "path", label: "Reading path" }, { key: "inputs", label: "Public inputs" }, { key: "links", label: "Sources" }
     ]));
-    h += guideSection("research-models", "Stage 1 model priority", "Start here for perturbation-response and post-perturbation gene-expression experiments.", guideTable(guide.stage1Models, [
+    stage1 += guideSection("research-models", "Stage 1 model priority", "Start here for perturbation-response and post-perturbation gene-expression experiments.", guideTable(guide.stage1Models, [
       { key: "rank", label: "Priority" }, { key: "name", label: "Model" }, { key: "role", label: "Role" }, { key: "scope", label: "Perturbation scope" }, { key: "embedding", label: "Representation / biology prior" }, { key: "generalization", label: "Generalization focus" }, { key: "links", label: "Sources" }
     ]));
-    h += guideSection("research-model-selection", "Model selection guide", "Use the task first, then read the strengths and trade-offs before choosing a model family.", guideTable(guide.modelSelection, [
+    stage1 += guideSection("research-model-selection", "Model selection guide", "Use the task first, then read the strengths and trade-offs before choosing a model family.", guideTable(guide.modelSelection, [
       { key: "name", label: "Model" }, { key: "bestFor", label: "Best fit" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "choose", label: "Choose it when" }, { key: "links", label: "Public evidence" }
     ]) + "<div class='guide-choice'><strong>Quick selector:</strong> GEARS for a default genetic baseline; CPA/chemCPA for dose or context composition; CellOT, STATE or PerturbNet for distributional responses; scGPT or scFoundation for frozen scFM probes; LPM or Scouter for biology-aware embedding questions; scVIDR for dose-focused chemical transfer.</div>");
-    h += guideSection("research-datasets", "Benchmark datasets and access", "A compact dataset ladder: broad atlases for robustness, canonical studies for interpretable splits, and large perturbation atlases for modern virtual-cell models.", guideTable(guide.benchmarkDatasets, [
+    stage1 += guideSection("research-datasets", "Benchmark datasets and access", "A compact dataset ladder: broad atlases for robustness, canonical studies for interpretable splits, and large perturbation atlases for modern virtual-cell models.", guideTable(guide.benchmarkDatasets, [
       { key: "name", label: "Dataset" }, { key: "type", label: "Type" }, { key: "coverage", label: "Coverage" }, { key: "use", label: "Recommended use" }, { key: "links", label: "Access / paper" }
     ]));
-    h += guideSection("research-suites", "Benchmark suites and evaluation", "Use at least one broad comparison suite plus an anti-shortcut or biology-grounded evaluation.", guideTable(guide.evaluationSuites, [
+    stage1 += guideSection("research-suites", "Benchmark suites and evaluation", "Use at least one broad comparison suite plus an anti-shortcut or biology-grounded evaluation.", guideTable(guide.evaluationSuites, [
       { key: "name", label: "Suite" }, { key: "focus", label: "Focus" }, { key: "metrics", label: "Metrics / signal" }, { key: "recommendation", label: "Use in study" }, { key: "links", label: "Sources" }
     ]));
-    h += guideSection("research-evidence", "Benchmark evidence matrix", "A protocol-level ledger for model × dataset × split × metric evidence. A row is comparable only within the stated protocol and source boundary.", guideTable(guide.benchmarkEvidence, [
+    stage1 += guideSection("research-evidence", "Benchmark evidence matrix", "A protocol-level ledger for model × dataset × split × metric evidence. A row is comparable only within the stated protocol and source boundary.", guideTable(guide.benchmarkEvidence, [
       { key: "name", label: "Resource" }, { key: "type", label: "Type" }, { key: "task", label: "Task" }, { key: "datasets", label: "Dataset / suite" }, { key: "split", label: "Split / holdout" }, { key: "metrics", label: "Metrics" }, { key: "baselines", label: "Baselines" }, { key: "status", label: "Evidence status" }, { key: "comparability", label: "Comparability" }, { key: "code", label: "Code" }, { key: "data", label: "Data" }, { key: "notes", label: "Notes" }, { key: "links", label: "Public source" }
     ]) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/benchmark_evidence.csv' download='benchmark_evidence.csv'>Download the benchmark evidence matrix CSV</a>. Treat each row as a source-linked protocol record, not a universal score.</div>");
-    h += guideSection("research-protocol", "Split and holdout protocol guide", "Make the generalization question explicit before comparing perturbation-response or embedding models.", guideTable(guide.evaluationProtocols, [
+    stage1 += guideSection("research-protocol", "Split and holdout protocol guide", "Make the generalization question explicit before comparing perturbation-response or embedding models.", guideTable(guide.evaluationProtocols, [
       { key: "priority", label: "Priority" }, { key: "name", label: "Protocol" }, { key: "definition", label: "Definition" }, { key: "question", label: "Question answered" }, { key: "risk", label: "Leakage / interpretation risk" }, { key: "status", label: "Status" }
     ]));
-    h += guideSection("research-guardrails", "Baseline and anti-shortcut checklist", "Use these controls before interpreting a model delta as biological progress.", guideTable(guide.benchmarkGuardrails, [
+    stage1 += guideSection("research-guardrails", "Baseline and anti-shortcut checklist", "Use these controls before interpreting a model delta as biological progress.", guideTable(guide.benchmarkGuardrails, [
       { key: "name", label: "Guardrail" }, { key: "purpose", label: "Purpose" }, { key: "implementation", label: "Implementation" }, { key: "interpretation", label: "Interpretation" }, { key: "status", label: "Status" }
     ]));
-    h += guideSection("research-citations", "Citation register", "Primary public records behind the Stage 1 routing layer. Publication status is shown so peer-reviewed evidence is not conflated with preprints.", guideTable(guide.citations, [
+    stage1 += guideSection("research-citations", "Citation register", "Primary public records behind the Stage 1 routing layer. Publication status is shown so peer-reviewed evidence is not conflated with preprints.", guideTable(guide.citations, [
       { key: "citation", label: "Citation" }, { key: "status", label: "Status" }, { key: "why", label: "Why it is here" }, { key: "links", label: "Public source" }
     ]));
-    h += guideSection("research-embeddings", "Perturbation-aware embedding agenda", "Prioritized probes for biology embeddings; P0 is the Stage 1 implementation target.", guideTable(guide.embeddingTasks, [
+    stage1 += guideSection("research-embeddings", "Perturbation-aware embedding agenda", "Prioritized probes for biology embeddings; P0 is the Stage 1 implementation target.", guideTable(guide.embeddingTasks, [
       { key: "priority", label: "Priority" }, { key: "task", label: "Embedding task" }, { key: "probe", label: "Question" }, { key: "biology", label: "Biology-facing readout" }, { key: "guardrail", label: "Guardrail" }
     ]));
-    h += guideSection("research-roadmap", "Stage 2 and backlog", "Broader virtual-cell and perturbation-trained models to add after the common evaluation protocol is stable.", guideTable(guide.roadmap, [
+    var stage2 = guideSection("research-roadmap", "Stage 2 and backlog", "Broader virtual-cell and perturbation-trained models to add after the common evaluation protocol is stable.", guideTable(guide.roadmap, [
       { key: "name", label: "Model / direction" }, { key: "status", label: "Status" }, { key: "note", label: "Why later" }, { key: "links", label: "Sources" }
     ]));
-    h += guideSection("research-stage2-virtual", "Stage 2 virtual-cell triage", "A ranked reading queue for newer virtual-cell and perturbation directions. Priority reflects study readiness and evidence maturity, not a universal performance ranking.", guideTable(guide.stage2VirtualCell, [
+    stage2 += guideSection("research-stage2-virtual", "Stage 2 virtual-cell triage", "A ranked reading queue for newer virtual-cell and perturbation directions. Priority reflects study readiness and evidence maturity, not a universal performance ranking.", guideTable(guide.stage2VirtualCell, [
       { key: "priority", label: "Priority" }, { key: "name", label: "Model / direction" }, { key: "year", label: "Period" }, { key: "kind", label: "Type" }, { key: "task", label: "Task fit" }, { key: "evidence", label: "Public evidence" }, { key: "status", label: "Evidence maturity" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "next", label: "Next verification" }, { key: "links", label: "Sources" }
     ]) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/stage2_virtual_cell.csv' download='stage2_virtual_cell.csv'>Download the Stage 2 virtual-cell triage CSV</a>.</div>");
-    h += guideSection("research-stage2-agents", "Stage 2 agents, benchmarks and tool layers", "Keep agent capability, benchmark protocol and execution infrastructure separate. Use the pros/cons and next-verification columns to choose a route without conflating scores.", guideTable(guide.stage2AgentTools, [
+    stage2 += guideSection("research-stage2-agents", "Stage 2 agents, benchmarks and tool layers", "Keep agent capability, benchmark protocol and execution infrastructure separate. Use the pros/cons and next-verification columns to choose a route without conflating scores.", guideTable(guide.stage2AgentTools, [
       { key: "priority", label: "Priority" }, { key: "name", label: "Resource" }, { key: "year", label: "Period" }, { key: "kind", label: "Type" }, { key: "bestFor", label: "Best fit" }, { key: "evidence", label: "Public evidence" }, { key: "status", label: "Evidence maturity" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "next", label: "Next verification" }, { key: "links", label: "Sources" }
     ]) + "<div class='guide-choice'><strong>Public export:</strong> <a href='assets/data/stage2_agent_tools.csv' download='stage2_agent_tools.csv'>Download the Stage 2 agent/tool triage CSV</a>.</div>");
-    h += guideSection("research-agent-selection", "Bioinformatics agent & tool selection guide", "Benchmarks measure different capabilities; pair an execution benchmark with a local tool layer when reproducibility and privacy matter.", guideTable(guide.agentSelection, [
+    stage2 += guideSection("research-agent-selection", "Bioinformatics agent & tool selection guide", "Benchmarks measure different capabilities; pair an execution benchmark with a local tool layer when reproducibility and privacy matter.", guideTable(guide.agentSelection, [
       { key: "name", label: "Agent / tool" }, { key: "kind", label: "Type" }, { key: "bestFor", label: "Best fit" }, { key: "pros", label: "Pros" }, { key: "cons", label: "Cons / risks" }, { key: "choose", label: "Choose it when" }, { key: "links", label: "Public evidence" }
     ]) + "<div class='guide-choice'><strong>Quick selector:</strong> scBench for concrete single-cell workflows; BixBench for long computational-biology trajectories; BioAgent Bench for robustness and failure handling; LAB-Bench for broad biology reasoning; ClawBio for a local-first, MCP-compatible execution layer. These are not interchangeable scores.</div>");
-    h += "<div id='research-next' class='guide-next'><h2>Suggested next information route</h2><p>Stage 1 now has the protocol and anti-shortcut layer. For Stage 2, start with VCBench and the public community virtual-cell benchmark, then route each model through a matched Cell-Eval or PertEval-style protocol. For agent work, use a knowledge benchmark only as a pre-screen, an executable workflow benchmark for task completion, and a versioned local tool layer for reproducibility. No model runs are performed by this site.</p><p class='sub'>The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
-    el.innerHTML = h;
+    stage1 += "<div id='research-next' class='guide-next'><h2>Suggested Stage 1 route</h2><p>Start with the public-source ledger, benchmark evidence matrix and split guardrails. Then route each perturbation-response question through the canonical datasets and evaluation suites. The P0 embedding items are evaluation specifications for future work, not runs performed by this site.</p><p class='sub'>Stage 2 has its own tab below. The accompanying <a href='blog/posts/2026-09-08-perturbation-virtual-cell-guide.html'>research report</a> explains the rationale and caveats.</p></div>";
+    stage2 += "<div id='research-stage2-next' class='guide-next'><h2>Suggested Stage 2 route</h2><p>Start with VCBench and the public community virtual-cell benchmark, then route each model through a matched Cell-Eval or PertEval-style protocol. For agent work, use a knowledge benchmark only as a pre-screen, an executable workflow benchmark for task completion, and a versioned local tool layer for reproducibility. No model runs are performed by this site.</p><p class='sub'>Stage 1 protocol guidance remains available in the neighboring tab.</p></div>";
+
+    el.innerHTML = "<div class='research-tabs' role='tablist' aria-label='Research Guide stages'><button type='button' class='research-tab' id='research-tab-stage1' role='tab' aria-controls='research-stage1-panel' aria-selected='true' data-research-tab='stage1'>Stage 1 <span>Benchmark protocol</span></button><button type='button' class='research-tab' id='research-tab-stage2' role='tab' aria-controls='research-stage2-panel' aria-selected='false' data-research-tab='stage2'>Stage 2 <span>Frontier models &amp; agents</span></button></div><div class='research-tab-panel' id='research-stage1-panel' role='tabpanel' aria-labelledby='research-tab-stage1' data-research-panel='stage1'></div><div class='research-tab-panel' id='research-stage2-panel' role='tabpanel' aria-labelledby='research-tab-stage2' data-research-panel='stage2' hidden></div>";
+    el.querySelector("[data-research-panel='stage1']").innerHTML = stage1;
+    el.querySelector("[data-research-panel='stage2']").innerHTML = stage2;
+
+    var tabButtons = el.querySelectorAll("[data-research-tab]");
+    var panels = el.querySelectorAll("[data-research-panel]");
+    var indexes = document.querySelectorAll("[data-research-index]");
+    var activeTab = "stage1";
+    function tabForHash() {
+      var hash = window.location.hash || "";
+      if (hash === "#stage2" || hash.indexOf("#research-stage2-") === 0 || hash === "#research-roadmap" || hash === "#research-agent-selection") return "stage2";
+      return "stage1";
+    }
+    function activateTab(tab, updateHash) {
+      activeTab = tab === "stage2" ? "stage2" : "stage1";
+      for (var i = 0; i < tabButtons.length; i++) {
+        var selected = tabButtons[i].getAttribute("data-research-tab") === activeTab;
+        tabButtons[i].classList.toggle("active", selected);
+        tabButtons[i].setAttribute("aria-selected", selected ? "true" : "false");
+        tabButtons[i].tabIndex = selected ? 0 : -1;
+      }
+      for (var j = 0; j < panels.length; j++) panels[j].hidden = panels[j].getAttribute("data-research-panel") !== activeTab;
+      for (var k = 0; k < indexes.length; k++) indexes[k].hidden = indexes[k].getAttribute("data-research-index") !== activeTab;
+      if (updateHash) window.history.replaceState(null, "", activeTab === "stage2" ? "#stage2" : "#stage1");
+    }
+    for (var b = 0; b < tabButtons.length; b++) {
+      tabButtons[b].addEventListener("click", function () { activateTab(this.getAttribute("data-research-tab"), true); });
+      tabButtons[b].addEventListener("keydown", function (event) {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        var next = this.getAttribute("data-research-tab") === "stage1" ? "stage2" : "stage1";
+        activateTab(next, true);
+        el.querySelector("[data-research-tab='" + next + "']").focus();
+      });
+    }
+    window.addEventListener("hashchange", function () { activateTab(tabForHash(), false); });
+    activateTab(tabForHash(), false);
+    if (window.location.hash.indexOf("#research-") === 0) {
+      window.setTimeout(function () {
+        var target = document.getElementById(window.location.hash.slice(1));
+        if (target) target.scrollIntoView();
+      }, 0);
+    }
   }
 })();
