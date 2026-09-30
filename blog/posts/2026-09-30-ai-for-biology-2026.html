@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Biology in 2026: From Prediction Models to Autonomous Discovery — scAI Index</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#big-picture">The big picture</a>
+          <a href="#genome">Genome &amp; DNA models</a>
+          <a href="#proteins">Proteins</a>
+          <a href="#single-cell">Single-cell &amp; virtual cells</a>
+          <a href="#llms">Biomedical LLMs</a>
+          <a href="#agents">Agents &amp; autonomous discovery</a>
+          <a href="#drug">Drug discovery</a>
+          <a href="#data">The data bottleneck</a>
+          <a href="#biosecurity">Biosecurity &amp; governance</a>
+          <a href="#next">What to watch next</a>
+          <a href="#papers">Selected papers</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-30</span>
+      </div>
+      <h1>AI for Biology in 2026: From Prediction Models to Autonomous Discovery</h1>
+
+      <p>A survey of the most important AI and large language model (LLM) advances for biology from January through September 2026. This note covers foundation models for genomes, proteins, and cells; biomedical LLMs; agentic "AI scientist" systems; drug discovery results; the data bottleneck; and biosecurity.</p>
+      <p>The short version: <b>2026 is the year biology AI shifted from single-task predictors to generalist, multimodal, and increasingly agentic systems.</b> Models are no longer only predicting structures or labeling cell types. They are reading DNA, designing proteins, reasoning over publications, running code, orchestrating tools, and in some cases proposing experiments that humans then test at the bench.</p>
+      <p>A caveat up front: this field moves faster than peer review. Below, peer-reviewed results, preprints, company announcements, and press reports are labeled so you can weigh them differently.</p>
+
+      <hr>
+
+      <h2 id="big-picture">1. The big picture</h2>
+      <p>Three trends defined January–September 2026:</p>
+      <ul>
+        <li><b>Generalist biological foundation models.</b> A single model increasingly spans DNA, RNA, protein, and text instead of one narrow task. Evo 2 (genomes), Universal Cell Embedding (cells), and AlphaGenome (regulatory DNA) are representative.</li>
+        <li><b>Agents and "AI scientists."</b> Instead of answering one prompt, systems plan, call tools, read literature, write code, and iterate. Examples include Google DeepMind's Co-Scientist (published in <i>Nature</i>), NVIDIA's BioNeMo Agent Toolkit, Anthropic's Claude Science, and OpenAI's GPT-Rosalind.</li>
+        <li><b>Wet-lab validation and controversy.</b> 2026 produced the first widely publicized claims of AI-driven biological discoveries verified (or disputed) in a real lab. Anthropic's Claude discovered a CRISPR-like repeat system; Stanford's "virtual biotech" of 37,000 agents proposed a lung-cancer strategy that a pharma company independently pursued.</li>
+      </ul>
+      <p>The result is a field that is simultaneously more capable and harder to evaluate. Benchmarks, reproducibility, and independent wet-lab confirmation became the central arguments of 2026.</p>
+
+      <h2 id="genome">2. Genome and DNA foundation models</h2>
+
+      <h3>Evo 2: a 40-billion-parameter model of the tree of life</h3>
+      <p>The most consequential genome model of the year is <b>Evo 2</b>, published in <i>Nature</i> on 4 March 2026 (Brixi et al., <i>Nature</i> 652, 1349–1361). Trained on more than <b>9.3 trillion nucleotides from over 128,000 genomes across all three domains of life</b>, with 40 billion parameters and a 1-megabase context window, it is among the largest open biological models ever released.</p>
+      <p>Evo 2 performs generalist tasks across DNA, RNA, and protein: predicting which human variants are likely pathogenic, and generating new genome-scale sequences. Its weights, data, and inference code are open, and it is integrated into NVIDIA's BioNeMo. The same week, <i>Nature</i> asked the obvious follow-up: how long until AI-written genomes amount to synthetic life?</p>
+
+      <h3>AlphaGenome and the variant-effect map</h3>
+      <p><b>AlphaGenome</b> (DeepMind, published in <i>Nature</i> on 28 January 2026, DOI 10.1038/s41586-025-10014-0) predicts how DNA changes affect gene regulation. In 2026 DeepMind extended it into an <b>AlphaGenome Atlas</b> — a predictive map of essentially every possible single-letter change in the human genome, aimed at turning regulatory variant interpretation into a lookup.</p>
+
+      <h3>Other genome models to note</h3>
+      <ul>
+        <li><b>GPN-Star</b> (<i>Nature</i>, 9 September 2026) predicts genome-wide functional constraints.</li>
+        <li><b>Large-scale data-driven pre-trained DNA models</b> (<i>Nature Communications</i>, 14 May 2026) showed broad gains across diverse genomics tasks.</li>
+        <li><b>JEPA-DNA</b> (preprint, August 2026) applied joint-embedding predictive architectures to genomic foundation models.</li>
+        <li><b>PlantGFM</b> and a <i>New Phytologist</i> review (June 2026) signaled that plant biology is now building its own foundation models.</li>
+      </ul>
+      <p>One important counter-trend: a <i>Nature Methods</i> paper on 9 June 2026 found that <b><a href="https://doi.org/10.1038/s41592-026-03119-5">scaling up transcriptomic training data is "much pain with little gain"</a></b>. Bigger is not automatically better, and 2026 saw more honest benchmarking of that claim.</p>
+
+      <h2 id="proteins">3. Proteins: structure, design, and enzyme-specific models</h2>
+
+      <h3>ESMFold2 and the billion-protein atlas</h3>
+      <p>In May 2026, <i>Nature</i> reported that an open-source model called <b>ESMFold2</b> had produced an atlas of the predicted structures of <b>1 billion proteins</b>, dramatically expanding the known protein universe (<a href="https://doi.org/10.1038/d41586-026-01686-3">news</a>). The framing — "Move over, AlphaFold" — is press shorthand, but the scale is real, and open weights matter for the long tail of understudied proteins.</p>
+
+      <h3>AlphaFold is being pushed in new directions</h3>
+      <p>AlphaFold itself is no longer just a structure predictor:</p>
+      <ul>
+        <li><b>AlphaFold as a prior</b> (<i>Nature Methods</i>, April 2026, DOI 10.1038/s41592-026-03047-4) uses a pretrained network to <i>condition experimental</i> structure determination, a genuine workflow change for structural biologists.</li>
+        <li><b>Isomorphic Labs</b> released its <b>Drug Design Engine (IsoDDE)</b> on 10 February 2026, claiming more than <b>2× the accuracy of AlphaFold 3</b> on hard protein–ligand generalisation benchmarks and large gains on antibody–antigen prediction, including the difficult CDR-H3 loop.</li>
+      </ul>
+
+      <h3>Enzyme-specific protein language models</h3>
+      <p>Generic protein language models often underperform on catalysis. A <b>2026 enzyme-specific protein language model</b> (<i>Nature Communications</i>, 17 July 2026, DOI 10.1038/s41467-026-75283-3) was trained specifically for catalytic-property prediction — part of a broader move toward domain-specialized PLMs for enzymes, antibodies, and nucleases.</p>
+
+      <h3>De novo design, validated in the wet lab</h3>
+      <p>The headline protein-design result of the year was <b>Anthropic's Claude protein-binder campaign</b> (18 August 2026). Given a single prompt and access to existing design and co-folding models, Claude designed minibinders against 15 targets and succeeded against <b>14 of them</b>. Reported hit rates were <b>22.6%–35.1%</b>, versus the <b>10–15%</b> typical of current campaigns. Highlights:</p>
+      <ul>
+        <li>Against <b>RBX1</b>, a 40% hit rate (competition participants: 3.7%), with a top design beating the winning entry of Adaptyv Bio's competition.</li>
+        <li>Cross-reactive binders against <b>TNFα</b>, binding human, cynomolgus monkey, and mouse variants.</li>
+        <li><b>15 binders containing β-sheets</b>, a harder and less common fold than designed α-helical bundles.</li>
+        <li>Failures included <b>BBF-14</b> and <b>maltose-binding protein (MBP)</b>, where no high-affinity binder was confirmed.</li>
+      </ul>
+      <p>The designs were validated externally by <b>Adaptyv Bio</b> and <b>Twist Bioscience</b>. This is a company claim, but the third-party wet-lab validation and released data make it more than a demo.</p>
+      <p>Other protein-design milestones:</p>
+      <ul>
+        <li><b>Minimal RNA-guided nucleases</b> (<i>Science</i>, 16 July 2026, DOI 10.1126/science.aed6123) — structure- and evolution-guided design of compact gene editors.</li>
+        <li><b>Apple's SimpleDesign</b> (arXiv 2609.03377, 3 September 2026) — a joint model for protein sequence and structure co-design.</li>
+        <li><b>AI-optimized gene editors</b> and Cas12l variants appeared throughout the year as candidates for compact alternatives to Cas9.</li>
+      </ul>
+
+      <h2 id="single-cell">4. Single-cell and virtual-cell foundation models</h2>
+      <p>2026 was arguably the breakthrough year for the <b>"virtual cell."</b></p>
+
+      <h3>Universal Cell Embedding (UCE)</h3>
+      <p><b>Universal Cell Embedding</b> (<i>Nature</i>, 8 July 2026, DOI 10.1038/s41586-026-10689-z) provides a foundation model for cell biology, producing cell representations that transfer across tissues, organisms, and tasks. Related interpretability work showed how to <b>score gene importance by interpreting single-cell foundation models</b> (<i>Nature Biotechnology</i>, 27 May 2026, DOI 10.1038/s41587-026-03112-5).</p>
+
+      <h3>Specialized models</h3>
+      <ul>
+        <li><b>RegFormer</b> (<i>Nature Communications</i>, 5 May 2026) — a single-cell foundation model grounded in gene regulatory hierarchies.</li>
+        <li><b>CAPTAIN</b> (<i>Nature Communications</i>, 7 May 2026) — a multimodal model pretrained on co-assayed single-cell RNA and protein.</li>
+        <li><b>A generalizable Hi-C foundation model</b> (<i>Nature Methods</i>, 15 June 2026) for chromatin architecture across species.</li>
+        <li><b>SpatialCell AI</b> (<i>Scientific Reports</i>, 16 June 2026) — reference-free single-cell resolution from spot-based spatial transcriptomics.</li>
+      </ul>
+
+      <h3>The virtual cell as a race</h3>
+      <p><i>Nature</i> framed the moment directly in June 2026: <b>"[Virtual cells] aim to turn raw data into predictive models of biology."</b> By August, <b>GenBio AI launched AIDO Cell</b>, described as the first "world model" of the human cell, with Nobel laureate <b>David Baker</b> involved — a company claim, but a signal of where capital and talent are going. A separate effort (covered by <i>Medical Xpress</i>) used an AI virtual cell with protein dynamics to predict personalized breast-cancer treatments. The Arc Institute's <b>2026 Virtual Cell Challenge</b> went zero-shot: predict CRISPRi perturbation responses in cell lines the model has never seen perturbed, with a $100,000 grand prize.</p>
+
+      <h2 id="llms">5. Biomedical LLMs and clinical AI</h2>
+
+      <h3>General models are beating specialized medical tools</h3>
+      <p>Two mid-2026 <i>Nature Medicine</i> papers delivered a pointed result: <b>general-purpose LLMs outperformed specialized clinical AI tools on medical benchmarks</b> (12 June 2026, DOI 10.1038/s41591-026-04431-5), and general chatbots beat clinical tools on physicians' real-world questions. The practical implication is that domain-specific fine-tuning is not automatically the winning strategy when frontier general models keep improving.</p>
+
+      <h3>Workflow, not just answers</h3>
+      <p>A September 2026 paper, <b><a href="https://doi.org/10.1038/s44400-026-00126-3">Reimagining biomedical science workflows in the age of large language models</a></b>, argued that the real value is in restructuring research workflows — literature triage, data analysis, protocol drafting, and regulatory work — rather than isolated question answering. Related work showed that <b>LLMs are powerful electronic health record encoders</b> and that <b>memorization in medical LLMs</b> raises privacy and evaluation concerns.</p>
+
+      <h3>Life-sciences-specific models and access</h3>
+      <ul>
+        <li><b>OpenAI's GPT-Rosalind</b> (April 2026) is a purpose-built life-sciences model delivered through the Rosalind Workbench and Codex, with an emphasis on connecting scientific tools, data, and evidence.</li>
+        <li><b>Anthropic's Claude Science</b> (launched June 2026) integrates research tools, produces auditable artifacts, and runs long agentic sessions.</li>
+        <li><b>Anthropic's Life Sciences Verification Program</b> (17 September 2026) gives vetted researchers more permissive, but monitored, access to biology-capable models, moving safeguards from real-time blocking to offline monitoring of usage patterns.</li>
+        <li>A foundation model for <b>sleep-based risk stratification</b> (<i>Nature Communications</i>, 3 August 2026) showed clinical foundation models moving into routine diagnostics.</li>
+      </ul>
+
+      <h2 id="agents">6. AI agents and autonomous discovery</h2>
+      <p>Agentic systems were the defining theme of 2026.</p>
+      <ul>
+        <li><b>Google DeepMind's Co-Scientist</b> (<i>Nature</i>, 19 May 2026, DOI 10.1038/s41586-026-10644-y) is a multi-agent system built on Gemini that generates and debates novel research hypotheses for experimental validation. Alongside it, DeepMind published a separate <b>multi-agent system for automating scientific discovery</b> (<i>Nature</i>, 19 May 2026, DOI 10.1038/s41586-026-10652-y) and launched <b>Gemini for Science</b>.</li>
+        <li><b>NVIDIA's BioNeMo Agent Toolkit</b> (23 June 2026) gives agents callable life-sciences tools across biology, chemistry, genomics, and drug discovery; more than 50 companies adopted it, and <b>Anthropic and OpenAI integrated it</b>.</li>
+        <li><b>Anthropic's Claude enzyme discovery</b> (23 September 2026) is the most discussed agentic result: roughly <b>950 agents</b> searched a database for ~21 hours using ~210 million tokens, collected 200,000+ reverse transcriptases, narrowed to 3,500 candidates and 20 reports, and flagged a <b>CRISPR-like repeat array associated with reverse transcriptases (ART)</b> in bacteriophages. Feng Zhang of MIT/Broad called it "an exciting example of how AI agents can contribute to biological discovery."</li>
+        <li><b>Stanford's virtual biotech</b> (<i>Science</i>, 17 September 2026, DOI 10.1126/science.aeg6779): a system of up to <b>37,000 AI agents</b> reporting to a virtual chief scientific officer. It reprocessed the outcomes of <b>37,075 Phase II/III trials in about six hours</b>, derived target-selection features that predicted clinical success, and independently proposed a <b>B7-H3-targeted lung-cancer strategy</b> that a pharma company later advanced to FDA breakthrough status (ifinatamab deruxtecan).</li>
+      </ul>
+
+      <h3>The counterpoint to the hype</h3>
+      <p>Two recurring criticisms appeared:</p>
+      <ul>
+        <li><b>Routine mining vs. genuine discovery.</b> After Anthropic's ART announcement, CRISPR researchers described the approach as routine genome mining. Days later, <i>The New York Times</i> reported that Mario Rodríguez Mestre, a scientist at the University of Copenhagen, said he and colleagues had spent years studying the same microbial system and had uploaded information about it to Anthropic's models. Anthropic said the model responsible "was not trained on any user transcripts." The episode became a case study in attribution and how we define an AI "discovery."</li>
+        <li><b>Reproducibility and evaluation.</b> Independent work questioned whether single-cell foundation-model gains hold up under careful benchmarking, and whether scaling data always helps. The field is increasingly rewarding papers that test models adversarially.</li>
+      </ul>
+
+      <h2 id="drug">7. Drug discovery: from demos to validated hits</h2>
+      <p>2026 brought a mix of real pipeline progress and continued skepticism.</p>
+      <ul>
+        <li><b>Insilico Medicine</b> reported commercialization progress (three-digit-million-dollar revenue in H1 2026) and expanded in the Middle East with an AI-generated blood-cancer candidate.</li>
+        <li><b>Recursion partnered with Genentech</b> (5 August 2026) to advance a neuro target discovered through its AI map.</li>
+        <li><b>Takeda deepened its AI push</b> with a <b>$1.7 billion Iambic Therapeutics deal</b> (Reuters, 9 February 2026).</li>
+        <li><b>Aureka Biotechnologies</b> raised a <b>$100M Series B</b> (August 2026) to build a "biological world model" for drug discovery.</li>
+        <li><b>BigHat Biosciences</b> raised <b>$75M Series C</b> (September 2026) for agentic protein design; <b>Enveda</b> raised <b>$311M Series E</b> (September 2026).</li>
+        <li><b>Isomorphic Labs</b> pushed its Drug Design Engine as a foundation for AI-first drug design.</li>
+        <li>Reuters (21 September 2026): <b>pharma is doubling down on AI to cut costs and timelines.</b></li>
+      </ul>
+      <p>The tempering note: <i>Nature</i> News and industry analysts both emphasized that AI is strongest at target selection, design, and evidence synthesis — not at compressing the clinical-trial timeline, which remains the dominant cost.</p>
+
+      <h2 id="data">8. Data is still the bottleneck</h2>
+      <p>The most cited structural problem of 2026 was data. On 15 September 2026, the <b>OpenAI Foundation</b> launched <b>Public Data for Health</b>, explicitly to pay for high-quality scientific datasets. The initial round included:</p>
+      <ul>
+        <li><b>$40M</b> to a University of North Carolina program collecting data on novel cancer vaccines;</li>
+        <li><b>$500K</b> to 1Day Sooner to build a "biotech lost archive" from failed-company filings and safety data;</li>
+        <li>support for <b>OpenAdmet</b> predictive drug-effect competitions.</li>
+      </ul>
+      <p>As one former compute executive put it, "data is the biggest bottleneck in successfully applying AI to biology." The same theme runs through the broader AI-for-biology tooling landscape: the models are increasingly commoditized, while clean, well-annotated, legally usable data is not.</p>
+
+      <h2 id="biosecurity">9. Biosecurity and dual-use governance</h2>
+      <p>2026 made the dual-use problem concrete:</p>
+      <ul>
+        <li><b>Nature</b> (13 May 2026): "<a href="https://doi.org/10.1038/d41586-026-01476-x">AI can design viruses, toxins and other bioweapons. How worried should we be?</a>"</li>
+        <li><b>AI models designed viruses not found in nature for the first time</b> (August 2026), a genuine capability threshold.</li>
+        <li>The <b>Nuclear Threat Initiative's AIxBio Horizon Scan</b> (May 2026) found accelerating capabilities requiring urgent oversight.</li>
+        <li><b>Microsoft</b> published a biosecurity framework (4 June 2026), and <b>Anthropic</b> restricted professional biology queries in its general models while creating a vetted access program.</li>
+        <li><b>OpenAI</b> backed bipartisan US bills on AI and biological-weapon threats (Reuters, 15 September 2026).</li>
+        <li>Researchers warned that <b>sequence-based screening tools are inadequate</b> in the age of AI-assisted protein design.</li>
+      </ul>
+      <p>The emerging governance pattern is <b>tiered, verified access plus continuous monitoring</b>, rather than blanket refusal — because legitimate vaccine and antiviral research looks chemically similar to misuse.</p>
+
+      <h2 id="next">10. What to watch next</h2>
+      <ul>
+        <li><b>Wet-lab closed loops.</b> Agents that not only design but dispatch experiments to cloud labs and learn from results. Northwestern received $20M from the NSF for an AI-directed protein-engineering cloud lab.</li>
+        <li><b>Virtual cells that predict perturbation.</b> The Arc Virtual Cell Challenge and AIDO Cell will show whether zero-shot perturbation prediction generalizes.</li>
+        <li><b>Independent replication of agentic discoveries.</b> Expect more attribution disputes until norms for citing AI-assisted findings mature.</li>
+        <li><b>Benchmark honesty.</b> The "scaling is all you need" assumption is being tested; expect more negative results.</li>
+        <li><b>Agent interoperability.</b> NVIDIA BioNeMo, Claude Science, and GPT-Rosalind are converging on a common pattern: a frontier reasoning model plus domain tools plus an auditable workspace.</li>
+      </ul>
+
+      <h2 id="papers">Selected papers and releases (January–September 2026)</h2>
+      <p>A curated list of the primary papers and releases cited above.</p>
+
+      <h3>1. Evo 2 — Genome Foundation Model</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41586-026-10176-5">Genome modelling and design across all domains of life with Evo 2</a></li>
+        <li><b>Category</b>: Genome Foundation Model / <i>Nature</i>, March 2026</li>
+        <li><b>Description</b>: 40B-parameter model trained on 9.3T nucleotides from 128k+ genomes. Generalist DNA/RNA/protein prediction and design; open weights.</li>
+      </ul>
+
+      <h3>2. AlphaGenome and AlphaGenome Atlas</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41586-025-10014-0">Advancing regulatory variant effect prediction with AlphaGenome</a></li>
+        <li><b>Category</b>: Regulatory Genomics / DeepMind</li>
+        <li><b>Description</b>: Predicts regulatory effects of DNA variants; extended in 2026 into an atlas of essentially all possible single-letter human genome changes.</li>
+      </ul>
+
+      <h3>3. GPN-Star — Functional Constraint Prediction</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41586-026-11005-5">Predicting genome-wide functional constraints with GPN-Star</a></li>
+        <li><b>Category</b>: Genomics / <i>Nature</i>, September 2026</li>
+        <li><b>Description</b>: Genome-wide prediction of functional constraint, useful for interpreting non-coding variation.</li>
+      </ul>
+
+      <h3>4. ESMFold2 Billion-Protein Atlas</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/d41586-026-01686-3">Move over, AlphaFold: open-source model predicts shape of 1 billion proteins</a></li>
+        <li><b>Category</b>: Protein Structure / <i>Nature</i> News, May 2026</li>
+        <li><b>Description</b>: Open-source ESMFold2 atlas vastly expands the predicted protein universe.</li>
+      </ul>
+
+      <h3>5. AlphaFold as a Prior</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41592-026-03047-4">AlphaFold as a prior: experimental structure determination conditioned on a pretrained neural network</a></li>
+        <li><b>Category</b>: Structural Biology / <i>Nature Methods</i>, April 2026</li>
+        <li><b>Description</b>: Uses AlphaFold predictions to condition and accelerate experimental structure determination.</li>
+      </ul>
+
+      <h3>6. Isomorphic Labs Drug Design Engine (IsoDDE)</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.isomorphiclabs.com/articles/the-isomorphic-labs-drug-design-engine-unlocks-a-new-frontier">The Isomorphic Labs Drug Design Engine unlocks a new frontier</a></li>
+        <li><b>Category</b>: AI Drug Design / Company, February 2026</li>
+        <li><b>Description</b>: Unified drug-design system claiming &gt;2× AlphaFold 3 accuracy on hard generalisation benchmarks and strong antibody–antigen prediction.</li>
+      </ul>
+
+      <h3>7. Enzyme-Specific Protein Language Model</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41467-026-75283-3">An enzyme-specific protein language model for catalytic property prediction</a></li>
+        <li><b>Category</b>: Protein Language Model / <i>Nature Communications</i>, July 2026</li>
+        <li><b>Description</b>: Domain-specialized PLM for predicting catalytic properties, addressing a weakness of generic models.</li>
+      </ul>
+
+      <h3>8. Claude Protein Design Campaign</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/research/Claude-accelerates-protein-design">How Claude is accelerating protein design and analytical chemistry</a></li>
+        <li><b>Category</b>: Agentic Protein Design / Anthropic, August 2026</li>
+        <li><b>Description</b>: 14/15 targets bound; 22.6%–35.1% hit rates vs. 10–15% typical; third-party wet-lab validation by Adaptyv Bio and Twist Bioscience.</li>
+      </ul>
+
+      <h3>9. Apple SimpleDesign</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2609.03377">SimpleDesign: A Joint Model for Protein Sequence and Structure Codesign</a></li>
+        <li><b>Category</b>: Protein Design / Apple, September 2026</li>
+        <li><b>Description</b>: Joint sequence–structure co-design model for protein design.</li>
+      </ul>
+
+      <h3>10. Minimal RNA-Guided Nucleases</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1126/science.aed6123">Structure and evolution-guided design of minimal RNA-guided nucleases</a></li>
+        <li><b>Category</b>: Gene Editing / <i>Science</i>, July 2026</li>
+        <li><b>Description</b>: AI/structure-guided design of compact gene-editing nucleases.</li>
+      </ul>
+
+      <h3>11. Universal Cell Embedding (UCE)</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41586-026-10689-z">Universal cell embedding provides a foundation model for cell biology</a></li>
+        <li><b>Category</b>: Single-Cell Foundation Model / <i>Nature</i>, July 2026</li>
+        <li><b>Description</b>: Transferable cell representations across tissues, organisms, and tasks.</li>
+      </ul>
+
+      <h3>12. RegFormer</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41467-026-72198-x">RegFormer: a single-cell foundation model powered by gene regulatory hierarchies</a></li>
+        <li><b>Category</b>: Single-Cell Foundation Model / <i>Nature Communications</i>, May 2026</li>
+        <li><b>Description</b>: Incorporates gene-regulatory hierarchy structure into single-cell representation learning.</li>
+      </ul>
+
+      <h3>13. CAPTAIN</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41467-026-72882-y">CAPTAIN: a multimodal foundation model pretrained on co-assayed single-cell RNA and protein</a></li>
+        <li><b>Category</b>: Multimodal Single-Cell / <i>Nature Communications</i>, May 2026</li>
+        <li><b>Description</b>: Pretrained on paired RNA and surface-protein measurements for multimodal cell analysis.</li>
+      </ul>
+
+      <h3>14. 'Virtual Cells' in Nature</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/d41586-026-01731-1">'Virtual cells' aim to turn raw data into predictive models of biology</a></li>
+        <li><b>Category</b>: Virtual Cell / <i>Nature</i> News, June 2026</li>
+        <li><b>Description</b>: Overview of the virtual-cell race, from perturbation prediction to whole-cell simulation.</li>
+      </ul>
+
+      <h3>15. Scoring Gene Importance from Single-Cell Models</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41587-026-03112-5">Scoring gene importance by interpreting single-cell foundation models</a></li>
+        <li><b>Category</b>: Interpretability / <i>Nature Biotechnology</i>, May 2026</li>
+        <li><b>Description</b>: Turns single-cell foundation models into interpretable gene-importance scores.</li>
+      </ul>
+
+      <h3>16. General-Purpose LLMs vs. Clinical AI Tools</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41591-026-04431-5">General-purpose large language models outperform specialized clinical AI tools on medical benchmarks</a></li>
+        <li><b>Category</b>: Clinical LLM Benchmark / <i>Nature Medicine</i>, June 2026</li>
+        <li><b>Description</b>: Frontier general models beat specialized clinical tools on several medical benchmarks, questioning narrow fine-tuning strategies.</li>
+      </ul>
+
+      <h3>17. Reimagining Biomedical Workflows with LLMs</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s44400-026-00126-3">Reimagining biomedical science workflows in the age of large language models</a></li>
+        <li><b>Category</b>: Biomedical LLM / September 2026</li>
+        <li><b>Description</b>: Argues the main value of LLMs is restructuring research workflows rather than isolated Q&amp;A.</li>
+      </ul>
+
+      <h3>18. OpenAI GPT-Rosalind</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://openai.com/rosalind/">Rosalind — OpenAI life sciences</a></li>
+        <li><b>Category</b>: Life-Sciences LLM / OpenAI, April 2026</li>
+        <li><b>Description</b>: Purpose-built life-sciences model plus an orchestrated workbench for research workflows.</li>
+      </ul>
+
+      <h3>19. Google DeepMind Co-Scientist</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41586-026-10644-y">Accelerating scientific discovery with Co-Scientist</a></li>
+        <li><b>Category</b>: Multi-Agent AI Scientist / <i>Nature</i>, May 2026</li>
+        <li><b>Description</b>: Gemini-based multi-agent system that generates and debates novel research hypotheses for experimental validation.</li>
+      </ul>
+
+      <h3>20. Multi-Agent System for Scientific Discovery</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41586-026-10652-y">A multi-agent system for automating scientific discovery</a></li>
+        <li><b>Category</b>: Autonomous Discovery / <i>Nature</i>, May 2026</li>
+        <li><b>Description</b>: A separate multi-agent "AI scientist" architecture for automating parts of the discovery loop.</li>
+      </ul>
+
+      <h3>21. NVIDIA BioNeMo Agent Toolkit</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://nvidianews.nvidia.com/news/nvidia-launches-bionemo-agent-toolkit-giving-ai-agents-the-tools-to-accelerate-scientific-discovery">NVIDIA launches BioNeMo Agent Toolkit</a></li>
+        <li><b>Category</b>: Agent Tooling / NVIDIA, June 2026</li>
+        <li><b>Description</b>: Callable life-sciences tools for agents across biology, chemistry, genomics, and drug discovery; adopted by 50+ organizations and integrated by Anthropic and OpenAI.</li>
+      </ul>
+
+      <h3>22. Anthropic Claude Enzyme Discovery (ART)</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/news/claude-discovers-novel-enzyme-system">Claude discovers a novel enzyme system with CRISPR-like repeats</a></li>
+        <li><b>Category</b>: Agentic Discovery / Anthropic, September 2026</li>
+        <li><b>Description</b>: ~950 agents found array-associated reverse transcriptases (ART) in bacteriophage DNA. Preprint, not yet peer reviewed; attribution is disputed.</li>
+      </ul>
+
+      <h3>23. Stanford Virtual Biotech (37,000 Agents)</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/d41586-026-02954-y">How a team of AIs discovered a promising lung-cancer drug</a></li>
+        <li><b>Category</b>: Agentic Drug Discovery / <i>Science</i> + <i>Nature</i> News, September 2026</li>
+        <li><b>Description</b>: Virtual biotech of up to 37,000 agents analyzed 37,075 trials and proposed a B7-H3 lung-cancer strategy later advanced by a pharma company.</li>
+      </ul>
+
+      <h3>24. Anthropic Life Sciences Verification Program</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/news/life-sciences-verification-program">Introducing the Life Sciences Verification Program</a></li>
+        <li><b>Category</b>: Governance / Anthropic, September 2026</li>
+        <li><b>Description</b>: Tiered, monitored access to biology-capable models for vetted organizations, replacing blanket refusals with offline misuse monitoring.</li>
+      </ul>
+
+      <h3>25. Biosecurity: AI-Designed Threats</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/d41586-026-01476-x">AI can design viruses, toxins and other bioweapons. How worried should we be?</a></li>
+        <li><b>Category</b>: Biosecurity / <i>Nature</i> News Feature, May 2026</li>
+        <li><b>Description</b>: Reviews the dual-use risk of generative biology and debates software limits and screening.</li>
+      </ul>
+
+      <h3>26. OpenAI Foundation Public Data for Health</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.technologyreview.com/2026/09/15/1144129/ai-models-need-more-data-about-biology-and-openai-is-paying-to-create-it/">AI models need more data about biology, and OpenAI is paying to create it</a></li>
+        <li><b>Category</b>: Data Infrastructure / MIT Technology Review, September 2026</li>
+        <li><b>Description</b>: Funds high-quality scientific datasets, including $40M for cancer-vaccine data and a "biotech lost archive" from failed companies.</li>
+      </ul>
+
+      <h3>27. Benchmarking Reality Check</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1038/s41592-026-03119-5">Scaling up training dataset size for transcriptomic AI models is much pain with little gain</a></li>
+        <li><b>Category</b>: Evaluation / <i>Nature Methods</i>, June 2026</li>
+        <li><b>Description</b>: A useful corrective showing that simply scaling transcriptomic training data yields limited returns.</li>
+      </ul>
+
+      <h3>28. AI for Plant Biology</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1111/nph.71395">AI foundation models in plant biology</a></li>
+        <li><b>Category</b>: Plant Science / <i>New Phytologist</i>, June 2026</li>
+        <li><b>Description</b>: Review of foundation models moving into plant genomics, phenotyping, and crop science.</li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The through-line of 2026 is that <b>biology AI crossed from prediction into action.</b> Models are designing proteins, proposing drugs, mining genomes, and orchestrating their own experiments. That makes the field more exciting — and makes verification, attribution, and governance more important, not less.</p>
+      <p>Three practical lessons for anyone applying these tools:</p>
+      <ul>
+        <li><b>Treat agentic output as a hypothesis, not a result.</b> The Anthropic ART episode shows both the power and the ambiguity of autonomous discovery.</li>
+        <li><b>Wet-lab validation is the new benchmark.</b> Hit rates, binding affinities, and clinical outcomes now matter more than leaderboard scores.</li>
+        <li><b>Data and access, not model weights, are the constraints.</b> The winners of 2026 were often the teams with proprietary assays, clean datasets, or vetted access to frontier models.</li>
+      </ul>
+      <p>If 2025 was the year AI learned to read biology, 2026 is the year it started to <i>do</i> biology. The next question is who gets to verify — and trust — what it does.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>
