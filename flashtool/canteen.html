@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
   ============================================================================
-  HKUST 食堂决策引擎 · 本地单文件版
+  食堂决策引擎 · 本地单文件版
   ----------------------------------------------------------------------------
-  用途   ：为科大清湾校园（HKUST Clear Water Bay）学生 / 教职工 / 访客提供
+  用途   ：为校园学生 / 教职工 / 访客提供
            餐饮推荐：硬性约束过滤 + 多因子动态加权评分，输出 Top-3 推荐。
-  依据   ：canteenDecision.txt（HKUST Catering Decision Engine Spec）
+  依据   ：canteenDecision.txt（Catering Decision Engine Spec）
   作者   ：swimHelper
   版本   ：v1.4（位置校正：UniBar/UniBistro→Tower C、UniQue→Conference Lodge、Hana→CYT 1/F、Donburi→LTJ、Nourish→CYT 对面新楼；新增 WeBite Space）
   生成日 ：2026-09-29
@@ -21,7 +21,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#000000">
-<title>科大食堂决策</title>
+<title>食堂决策</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { background: #000; color: #fff; }
@@ -215,7 +215,7 @@
 </style>
 </head>
 <body class="light">
-<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:currentColor;opacity:.42;border:1px solid currentColor;padding:3px 8px;border-radius:2px;pointer-events:none;">科大食堂决策 · v1.4</div>
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:currentColor;opacity:.42;border:1px solid currentColor;padding:3px 8px;border-radius:2px;pointer-events:none;">食堂决策 · v1.4</div>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 <div class="app" id="app"></div>
 <button class="theme-toggle" id="themeToggle" aria-label="切换亮/暗模式">🌙</button>
@@ -229,7 +229,7 @@
      一、餐厅数据库（依据 PRD 的 Seed Data，JSON 内联）
      ======================================================================== */
   var DB = [
-    { "id": "hft_life", "name_cn": "HFT Life (鸿福堂)", "name_en": "HFT Life", "zone": "Shaw Auditorium", "elevation": "G/F", "avg_price": 45, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["LIGHT_MEAL", "SOUP", "HK_SNACK", "BAKERY"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "07:30-19:00", "weekend": "08:00-19:00" }, "crowd_risk": "LOW" },
+    { "id": "hft_life", "name_cn": "HFT Life (鸿福堂)", "name_en": "HFT Life", "zone": "Auditorium", "elevation": "G/F", "avg_price": 45, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["LIGHT_MEAL", "SOUP", "HK_SNACK", "BAKERY"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "07:30-19:00", "weekend": "08:00-19:00" }, "crowd_risk": "LOW" },
     { "id": "hana_musubi", "name_cn": "華御結", "name_en": "Hana-musubi", "zone": "CYT", "elevation": "1/F", "avg_price": 30, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["JAPANESE", "RICE_BALL", "LIGHT_MEAL"], "dietary": ["NONE"], "seating_capacity": "NONE", "opening_hours": { "weekday": "08:00-20:00", "weekend": "08:00-20:00" }, "crowd_risk": "LOW" },
     { "id": "american_diner", "name_cn": "American Diner", "name_en": "American Diner", "zone": "Academic Concourse", "elevation": "1/F", "avg_price": 50, "speed_level": "FAST", "cuisine_tags": ["WESTERN", "BURGER", "SANDWICH", "FAST_FOOD"], "dietary": ["NONE"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "08:00-21:00", "weekend": "08:00-18:00" }, "crowd_risk": "MEDIUM" },
     { "id": "joa_korean", "name_cn": "JoA (韩式料理)", "name_en": "JoA", "zone": "Academic Concourse", "elevation": "1/F", "avg_price": 60, "speed_level": "MEDIUM", "cuisine_tags": ["KOREAN", "FRIED_CHICKEN", "RICE_BOWL", "SPICY"], "dietary": ["NONE"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "10:00-21:00", "weekend": "CLOSED" }, "crowd_risk": "HIGH" },
@@ -265,7 +265,7 @@
     { value: "academic", label: "学术廊 / 学术大楼", zone: "Academic Concourse", level: 1 },
     { value: "cyt", label: "CYT 郑裕彤楼", zone: "CYT", level: 0 },
     { value: "lsk", label: "LSK 商学院", zone: "LSK", level: 1 },
-    { value: "shaw", label: "Shaw Auditorium 逸夫演艺厅", zone: "Shaw Auditorium", level: 0 },
+    { value: "shaw", label: "演艺厅 Auditorium", zone: "Auditorium", level: 0 },
     { value: "hall", label: "宿舍区 Hall Zone", zone: "Hall Zone", level: 0 }
   ];
 
@@ -308,15 +308,15 @@
 
   /* 区域步行时间矩阵（分钟，对称近似值） */
   var ZONE_WALK = {
-    "Academic Concourse": { "Academic Concourse": 1, "CYT": 4, "LSK": 5, "Shaw Auditorium": 6, "Hall Zone": 11, "Tower C": 2, "LTJ": 4, "CYT Annex": 5, "Conference Lodge": 14 },
-    "CYT": { "Academic Concourse": 4, "CYT": 1, "LSK": 4, "Shaw Auditorium": 7, "Hall Zone": 11, "Tower C": 4, "LTJ": 5, "CYT Annex": 2, "Conference Lodge": 15 },
-    "LSK": { "Academic Concourse": 5, "CYT": 4, "LSK": 1, "Shaw Auditorium": 6, "Hall Zone": 11, "Tower C": 4, "LTJ": 4, "CYT Annex": 5, "Conference Lodge": 12 },
-    "Shaw Auditorium": { "Academic Concourse": 6, "CYT": 7, "LSK": 6, "Shaw Auditorium": 1, "Hall Zone": 9, "Tower C": 6, "LTJ": 7, "CYT Annex": 7, "Conference Lodge": 8 },
-    "Hall Zone": { "Academic Concourse": 11, "CYT": 11, "LSK": 11, "Shaw Auditorium": 9, "Hall Zone": 1, "Tower C": 11, "LTJ": 11, "CYT Annex": 11, "Conference Lodge": 16 },
-    "Tower C": { "Academic Concourse": 2, "CYT": 4, "LSK": 4, "Shaw Auditorium": 6, "Hall Zone": 11, "Tower C": 1, "LTJ": 3, "CYT Annex": 5, "Conference Lodge": 14 },
-    "LTJ": { "Academic Concourse": 4, "CYT": 5, "LSK": 4, "Shaw Auditorium": 7, "Hall Zone": 11, "Tower C": 3, "LTJ": 1, "CYT Annex": 5, "Conference Lodge": 14 },
-    "CYT Annex": { "Academic Concourse": 5, "CYT": 2, "LSK": 5, "Shaw Auditorium": 7, "Hall Zone": 11, "Tower C": 5, "LTJ": 5, "CYT Annex": 1, "Conference Lodge": 15 },
-    "Conference Lodge": { "Academic Concourse": 14, "CYT": 15, "LSK": 12, "Shaw Auditorium": 8, "Hall Zone": 16, "Tower C": 14, "LTJ": 14, "CYT Annex": 15, "Conference Lodge": 1 }
+    "Academic Concourse": { "Academic Concourse": 1, "CYT": 4, "LSK": 5, "Auditorium": 6, "Hall Zone": 11, "Tower C": 2, "LTJ": 4, "CYT Annex": 5, "Conference Lodge": 14 },
+    "CYT": { "Academic Concourse": 4, "CYT": 1, "LSK": 4, "Auditorium": 7, "Hall Zone": 11, "Tower C": 4, "LTJ": 5, "CYT Annex": 2, "Conference Lodge": 15 },
+    "LSK": { "Academic Concourse": 5, "CYT": 4, "LSK": 1, "Auditorium": 6, "Hall Zone": 11, "Tower C": 4, "LTJ": 4, "CYT Annex": 5, "Conference Lodge": 12 },
+    "Auditorium": { "Academic Concourse": 6, "CYT": 7, "LSK": 6, "Auditorium": 1, "Hall Zone": 9, "Tower C": 6, "LTJ": 7, "CYT Annex": 7, "Conference Lodge": 8 },
+    "Hall Zone": { "Academic Concourse": 11, "CYT": 11, "LSK": 11, "Auditorium": 9, "Hall Zone": 1, "Tower C": 11, "LTJ": 11, "CYT Annex": 11, "Conference Lodge": 16 },
+    "Tower C": { "Academic Concourse": 2, "CYT": 4, "LSK": 4, "Auditorium": 6, "Hall Zone": 11, "Tower C": 1, "LTJ": 3, "CYT Annex": 5, "Conference Lodge": 14 },
+    "LTJ": { "Academic Concourse": 4, "CYT": 5, "LSK": 4, "Auditorium": 7, "Hall Zone": 11, "Tower C": 3, "LTJ": 1, "CYT Annex": 5, "Conference Lodge": 14 },
+    "CYT Annex": { "Academic Concourse": 5, "CYT": 2, "LSK": 5, "Auditorium": 7, "Hall Zone": 11, "Tower C": 5, "LTJ": 5, "CYT Annex": 1, "Conference Lodge": 15 },
+    "Conference Lodge": { "Academic Concourse": 14, "CYT": 15, "LSK": 12, "Auditorium": 8, "Hall Zone": 16, "Tower C": 14, "LTJ": 14, "CYT Annex": 15, "Conference Lodge": 1 }
   };
   var LEVEL = { "G/F": 0, "1/F": 1, "LG1": -1, "LG5": -5, "LG6": -6, "LG7": -7 };
 
@@ -484,9 +484,9 @@
     var late = isLateNight(now) || state.nightMode;
     app.innerHTML =
       '<div class="hero fade">' +
-        '<div class="kicker">🍔 HKUST CATERING DECISION 🍟</div>' +
-        '<h1 id="heroTitle">' + rndEmoji() + ' 科大食堂决策</h1>' +
-        '<div class="en">CLEAR WATER BAY CAMPUS</div>' +
+        '<div class="kicker">🍔 CATERING DECISION 🍟</div>' +
+        '<h1 id="heroTitle">' + rndEmoji() + ' 食堂决策</h1>' +
+        '<div class="en">CAMPUS</div>' +
         '<p class="sub">' + rndEmoji() + ' 「中午吃啥」这个宇宙难题，交给这台不插电的小机器吧 🍽️</p>' +
         '<p class="sub" style="color:#777;font-size:13px;">🔒 全程离线：不联网、不上传，关掉就忘。</p>' +
         '<div class="clock ' + (anyOpen ? "open" : "closed") + '"><span class="dot"></span>' + fmtClock(now) + ' · ' + (anyOpen ? "部分餐厅营业中" : "当前多数打烊") + '</div>' +
@@ -827,7 +827,7 @@
           if (!blob) return;
           var file = new File([blob], "食堂决策_" + fileStamp() + ".png", { type: "image/png" });
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({ files: [file], title: "科大食堂决策" }).catch(function () {});
+            navigator.share({ files: [file], title: "食堂决策" }).catch(function () {});
           }
         }, "image/png");
       });
@@ -861,8 +861,8 @@
 
     var y = 120;
     ctx.fillStyle = "#FFC72C"; ctx.fillRect(pad, y, 120, 6); y += 42;
-    txt("🍔 HKUST CATERING DECISION", pad, y, 30, "500", "#FFC72C"); y += 54;
-    txt("🍔 科大食堂决策 🍟", pad, y, 60, "700", "#fff"); y += 110;
+    txt("🍔 CATERING DECISION", pad, y, 30, "500", "#FFC72C"); y += 54;
+    txt("🍔 食堂决策 🍟", pad, y, 60, "700", "#fff"); y += 110;
     txt(fmtDateTime(getNow()), pad, y, 34, "400", "#888"); y += 60;
     line(y); y += 42;
 
