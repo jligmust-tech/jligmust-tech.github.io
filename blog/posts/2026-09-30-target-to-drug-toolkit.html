@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Given a target, find the drug: structure prediction, docking, and binding-affinity advances in 2026 — scAI Index</title>
+  <meta name="description" content="A source-linked tour of the current methods for turning a protein target into candidate drugs — protein structure prediction, molecular docking, virtual screening, binding-affinity and free-energy prediction, generative design, and reverse target prediction — with the motivation behind each tool.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#problem">The problem &amp; the terms</a>
+          <a href="#structure">1. Target structure prediction</a>
+          <a href="#docking">2. Molecular docking</a>
+          <a href="#screening">3. Virtual screening at scale</a>
+          <a href="#affinity">4. Binding affinity &amp; free energy</a>
+          <a href="#design">5. Generative design</a>
+          <a href="#reverse">6. The reverse: target prediction</a>
+          <a href="#hardware">The hardware axis</a>
+          <a href="#limits">What still fails</a>
+          <a href="#resources">Public resources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-30</span>
+      </div>
+      <h1>Given a target, find the drug: structure prediction, docking, and binding-affinity advances in 2026</h1>
+
+      <p>This note is about one concrete question: <b>given a protein target, how do we find a molecule that binds it well enough to become a drug?</b> The field that answers this is usually called <b>structure-based drug design (SBDD)</b>, and the dominant computational operation inside it is <b>molecular docking</b> — reinforced today by machine-learned structure prediction, virtual screening, binding-affinity prediction, and generative design.</p>
+
+      <p>Because the vocabulary is genuinely confusing, the first section maps the terms. The rest of the note follows the actual pipeline, target → structure → ligand, and for every major model or tool states <b>why it exists</b> — the specific limitation of the previous generation that motivated it. Compute requirements are treated as a cross-cutting axis because they are what decide who can actually run each method.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is an information-only, source-linked overview. All figures are order-of-magnitude estimates drawn from public papers, project pages, and databases. No model is run, no docking is executed, and no proprietary or downloaded dataset is included. Public resources are linked rather than reproduced.</div>
+
+      <h2 id="problem">The problem and the terminology</h2>
+      <p>"Protein target prediction" is ambiguous, because it can mean two opposite directions of the same relationship. This note keeps them apart explicitly:</p>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Term</th><th>What it actually means</th><th>Direction</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Structure prediction</strong></td><td>Predict the 3D structure of the target protein from its amino-acid sequence</td><td>sequence → structure</td></tr>
+            <tr><td><strong>Molecular docking</strong> <em>(protein–ligand docking)</em></td><td>Place a ligand into a target pocket and score the resulting pose</td><td>structure + ligand → pose + score</td></tr>
+            <tr><td><strong>Pose prediction</strong></td><td>The binding-mode half of docking: where and how the ligand sits</td><td>structure + ligand → coordinates</td></tr>
+            <tr><td><strong>Binding-affinity prediction</strong></td><td>Estimate K<sub>d</sub>/K<sub>i</sub>/IC<sub>50</sub> or ΔG, not just a pose</td><td>complex → strength</td></tr>
+            <tr><td><strong>Virtual screening (VS)</strong></td><td>Dock or score a large compound library and rank hits</td><td>library → ranked candidates</td></tr>
+            <tr><td><strong>Ultra-large VS (ULVS)</strong></td><td>VS at 10<sup>8</sup>–10<sup>10</sup>-compound scale</td><td>billions of molecules → hits</td></tr>
+            <tr><td><strong>Co-folding</strong></td><td>Predict the protein and ligand (or partner) complex jointly, often end-to-end</td><td>sequence + ligand → complex</td></tr>
+            <tr><td><strong>Free-energy perturbation (FEP)</strong></td><td>Physics-based simulation for accurate <em>relative</em> affinity between similar ligands</td><td>complexes → ΔΔG</td></tr>
+            <tr><td><strong>De novo / generative design</strong></td><td>Generate novel molecules optimized for the pocket instead of screening existing ones</td><td>pocket → new molecules</td></tr>
+            <tr><td><strong>Drug–target interaction (DTI) prediction</strong></td><td>Predict whether a compound binds a target, usually from sequence + chemistry</td><td>compound × target → score</td></tr>
+            <tr><td><strong>Reverse docking / target fishing</strong></td><td>Given a compound, find which proteins it binds (the reverse direction)</td><td>compound → targets</td></tr>
+            <tr><td><strong>ADMET prediction</strong></td><td>Absorption, distribution, metabolism, excretion, toxicity — the filters a hit must pass</td><td>molecule → properties</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The pipeline is not a single model but a chain, and each link was introduced to fix the failure of the link before it. That is the story told below.</p>
+
+      <h2 id="structure">1. Predicting the target's structure</h2>
+      <p>Docking needs coordinates. For most of history, that meant an experimental structure from the <a href="https://www.rcsb.org/">Protein Data Bank</a> or a homology model.</p>
+      <ul>
+        <li><b>Homology / comparative modeling</b> (<a href="https://swissmodel.expasy.org/">SWISS-MODEL</a>, <a href="https://salilab.org/modeller/">MODELLER</a>). <em>Motivation:</em> the great majority of targets had no experimental structure, but they often had a homologous protein with a solved structure to copy. <em>Limit:</em> it collapses when no template above roughly 30% sequence identity exists.</li>
+        <li><b><a href="https://github.com/google-deepmind/alphafold">AlphaFold2</a></b> (DeepMind, <i>Nature</i> 2021; CASP14). <em>Motivation:</em> remove the template dependence entirely. By combining multiple-sequence alignments with attention and an end-to-end trained network, it reached near-experimental accuracy for single-chain proteins and produced calibrated confidence scores (pLDDT, PAE) that tell a user whether a region is trustworthy. This is the single change that made structure-based work routine.</li>
+        <li><b><a href="https://github.com/RosettaCommons/RoseTTAFold">RoseTTAFold</a></b> (Baker lab, <i>Science</i> 2021) and <b><a href="https://github.com/facebookresearch/esm">ESMFold</a></b> (Meta). <em>Motivation:</em> ESMFold's single-sequence, MSA-free design traded a little accuracy for large speed and scale gains — which is what made the <a href="https://esmatlas.com/">ESM Metagenomic Atlas</a> of ~617 million predicted structures feasible.</li>
+        <li><b>Precomputed atlases.</b> <em>Motivation:</em> the cheapest way to "predict" a structure is to download one. <a href="https://alphafold.ebi.ac.uk/">AlphaFold DB</a> distributes &gt;200 million predictions across the tree of life.</li>
+        <li><b><a href="https://www.nature.com/articles/s41586-024-07487-w">AlphaFold3</a></b> (DeepMind, <i>Nature</i> 2024). <em>Motivation:</em> AlphaFold2 predicted single proteins well but not their interactions with ligands, nucleic acids, ions, or modified residues. AlphaFold3 replaced the structure module with a diffusion process over atoms and predicts complexes — the co-folding idea.</li>
+        <li><b>Open co-folding models:</b> <a href="https://github.com/jwohlwend/boltz">Boltz-1/Boltz-2</a>, <a href="https://github.com/chaidiscovery/chai-lab">Chai-1</a>, and OpenFold3. <em>Motivation:</em> AlphaFold3 was initially server-only and licence-restricted; the community rebuilt the capability in open, reproducible code. Boltz-2 additionally predicts binding affinity (see section 4).</li>
+      </ul>
+      <p><b>Hardware:</b> homology modeling is CPU-only; an AlphaFold2/ESMFold/Boltz inference on one structure fits on a single consumer GPU; generating an atlas is a multi-node job. This is the clearest example of the field's split: <em>producing</em> the prediction is expensive, <em>using</em> it is nearly free.</p>
+
+      <h2 id="docking">2. Molecular docking and pose prediction</h2>
+      <p>Docking answers a narrower question than most people assume: <b>given a known pocket, where does this ligand sit?</b> Affinity is a separate problem (section 4).</p>
+      <ul>
+        <li><b>AutoDock</b> (Scripps, 1990s). <em>Motivation:</em> automate flexible-ligand placement with a physics-inspired scoring function, replacing manual model building. It defined the field's first practical workflow.</li>
+        <li><b><a href="https://github.com/ccsb-scripps/AutoDock-Vina">AutoDock Vina</a></b> (Trott &amp; Olson, <i>J. Comput. Chem.</i> 2010). <em>Motivation:</em> AutoDock 4 was accurate but slow and fiddly. Vina delivered a large speed-up and better scoring with almost no tuning, and became the default baseline that essentially every new method still has to beat. Its CPU parallelism is why a laptop or small workstation can screen tens of thousands of compounds.</li>
+        <li><b><a href="https://github.com/ccsb-scripps/AutoDock-GPU">AutoDock-GPU</a></b> and <b><a href="https://github.com/gnina/gnina">GNINA</a></b>. <em>Motivation:</em> two different fixes to Vina. AutoDock-GPU ports the search to CUDA for throughput; GNINA adds a convolutional neural network to rescore poses because empirical scoring functions rank poses poorly.</li>
+        <li><b>Deep-learning docking:</b> <a href="https://github.com/HannesStark/EquiBind">EquiBind</a>, <a href="https://github.com/luwei0917/TankBind">TankBind</a>, and <b><a href="https://github.com/gcorso/DiffDock">DiffDock</a></b> (Corso et al., ICLR 2023). <em>Motivation:</em> classical docking is a search over a rugged energy landscape with a poor scoring function, and it needs the pocket to be specified. These models reframe docking as a learning problem — pose prediction directly (EquiBind, TankBind) or as a generative diffusion process over poses with uncertainty estimates (DiffDock), enabling <em>blind docking</em> where the site is unknown.</li>
+      </ul>
+      <p><b>Hardware:</b> "classical vs deep" is also a hardware choice. Vina is CPU and scales by core count; GNINA, DiffDock, and friends want a GPU; a GPU docking/rescoring campaign at 10<sup>7</sup>–10<sup>8</sup> compounds wants several cards.</p>
+
+      <h2 id="screening">3. Virtual screening at scale — the search for a wider chemical space</h2>
+      <p>Docking one ligand is a demo. The scientific value comes from docking <em>many</em> and finding the rare good one. The motivating constant is that physical screening libraries hold thousands to millions of compounds, while chemical space is effectively unbounded.</p>
+      <ul>
+        <li><b><a href="https://zinc22.docking.org/">ZINC</a></b> (Irwin &amp; Shoichet). <em>Motivation:</em> provide a free, ready-to-dock, <em>purchasable</em> compound database so that a computational hit is a real, orderable molecule. ZINC-22 holds on the order of a billion-plus compounds.</li>
+        <li><b>Make-on-demand catalogues</b> such as Enamine REAL. <em>Motivation:</em> decouple screening space from shelf space — dock tens of billions of virtual molecules and only synthesize the few that score well, which is far cheaper than buying the library.</li>
+        <li><b>Ultra-large VS and docking engines</b> (<a href="https://www.nature.com/articles/s41586-019-0917-9">Lyu et al., <i>Nature</i> 2019</a>; <a href="https://github.com/VirtualFlow/VirtualFlow">VirtualFlow</a>). <em>Motivation:</em> show that docking 10<sup>8</sup>–10<sup>10</sup> compounds is an engineering problem, not a theoretical one, once you build a fault-tolerant, checkpointed pipeline across many machines.</li>
+        <li><b>Hierarchical screening</b> (e.g., V-SYNTHES-style). <em>Motivation:</em> brute-force docking everything is wasteful; screen cheap coarse representations first and only fully dock the survivors.</li>
+      </ul>
+      <p><b>Hardware:</b> this is where "small to large" becomes concrete. 10<sup>4</sup>–10<sup>5</sup> compounds is a laptop or single GPU; 10<sup>7</sup>–10<sup>8</sup> is a lab cluster; 10<sup>9</sup> is a supercomputer campaign — famously demonstrated in 2020 when Oak Ridge's <a href="https://www.ornl.gov/news/summit-supercomputer-simulates-1-billion-potential-drugs-covid-19">Summit docked roughly a billion compounds</a> against the SARS-CoV-2 main protease.</p>
+
+      <h2 id="affinity">4. Binding affinity and free energy — the hard part</h2>
+      <p>Docking ranks poses; it does not reliably rank <em>potency</em>. Closing that gap is the field's central unsolved problem and the clearest source of the current wave of models.</p>
+      <ul>
+        <li><b>Empirical / knowledge-based scoring</b> (Vina, smina). <em>Motivation:</em> affordable, fast, and good enough for pose prediction; the known weakness is weak correlation with measured affinity across chemically diverse ligands.</li>
+        <li><b>ML scoring functions</b> (GNINA's CNN, and earlier RF-Score-style models). <em>Motivation:</em> learn the score→affinity mapping from data instead of hand-tuning physics terms.</li>
+        <li><b>Free-energy perturbation (FEP)</b>, e.g., Schrödinger's <a href="https://www.schrodinger.com/platform/products/fep/">FEP+</a> and the open <a href="https://openfree.energy/">OpenFE</a> ecosystem. <em>Motivation:</em> for a congeneric series, physics-based alchemical free energy can reach useful accuracy where docking cannot. <em>Cost:</em> it needs GPU molecular dynamics, careful setup, and is mostly limited to <em>relative</em> affinities of similar compounds.</li>
+        <li><b>Deep-learning affinity and co-folding</b> — <a href="https://www.nature.com/articles/s41586-024-07487-w">AlphaFold3</a>, <a href="https://github.com/jwohlwend/boltz">Boltz-2</a>. <em>Motivation:</em> predict the complex and its binding strength in one shot, without the human setup FEP requires. Boltz-2 advertises FEP-competitive affinity prediction at a small fraction of the cost — a company/lab claim that is now a key benchmark target, not yet an established fact.</li>
+        <li><b>MD-based end-point methods</b> (MM-PBSA/MM-GBSA with <a href="https://www.gromacs.org/">GROMACS</a>/<a href="https://openmm.org/">OpenMM</a>). <em>Motivation:</em> a middle ground — cheaper than alchemical FEP, more physical than a docking score.</li>
+      </ul>
+      <p><b>Hardware:</b> the accuracy ladder is also a compute ladder. Vina scoring is CPU-minutes; ML scoring is GPU-milliseconds; FEP is GPU-hours per compound; rigorous absolute free energy is worse. This cost gradient is the main reason ML affinity models are attractive despite weaker physical grounding.</p>
+
+      <h2 id="design">5. Generative design — stop screening, start inventing</h2>
+      <p>Virtual screening can only find molecules that already exist in a library. Generative models were motivated by the desire to invert the problem: <em>given the pocket, design a molecule</em>.</p>
+      <ul>
+        <li><b><a href="https://github.com/pengxingang/Pocket2Mol">Pocket2Mol</a></b> (2022), <b><a href="https://github.com/guanjq/targetdiff">TargetDiff</a></b> (ICLR 2023), <b><a href="https://github.com/arneschneuing/DiffSBDD">DiffSBDD</a></b> (2023). <em>Motivation:</em> generate 3D molecules conditioned on the pocket geometry, using autoregressive or equivariant-diffusion models, rather than ranking an existing catalogue.</li>
+        <li><b>RL and optimization-based generation</b> (<a href="https://github.com/MolecularAI/REINVENT">REINVENT</a>, and commercial platforms such as Insilico's Chemistry42). <em>Motivation:</em> optimize a molecule against multiple objectives at once — affinity, novelty, synthesizability, and ADMET — which single-score docking cannot express.</li>
+        <li><b>Property and ADMET filters.</b> <em>Motivation:</em> a strong binder that is toxic or unabsorbable is worthless; ADMET prediction is the cheap, fast filter that keeps generative output realistic.</li>
+      </ul>
+      <p><b>Hardware:</b> generative sampling is cheap (single GPU); the expensive part is the <em>validation</em> loop — re-docking and re-scoring thousands of generated molecules, then the wet lab. As the companion survey stresses, generation is the easy half; confirming the molecule is the bottleneck.</p>
+
+      <h2 id="reverse">6. The reverse direction — predicting the target of a compound</h2>
+      <p>The user's phrase "protein target prediction" most often means this direction: given a molecule, which proteins does it hit? It matters for polypharmacology, repurposing, and off-target safety.</p>
+      <ul>
+        <li><b>Reverse docking / target fishing</b> (TarFisDock, idTarget). <em>Motivation:</em> dock one compound against a panel of structures to nominate likely targets when the biology is unknown.</li>
+        <li><b>Drug–target interaction (DTI) prediction</b> — <a href="https://github.com/kexinhuang12345/DeepPurpose">DeepPurpose</a>, <a href="https://github.com/samsledje/ConPLex">ConPLex</a> (2023, contrastive learning on protein language-model embeddings). <em>Motivation:</em> learn directly from the &gt;10<sup>8</sup> compound–target measurements in <a href="https://www.ebi.ac.uk/chembl/">ChEMBL</a>, <a href="https://pubchem.ncbi.nlm.nih.gov/">PubChem</a>, and <a href="https://www.bindingdb.org/">BindingDB</a>, sidestepping the need for a structure at all.</li>
+      </ul>
+      <p><b>Hardware:</b> target fishing is many dockings (CPU-bound but parallel); DTI models are usually single-GPU inference or modest training runs.</p>
+
+      <h2 id="hardware">The hardware axis, in one table</h2>
+      <p>The same pipeline can be read as a compute ladder. This is why "what can I run?" is often the real first question.</p>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Tier</th><th>Hardware</th><th>Steps it can run</th><th>Representative tools</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tier 0</strong></td>
+              <td>CPU laptop/workstation: 8–32 GB RAM, no discrete GPU</td>
+              <td>Homology modeling, classical docking of 10<sup>4</sup>–10<sup>5</sup> compounds, database lookups, visualization</td>
+              <td>MODELLER/SWISS-MODEL, AutoDock Vina, RDKit, PyMOL</td>
+            </tr>
+            <tr>
+              <td><strong>Tier 1</strong></td>
+              <td>One GPU: 8–48 GB VRAM</td>
+              <td>AlphaFold/Boltz inference, DL docking, ML scoring, generative sampling, LoRA fine-tuning</td>
+              <td>ColabFold, ESMFold, Boltz, Chai-1, DiffDock, GNINA</td>
+            </tr>
+            <tr>
+              <td><strong>Tier 2</strong></td>
+              <td>Lab cluster: 2–8 × 80 GB GPUs, TB-class storage</td>
+              <td>FEP/ABFE, 10<sup>7</sup>–10<sup>9</sup>-compound VS, full fine-tuning</td>
+              <td>OpenFE, GROMACS/OpenMM, AutoDock-GPU + VirtualFlow</td>
+            </tr>
+            <tr>
+              <td><strong>Tier 3</strong></td>
+              <td>Supercomputer / exascale: hundreds–thousands of GPUs</td>
+              <td>Atlas generation, foundation-model training, billion-compound campaigns, long-timescale MD</td>
+              <td>Frontier, Summit, dedicated Anton systems</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="guide-callout"><strong>The through-line:</strong> the field moved from "predict a pose on a laptop" to "predict a complex, its affinity, and then invent a molecule" — and each step up in capability required a step up in compute, right up to exascale atlas generation and billion-compound screening.</div>
+
+      <h2 id="limits">What still fails</h2>
+      <p>The honest summary is that the pipeline is strong at <b>structure and pose</b> and weak at <b>true potency and safety</b>.</p>
+      <ul>
+        <li><b>Docking scores are not affinities.</b> Across chemically diverse ligands, pose-prediction accuracy does not transfer to reliable affinity ranking.</li>
+        <li><b>Receptor flexibility, water, protonation, and covalent chemistry</b> are routinely under-modeled; a rigid receptor is an approximation, not a solution.</li>
+        <li><b>Benchmark bias.</b> Datasets such as <a href="http://www.pdbbind.org.cn/">PDBbind/CASF</a> and <a href="https://dude.docking.org/">DUD-E</a> are small and biased toward well-behaved systems, so reported gains often do not generalize.</li>
+        <li><b>AI-designed molecules still fail in trials.</b> As the <a href="/blog/posts/2026-09-30-ai-for-biology-2026.html">2026 survey</a> notes, AI is strongest at target selection and design and weakest at compressing the clinical timeline; wet-lab and clinical validation remain non-negotiable.</li>
+      </ul>
+
+      <h2 id="resources">Public resources referenced</h2>
+      <ul>
+        <li><b>Structures &amp; prediction:</b> <a href="https://www.rcsb.org/">PDB</a> · <a href="https://alphafold.ebi.ac.uk/">AlphaFold DB</a> · <a href="https://esmatlas.com/">ESM Atlas</a> · <a href="https://alphafoldserver.com/">AlphaFold Server</a> · <a href="https://github.com/google-deepmind/alphafold">AlphaFold2</a> · <a href="https://github.com/jwohlwend/boltz">Boltz</a> · <a href="https://github.com/chaidiscovery/chai-lab">Chai-1</a></li>
+        <li><b>Docking &amp; scoring:</b> <a href="https://github.com/ccsb-scripps/AutoDock-Vina">AutoDock Vina</a> · <a href="https://github.com/ccsb-scripps/AutoDock-GPU">AutoDock-GPU</a> · <a href="https://github.com/gnina/gnina">GNINA</a> · <a href="https://github.com/gcorso/DiffDock">DiffDock</a> · <a href="https://github.com/luwei0917/TankBind">TankBind</a></li>
+        <li><b>Screening libraries:</b> <a href="https://zinc22.docking.org/">ZINC-22</a> · <a href="https://enamine.net/compound-collections/real-compounds">Enamine REAL</a> · <a href="https://github.com/VirtualFlow/VirtualFlow">VirtualFlow</a></li>
+        <li><b>Affinity &amp; free energy:</b> <a href="https://openfree.energy/">OpenFE</a> · <a href="https://www.gromacs.org/">GROMACS</a> · <a href="https://openmm.org/">OpenMM</a> · <a href="http://www.pdbbind.org.cn/">PDBbind/CASF</a></li>
+        <li><b>Generative design:</b> <a href="https://github.com/pengxingang/Pocket2Mol">Pocket2Mol</a> · <a href="https://github.com/guanjq/targetdiff">TargetDiff</a> · <a href="https://github.com/arneschneuing/DiffSBDD">DiffSBDD</a> · <a href="https://github.com/MolecularAI/REINVENT">REINVENT</a></li>
+        <li><b>Target prediction &amp; data:</b> <a href="https://github.com/samsledje/ConPLex">ConPLex</a> · <a href="https://github.com/kexinhuang12345/DeepPurpose">DeepPurpose</a> · <a href="https://www.ebi.ac.uk/chembl/">ChEMBL</a> · <a href="https://pubchem.ncbi.nlm.nih.gov/">PubChem</a> · <a href="https://www.bindingdb.org/">BindingDB</a></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The advances of the last few years form a coherent arc: <b>predict the structure, dock the ligand, screen a billion molecules, estimate the affinity, then invent a new molecule — and, in the other direction, guess the target from the compound.</b> Each step exists because the previous one was insufficient, and each step is now split between a cheap version anyone can run and an expensive version that defines the frontier.</p>
+      <p>Three practical lessons:</p>
+      <ul>
+        <li><b>Match the tool to the question.</b> Docking answers "where," not "how strongly." Use affinity and free-energy methods when potency is the actual question.</li>
+        <li><b>Use precomputed structures and data first.</b> AlphaFold DB, ChEMBL, and PubChem turn many "predictions" into lookups, which is why Tier 0 is still scientifically useful.</li>
+        <li><b>Treat every computational hit as a hypothesis.</b> The final filter is still a binding assay, and then a clinic.</li>
+      </ul>
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked overview · method-focused</span>
+    </div>
+  </footer>
+</body>
+</html>

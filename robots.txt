@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /flashtool/
+
+Sitemap: https://jligmust-tech.github.io/sitemap.xml

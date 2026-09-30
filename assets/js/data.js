@@ -1151,6 +1151,11 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-09-30", tag: "Research", title: "Given a target, find the drug: structure prediction, docking, and binding-affinity advances in 2026",
+      desc: "A method-focused, source-linked tour of structure-based drug design — protein structure prediction, molecular docking, virtual screening, binding-affinity and free-energy prediction, generative design, and reverse target prediction — with the motivation behind each tool.",
+      url: "/blog/posts/2026-09-30-target-to-drug-toolkit.html"
+    },
+    {
       date: "2026-09-30", tag: "Research", title: "AI for Biology in 2026: From Prediction Models to Autonomous Discovery",
       desc: "A January–September 2026 survey of AI and LLM advances for biology: genome, protein, and cell foundation models, biomedical LLMs, agentic discovery, drug discovery, data, and biosecurity.",
       url: "/blog/posts/2026-09-30-ai-for-biology-2026.html"
