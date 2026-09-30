@@ -24,7 +24,7 @@
 <title>科大食堂决策</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { background: #000; color: #fff; }
+  body { background: #000; color: #fff; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     font-size: 15px; line-height: 1.6; min-height: 100vh;
@@ -152,12 +152,74 @@
     .hero h1 { font-size: 27px; }
     .q-title { font-size: 18px; }
   }
+
+  /* ---------- 主题切换 ---------- */
+  .theme-toggle { position: fixed; top: 8px; right: 10px; z-index: 80; width: 38px; height: 38px; border-radius: 50%; border: 1px solid currentColor; background: rgba(127,127,127,.14); color: inherit; font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: .9; }
+  .theme-toggle:active { transform: scale(.92); }
+  .app { padding-top: 46px; }
+  .disclaimer { margin-top: 18px; border: 1px solid #3a3a3a; background: rgba(127,127,127,.08); padding: 12px 14px; font-size: 12px; line-height: 1.75; text-align: left; }
+  .disclaimer b { display: block; margin-bottom: 4px; }
+  body.light .disclaimer { border-color: #ddd; background: #f2f1ed; color: #555; }
+
+  body.light { background: #fbfaf7; color: #141414; }
+  body.light .progress-track { background: #eee; }
+  body.light .progress-fill { background: #FFC72C; }
+  body.light .hero h1 { color: #111; }
+  body.light .hero .kicker, body.light .section-title, body.light .sub-head, body.light .res .kicker, body.light .modal-head, body.light .bar-note { color: #B8860B; }
+  body.light .hero .en { color: #DA291C; }
+  body.light .hero .sub { color: #666; }
+  body.light .clock { border-color: #ddd; color: #333; }
+  body.light .banner { background: #fdece9; color: #8a1f16; }
+  body.light .banner b { color: #B8860B; }
+  body.light .q-no { color: #999; }
+  body.light .q-name { color: #B8860B; border-color: #d8b24a; }
+  body.light .q-title { color: #111; }
+  body.light .q-hint { color: #888; }
+  body.light .opt { background: #fff; border-color: #e4e2dd; color: #222; }
+  body.light .opt .mark { border-color: #ccc; color: #999; }
+  body.light .opt .opt-sub { color: #888; }
+  body.light .opt.selected { background: #FFC72C; color: #000; border-color: #FFC72C; }
+  body.light .opt.selected .mark { background: #000; color: #FFC72C; border-color: #000; }
+  body.light .opt.selected .opt-sub { color: #6b5200; }
+  body.light .opt.selected .sc { color: #6b5200; }
+  body.light .chip { background: #fff; border-color: #e4e2dd; color: #222; }
+  body.light .chip.selected { background: #FFC72C; color: #000; border-color: #FFC72C; }
+  body.light .btn { background: #DA291C; color: #fff; border-color: #DA291C; }
+  body.light .btn.ghost { background: transparent; color: #B8860B; border-color: #d8b24a; }
+  body.light .btn.red { background: #FFC72C; color: #000; border-color: #FFC72C; }
+  body.light .res h2.h { color: #111; }
+  body.light .res .summary { color: #666 !important; }
+  body.light .section-title { border-bottom-color: #e4e2dd; }
+  body.light .card { background: #fff; border-color: #e4e2dd; }
+  body.light .card.rank1 { border-color: #FFC72C; }
+  body.light .card .name { color: #141414; }
+  body.light .card .name-en { color: #888; }
+  body.light .card .rank { color: #999; }
+  body.light .card.rank1 .rank { color: #B8860B; }
+  body.light .card .score { color: #B8860B; }
+  body.light .card .score small { color: #888; }
+  body.light .card .why { color: #555; }
+  body.light .card .why b { color: #B8860B; }
+  body.light .tag { border-color: #ddd; color: #555; }
+  body.light .bar-track { background: #eee; }
+  body.light .bar-fill { background: #FFC72C; }
+  body.light .bar-label, body.light .bar-val { color: #777; }
+  body.light .foot { border-top-color: #e4e2dd; color: #999; }
+  body.light .empty { border-color: #DA291C; color: #8a1f16; }
+  body.light .modal { background: rgba(251,250,247,.97); }
+  body.light .shot { border-color: #ddd; background: #fff; }
+  body.light .modal-note { color: #999; }
+  body.light .bird-overlay .line { color: #555; }
+  body.light .bird-overlay .pick { color: #B8860B; }
+
 </style>
 </head>
-<body>
-<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">科大食堂决策 · v1.4</div>
+<body class="light">
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:currentColor;opacity:.42;border:1px solid currentColor;padding:3px 8px;border-radius:2px;pointer-events:none;">科大食堂决策 · v1.4</div>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 <div class="app" id="app"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="切换亮/暗模式">🌙</button>
+
 
 <script>
 (function () {
@@ -425,10 +487,11 @@
         '<div class="kicker">🍔 HKUST CATERING DECISION 🍟</div>' +
         '<h1 id="heroTitle">' + rndEmoji() + ' 科大食堂决策</h1>' +
         '<div class="en">CLEAR WATER BAY CAMPUS</div>' +
-        '<p class="sub">' + rndEmoji() + ' 4 个问题，避开垂直交通与高峰排队，找到最适合你的那一餐 🍽️</p>' +
-        '<p class="sub" style="color:#777;font-size:13px;">🔒 不上传 · 不保存 · 完全离线</p>' +
+        '<p class="sub">' + rndEmoji() + ' 「中午吃啥」这个宇宙难题，交给这台不插电的小机器吧 🍽️</p>' +
+        '<p class="sub" style="color:#777;font-size:13px;">🔒 全程离线：不联网、不上传，关掉就忘。</p>' +
         '<div class="clock ' + (anyOpen ? "open" : "closed") + '"><span class="dot"></span>' + fmtClock(now) + ' · ' + (anyOpen ? "部分餐厅营业中" : "当前多数打烊") + '</div>' +
         (late ? '<div class="banner"><b>🌙 深夜拯救计划已可用</b>21:30-02:00 自动生效；也可长按上方标题手动进入。</div>' : '') +
+        '<div class="disclaimer"><b>⚠️ 免责声明</b>本站餐厅信息为校园公开资料的静态近似，营业时间与价格请以现场为准，非校方官方工具；建议仅供「选择困难症」缓解使用。</div>' +
       '</div>' +
       '<div class="nav"><button class="btn" id="startBtn">🚀 开始决策</button>' +
       (late ? '<button class="btn ghost small" id="nightBtn">🌙 深夜模式</button>' : '') + '</div>';
@@ -866,6 +929,14 @@
     };
     if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
     else run();
+  }
+
+  var themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var isLight = document.body.classList.toggle("light");
+      themeToggle.textContent = isLight ? "🌙" : "💡";
+    });
   }
 
   render();

@@ -23,7 +23,7 @@
 <title>饮食自评</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { background: #000; color: #fff; }
+  body { background: #000; color: #fff; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
     font-size: 15px; line-height: 1.6; min-height: 100vh;
@@ -140,12 +140,82 @@
     .bar-label { flex-basis: 56px; }
     .food-grid { grid-template-columns: 1fr; }
   }
+
+  /* ---------- 主题切换 ---------- */
+  .theme-toggle { position: fixed; top: 8px; right: 10px; z-index: 80; width: 38px; height: 38px; border-radius: 50%; border: 1px solid currentColor; background: rgba(127,127,127,.14); color: inherit; font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: .9; }
+  .theme-toggle:active { transform: scale(.92); }
+  .app { padding-top: 46px; }
+  .disclaimer { margin-top: 18px; border: 1px solid #3a3a3a; background: rgba(127,127,127,.08); padding: 12px 14px; font-size: 12px; line-height: 1.75; text-align: left; }
+  .disclaimer b { display: block; margin-bottom: 4px; }
+  body.light .disclaimer { border-color: #ddd; background: #f2f1ed; color: #555; }
+
+  body.light { background: #f6f6f3; color: #151515; }
+  body.light .progress-track { background: #e4e3df; }
+  body.light .progress-fill { background: #151515; }
+  body.light .hero .kicker { color: #8a8a8a; }
+  body.light .hero h1 { color: #111; }
+  body.light .hero .en { color: #999; }
+  body.light .hero .sub { color: #555; }
+  body.light .clock { border-color: #ccc; color: #333; }
+  body.light .clock.closed .dot { background: #bbb; }
+  body.light .banner { background: #fdece9; color: #8a1f16; }
+  body.light .banner b { color: #111; }
+  body.light .q-no { color: #999; }
+  body.light .q-name { color: #111; border-color: #c2c2be; }
+  body.light .q-title { color: #111; }
+  body.light .q-hint { color: #888; }
+  body.light .opt { background: #fff; border-color: #e0dfda; color: #333; }
+  body.light .opt .mark { border-color: #c2c2be; color: #999; }
+  body.light .opt .sc { color: #aaa; }
+  body.light .opt .opt-sub { color: #888; }
+  body.light .opt:active { background: #f0f0ec; }
+  body.light .opt.selected { background: #151515; color: #fff; border-color: #151515; }
+  body.light .opt.selected .mark { background: #fff; color: #151515; border-color: #fff; }
+  body.light .opt.selected .opt-sub { color: #cfcfcf; }
+  body.light .chip { background: #fff; border-color: #e0dfda; color: #333; }
+  body.light .chip.selected { background: #151515; color: #fff; border-color: #151515; }
+  body.light .sub-head { color: #888; }
+  body.light .num-input, body.light .kcal-input { background: #fff; border-color: #e0dfda; color: #111; }
+  body.light .kcal-box { background: #fafafa; border-color: #e4e3df; }
+  body.light .kcal-total { color: #666; }
+  body.light .kcal-total b { color: #111; }
+  body.light .food { background: #fff; border-color: #e0dfda; color: #333; }
+  body.light .food.on { background: #151515; color: #fff; border-color: #151515; }
+  body.light .food .fkcal { color: #999; }
+  body.light .food.on .fkcal { color: #cfcfcf; }
+  body.light .btn { background: #151515; color: #fff; border-color: #151515; }
+  body.light .btn.ghost { background: transparent; color: #151515; border-color: #c2c2be; }
+  body.light .btn.red { background: #c0392b; color: #fff; border-color: #c0392b; }
+  body.light .res .kicker, body.light .section-title { color: #8a8a8a; }
+  body.light .section-title { border-bottom-color: #e4e3df; }
+  body.light .res h2.h { color: #111; }
+  body.light .score { color: #111; }
+  body.light .score small { color: #999; }
+  body.light .grade { border-color: #111; color: #111; }
+  body.light .res .summary { color: #666 !important; }
+  body.light .bar-label, body.light .bar-val { color: #777; }
+  body.light .bar-track { background: #e4e3df; }
+  body.light .bar-fill { background: #151515; }
+  body.light .bar-fill.neutral { background: #c2c2be; }
+  body.light .bar-note { color: #999; }
+  body.light .sug { background: #fff; border-color: #e4e3df; border-left-color: #151515; }
+  body.light .sug h4 { color: #111; }
+  body.light .sug p { color: #555; }
+  body.light .foot { border-top-color: #e4e3df; color: #999; }
+  body.light .modal { background: rgba(250,250,248,.97); }
+  body.light .shot { border-color: #ddd; background: #fff; }
+  body.light .modal-head { color: #666; }
+  body.light .modal-note { color: #999; }
+  body.light .empty { color: #666; }
+
 </style>
 </head>
-<body>
-<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">饮食自评 · v1.0</div>
+<body class="light">
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:currentColor;opacity:.42;border:1px solid currentColor;padding:3px 8px;border-radius:2px;pointer-events:none;">饮食自评 · v1.0</div>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 <div class="app" id="app"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="切换亮/暗模式">🌙</button>
+
 
 <script>
 (function () {
@@ -442,8 +512,10 @@
       '<div class="hero fade">' +
         '<div class="kicker">DIET SELF-CHECK</div>' +
         '<h1>饮食自评</h1>' +
-        '<p class="sub">3 分钟评估饮食健康程度，含烹饪方式与热量快速估算。</p>' +
-        '<p class="sub" style="color:#666;font-size:13px;">不上传 · 不保存 · 关闭页面即清空</p>' +
+        '<p class="sub">刚吃完一顿，有人心生愧疚，有人觉得自己很棒——两边可能都挺有道理。</p>' +
+        '<p class="sub">花 3 分钟聊聊这顿吃了啥、怎么做的，让这台小机器给你的饮食打个分。 🥗</p>' +
+        '<p class="sub" style="color:#666;font-size:13px;">🔒 全程离线：不联网、不上传，关掉就忘。</p>' +
+        '<div class="disclaimer"><b>⚠️ 免责声明</b>本工具基于公开营养常识与主观感受自评，非医疗或营养建议，热量估算为粗略参考；特殊健康状况请咨询医生或注册营养师。</div>' +
         '<div class="section-title">选择评估范围</div>' +
         '<div class="opts" id="scopeCards">' + cards + '</div>' +
       '</div>' +
@@ -825,6 +897,14 @@
     };
     if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
     else run();
+  }
+
+  var themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var isLight = document.body.classList.toggle("light");
+      themeToggle.textContent = isLight ? "🌙" : "💡";
+    });
   }
 
   render();

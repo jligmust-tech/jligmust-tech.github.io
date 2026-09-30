@@ -25,7 +25,7 @@
 <style>
   /* 配色：墨黑 #0c0b09 · 鎏金 #E8C15A · 朱砂 #C0392B · 米白 #EDE6D6 */
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { background: #0c0b09; color: #EDE6D6; }
+  body { background: #0c0b09; color: #EDE6D6; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     font-size: 15px; line-height: 1.7; min-height: 100vh;
@@ -142,12 +142,56 @@
     .q-title { font-size: 19px; }
     .muyu { width: 138px; height: 104px; }
   }
+
+  /* ---------- 主题切换 ---------- */
+  .theme-toggle { position: fixed; top: 8px; right: 10px; z-index: 80; width: 38px; height: 38px; border-radius: 50%; border: 1px solid currentColor; background: rgba(127,127,127,.14); color: inherit; font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: .9; }
+  .theme-toggle:active { transform: scale(.92); }
+  .app { padding-top: 46px; }
+  .disclaimer { margin-top: 18px; border: 1px solid #3a3a3a; background: rgba(127,127,127,.08); padding: 12px 14px; font-size: 12px; line-height: 1.75; text-align: left; }
+  .disclaimer b { display: block; margin-bottom: 4px; }
+  body.light .disclaimer { border-color: #ddd; background: #f2f1ed; color: #555; }
+
+  body.light { background: #f6efe1; color: #2a2114; background-image: radial-gradient(rgba(140,110,40,.08) 1px, transparent 1px); }
+  body.light .progress-track { background: #e6dcc6; }
+  body.light .progress-fill { background: linear-gradient(90deg, #B5342B, #B8860B); }
+  body.light .hero .kicker { color: #9a7b3a; }
+  body.light .hero h1 { color: #3a2c14; }
+  body.light .hero .en { color: #a08a5c; }
+  body.light .hero .sub { color: #5c4f33; }
+  body.light .merit-badge { color: #9a7b3a; }
+  body.light .note { background: #fbf5e6; border-color: #e6dcc6; color: #7a6a45; }
+  body.light .note b { color: #9a7b3a; }
+  body.light .q-no { color: #9a7b3a; }
+  body.light .q-name { color: #9a7b3a; border-color: #d8c48a; }
+  body.light .q-title { color: #2a2114; }
+  body.light .q-hint { color: #8a7a55; }
+  body.light .chip { background: #fffdf7; border-color: #e6dcc6; color: #4a3f2a; }
+  body.light .chip.selected { background: #B8860B; color: #fff; border-color: #B8860B; }
+  body.light .btn { background: #B5342B; color: #fff7ea; border-color: #B5342B; }
+  body.light .btn.ghost { background: transparent; color: #9a7b3a; border-color: #d8c48a; }
+  body.light .card { background: #fffdf7; border-color: #e6dcc6; }
+  body.light .card.gold { border-color: #d8c48a; }
+  body.light .card h3, body.light .card .target { color: #2a2114; }
+  body.light .card p { color: #5c4f33; }
+  body.light .card .addon { color: #8a7a55; }
+  body.light .seal { color: #B5342B; }
+  body.light .merit-track { background: #e6dcc6; }
+  body.light .yiji .col { background: #fffdf7; border-color: #e6dcc6; }
+  body.light .yiji .col .v { color: #2a2114; }
+  body.light .quote { color: #5c4f33; }
+  body.light .foot { border-top-color: #e6dcc6; color: #9a8a66; }
+  body.light .modal { background: rgba(246,239,225,.97); }
+  body.light .shot { border-color: #e6dcc6; background: #f6efe1; }
+  body.light .modal-note { color: #9a8a66; }
+
 </style>
 </head>
-<body>
-<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">随喜放生 · v1.0</div>
+<body class="light">
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:currentColor;opacity:.42;border:1px solid currentColor;padding:3px 8px;border-radius:2px;pointer-events:none;">随喜放生 · v1.0</div>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 <div class="app" id="app"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="切换亮/暗模式">🌙</button>
+
 
 <script>
 (function () {
@@ -325,9 +369,10 @@
         '<h1>随喜放生决策</h1>' +
         '<div class="en">A TINY MERIT ORACLE</div>' +
         '<p class="sub">要不要随喜 · 放生什么 · 怎么放生 🪷</p>' +
-        '<p class="sub" style="color:#7d7154;font-size:13px;">不求签不开光 · 敲敲木鱼，随缘一卦</p>' +
+        '<p class="sub">纠结的时候就摇一卦——反正结果好不好，也不归它负责。</p>' +
+        '<p class="sub" style="color:#7d7154;font-size:13px;">不求签、不开光 · 敲敲木鱼，随缘一卦</p>' +
         muyuHtml("muyuHome", true) +
-        '<div class="note">🐟 <b>护生声明</b>：真正的放生是护生——不买不卖、不放外来物种，把善意用在护持环境上才是大功德。本应用只是一个解压玩具，请勿真的去市场买生放生。</div>' +
+        '<div class="note">🐟 <b>护生声明</b>：真正的放生是护生——不买不卖、不放外来物种，把善意用在护持环境上。本应用只是解压玩具，请勿真的去市场买生放生。<br><br>⚠️ <b>免责声明</b>：签文由随机算法生成，仅供娱乐解压，不构成任何建议、指引或暗示，也不对你的决定负责。</div>' +
       '</div>' +
       '<div class="nav"><button class="btn" id="startBtn">🙏 开始结缘</button></div>';
     bindMuyu("muyuHome");
@@ -591,6 +636,14 @@
     };
     if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
     else run();
+  }
+
+  var themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var isLight = document.body.classList.toggle("light");
+      themeToggle.textContent = isLight ? "🌙" : "💡";
+    });
   }
 
   render();

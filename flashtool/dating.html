@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  恋爱择偶建议器 · 自我了解向决策工具
+  ----------------------------------------------------------------------------
+  用途   ：用户选择性别，回答基本问题与三观问题，结合公开的「依恋类型」
+           知识框架与社交接触范围，输出恋爱人格类型与具体择偶/行动建议
+           （要不要主动、要不要多花钱买礼物、沟通方式、择偶标准等）。
+  作者   ：swimHelper
+  版本   ：v1.0（性别/年龄路由 + 依恋四型 + 主动度/投入度 + 本地分享截图）
+  生成日 ：2026-09-29
+  声明   ：单文件 HTML · 完全离线 · 零数据持久化，所有数据仅在内存中处理，
+           关闭页面即清空，不写入任何浏览器存储。
+           依恋类型属大众心理学概念，仅供自我了解与参考，非临床诊断。
+  说明   ：本文件不引用任何外部资源、外部字体、外部图片或远程接口。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#120a0f">
+<title>恋爱择偶建议</title>
+<style>
+  /* 配色：梅黑 #120a0f · 玫瑰 #E0557A · 鎏金 #E8B04B · 奶白 #F4E9EC */
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: #120a0f; color: #F4E9EC; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 15px; line-height: 1.7; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  button { font-family: inherit; }
+
+  .progress-track { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: #2a1a22; z-index: 50; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #E8B04B, #E0557A); transition: width .3s ease; }
+
+  .app { max-width: 520px; margin: 0 auto; padding: 32px 20px 44px; min-height: 100vh; display: flex; flex-direction: column; }
+  .fade { animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .hero .kicker { font-size: 12px; letter-spacing: 4px; color: #9a7684; margin-bottom: 14px; }
+  .hero h1 { font-size: 32px; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; color: #F7EDF0; }
+  .hero .sub { font-size: 14px; color: #c2a7b1; margin: 4px 0; }
+  .hero .en { font-size: 11px; letter-spacing: 3px; color: #7c5a68; margin-bottom: 20px; }
+  .note { margin-top: 22px; border: 1px solid #3a222c; background: #1a0f15; padding: 12px 14px; font-size: 12px; color: #b79aa4; text-align: left; line-height: 1.8; }
+  .note b { color: #E8B04B; }
+
+  .q-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+  .q-no { font-size: 12px; letter-spacing: 2px; color: #9a7684; }
+  .q-name { font-size: 12px; letter-spacing: 1px; color: #E8B04B; border: 1px solid #5c4030; padding: 2px 8px; }
+  .q-title { font-size: 21px; font-weight: 600; line-height: 1.5; margin-bottom: 8px; color: #F7EDF0; }
+  .q-hint { font-size: 12px; color: #9a7684; margin-bottom: 4px; }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    min-height: 52px; padding: 13px 16px; text-align: left;
+    background: #1a0f15; border: 1px solid #3a222c; color: #e6d5db;
+    font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .opt .mark { flex: 0 0 auto; width: 22px; height: 22px; border: 1px solid #6a4a58; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #9a7684; }
+  .opt .txt { flex: 1; }
+  .opt .opt-sub { display: block; font-size: 12px; color: #9a7684; margin-top: 2px; }
+  .opt:active { background: #24141c; }
+  .opt.selected { background: #E0557A; color: #fff; border-color: #E0557A; }
+  .opt.selected .mark { background: #120a0f; color: #E8B04B; border-color: #120a0f; }
+  .opt.selected .opt-sub { color: #ffd9e2; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+  .chip {
+    padding: 10px 15px; min-height: 46px; display: inline-flex; align-items: center;
+    background: #1a0f15; border: 1px solid #3a222c; color: #e6d5db; font-size: 14px; cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .chip:active { background: #24141c; }
+  .chip.selected { background: #E8B04B; color: #2a1a06; border-color: #E8B04B; }
+
+  .nav { display: flex; gap: 12px; margin-top: 32px; }
+  .btn {
+    flex: 1; min-height: 52px; padding: 0 16px; border: 1px solid #E0557A;
+    background: #E0557A; color: #fff; font-size: 15px; letter-spacing: 2px; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: transparent; color: #E8B04B; border-color: #5c4030; }
+  .btn.small { flex: 0 0 auto; padding: 0 18px; letter-spacing: 1px; font-size: 14px; }
+  .btn[disabled], .btn.disabled { opacity: .3; cursor: not-allowed; }
+
+  .res { padding-top: 6px; }
+  .res .kicker { font-size: 12px; letter-spacing: 4px; color: #9a7684; margin-bottom: 10px; }
+  .res h2.h { font-size: 25px; font-weight: 700; margin-bottom: 8px; color: #F7EDF0; }
+  .res .summary { font-size: 13px; color: #b79aa4; }
+  .section-title { font-size: 12px; letter-spacing: 4px; color: #E8B04B; margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #2a1a22; }
+
+  .card { border: 1px solid #2e1c24; background: #170e13; padding: 18px; margin-bottom: 14px; position: relative; }
+  .card.gold { border-color: #6b5230; }
+  .seal {
+    position: absolute; top: 16px; right: 16px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid #E0557A; color: #f4a9bd; font-size: 22px; font-weight: 700; border-radius: 6px;
+  }
+  .card h3 { font-size: 19px; font-weight: 700; color: #F7EDF0; margin-bottom: 4px; padding-right: 60px; }
+  .card .alias { font-size: 13px; color: #E8B04B; margin-bottom: 10px; letter-spacing: 1px; }
+  .card p { font-size: 14px; color: #cbb4bd; }
+  .card p + p { margin-top: 6px; }
+  .card .k { color: #E8B04B; }
+
+  .meter { margin-top: 4px; }
+  .meter .top { display: flex; align-items: baseline; justify-content: space-between; }
+  .meter .lvl { font-size: 20px; font-weight: 700; color: #F7EDF0; }
+  .meter .sc { font-size: 12px; color: #9a7684; }
+  .meter-track { height: 9px; background: #2a1a22; margin-top: 8px; }
+  .meter-fill { display: block; width: 0; height: 100%; background: linear-gradient(90deg, #E8B04B, #E0557A); transition: width .8s ease; }
+  .meter .txt { font-size: 13px; color: #cbb4bd; margin-top: 10px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 12px; border: 1px solid #4a2f3a; color: #d9bfc7; padding: 3px 10px; }
+
+  .sug { border: 1px solid #2e1c24; border-left: 3px solid #E8B04B; background: #170e13; padding: 14px 16px; margin-bottom: 12px; }
+  .sug h4 { font-size: 14px; font-weight: 600; color: #F7EDF0; margin-bottom: 6px; }
+  .sug p { font-size: 13px; color: #b79aa4; line-height: 1.75; }
+
+  .foot { margin-top: 30px; padding-top: 16px; border-top: 1px solid #201318; font-size: 11px; color: #7c5a68; text-align: center; line-height: 1.9; }
+
+  .modal { position: fixed; inset: 0; background: rgba(9,5,7,.95); display: none; z-index: 100; padding: 22px 20px 40px; overflow-y: auto; }
+  .modal.open { display: block; }
+  .modal-card { max-width: 520px; margin: 0 auto; }
+  .modal-head { font-size: 12px; letter-spacing: 3px; color: #E8B04B; margin-bottom: 14px; }
+  .shot { width: 100%; display: block; border: 1px solid #3a222c; background: #120a0f; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+  .modal-note { margin-top: 14px; font-size: 11px; color: #7c5a68; text-align: center; line-height: 1.7; }
+
+  @media (max-width: 380px) {
+    body { font-size: 14px; }
+    .hero h1 { font-size: 27px; }
+    .q-title { font-size: 18px; }
+  }
+
+  /* ---------- 主题切换 ---------- */
+  .theme-toggle { position: fixed; top: 8px; right: 10px; z-index: 80; width: 38px; height: 38px; border-radius: 50%; border: 1px solid currentColor; background: rgba(127,127,127,.14); color: inherit; font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: .9; }
+  .theme-toggle:active { transform: scale(.92); }
+  .app { padding-top: 46px; }
+  .disclaimer { margin-top: 18px; border: 1px solid #3a3a3a; background: rgba(127,127,127,.08); padding: 12px 14px; font-size: 12px; line-height: 1.75; text-align: left; }
+  .disclaimer b { display: block; margin-bottom: 4px; }
+  body.light .disclaimer { border-color: #ddd; background: #f2f1ed; color: #555; }
+
+  body.light { background: #fbf4f6; color: #2a1a20; }
+  body.light .progress-track { background: #eadfe4; }
+  body.light .progress-fill { background: linear-gradient(90deg, #C93A63, #B8860B); }
+  body.light .hero .kicker { color: #a06a80; }
+  body.light .hero h1 { color: #3a1f2a; }
+  body.light .hero .en { color: #b08a98; }
+  body.light .hero .sub { color: #6a4a56; }
+  body.light .note { background: #f6eaee; border-color: #eadfe4; color: #7a5563; }
+  body.light .note b { color: #B8860B; }
+  body.light .q-no { color: #a06a80; }
+  body.light .q-name { color: #B8860B; border-color: #d8b06a; }
+  body.light .q-title { color: #2a1a20; }
+  body.light .q-hint { color: #8a6572; }
+  body.light .opt { background: #fff; border-color: #ecdde2; color: #3a2630; }
+  body.light .opt .mark { border-color: #d3bcc5; color: #a06a80; }
+  body.light .opt .opt-sub { color: #8a6572; }
+  body.light .opt.selected { background: #C93A63; color: #fff; border-color: #C93A63; }
+  body.light .opt.selected .mark { background: #fff; color: #C93A63; border-color: #fff; }
+  body.light .opt.selected .opt-sub { color: #ffd9e2; }
+  body.light .chip { background: #fff; border-color: #ecdde2; color: #3a2630; }
+  body.light .chip.selected { background: #B8860B; color: #fff; border-color: #B8860B; }
+  body.light .btn { background: #C93A63; color: #fff; border-color: #C93A63; }
+  body.light .btn.ghost { background: transparent; color: #B8860B; border-color: #d8b06a; }
+  body.light .card { background: #fff; border-color: #ecdde2; }
+  body.light .card.gold { border-color: #d8b06a; }
+  body.light .card h3 { color: #2a1a20; }
+  body.light .card p { color: #5c3f4a; }
+  body.light .card .k { color: #B8860B; }
+  body.light .seal { color: #C93A63; }
+  body.light .meter .lvl { color: #2a1a20; }
+  body.light .meter-track { background: #eadfe4; }
+  body.light .meter .txt { color: #5c3f4a; }
+  body.light .tag { border-color: #e0cdd4; color: #5c3f4a; }
+  body.light .sug { background: #fff; border-color: #ecdde2; border-left-color: #B8860B; }
+  body.light .sug h4 { color: #2a1a20; }
+  body.light .sug p { color: #6a4a56; }
+  body.light .res .summary { color: #6a4a56 !important; }
+  body.light .res h2.h { color: #2a1a20; }
+  body.light .foot { border-top-color: #eadfe4; color: #a08a94; }
+  body.light .modal { background: rgba(251,244,246,.97); }
+  body.light .shot { border-color: #e0cdd4; background: #fbf4f6; }
+  body.light .modal-note { color: #a08a94; }
+
+</style>
+</head>
+<body class="light">
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:currentColor;opacity:.42;border:1px solid currentColor;padding:3px 8px;border-radius:2px;pointer-events:none;">恋爱择偶建议 · v1.0</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="app" id="app"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="切换亮/暗模式">🌙</button>
+
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========================================================================
+     一、题目定义
+     ======================================================================== */
+  var QUESTIONS = [
+    { key: "gender", name: "性别", type: "choice", question: "你的性别是？", hint: "仅用于措辞与个别建议的语境，不用于贴标签。",
+      options: [ { v: "m", label: "男" }, { v: "f", label: "女" }, { v: "x", label: "保密 / 不适用" } ] },
+    { key: "age", name: "年龄", type: "choice", question: "你目前的年龄段？",
+      options: [ { v: "18", label: "18-22 岁" }, { v: "23", label: "23-27 岁" }, { v: "28", label: "28-32 岁" }, { v: "33", label: "33 岁以上" } ] },
+
+    { key: "att1", name: "依恋 · 回应", type: "choice", question: "对方回消息变慢、没秒回时，你通常？",
+      options: [
+        { v: "s", label: "各忙各的很正常，不太受影响", ax: 0, av: 0 },
+        { v: "a", label: "会反复看手机，担心是不是说错了话", ax: 2, av: 0 },
+        { v: "d", label: "干脆也不回，先冷一下", ax: 0, av: 2 },
+        { v: "f", label: "又焦虑又想把对方推远", ax: 1, av: 1 }
+      ] },
+    { key: "att2", name: "依恋 · 亲密", type: "choice", question: "关系变得很亲密、天天黏在一起时，你会？",
+      options: [
+        { v: "s", label: "很享受，也保有各自的空间", ax: 0, av: 0 },
+        { v: "a", label: "怕 TA 离开，想要更多确认", ax: 2, av: 0 },
+        { v: "d", label: "觉得有点窒息，想喘口气", ax: 0, av: 2 },
+        { v: "f", label: "想靠近又怕受伤，很矛盾", ax: 1, av: 1 }
+      ] },
+    { key: "att3", name: "依恋 · 冲突", type: "choice", question: "吵架或发生冲突后，你的第一反应？",
+      options: [
+        { v: "s", label: "想尽快沟通解决", ax: 0, av: 0 },
+        { v: "a", label: "担心 TA 是不是不爱我了，想马上哄好", ax: 2, av: 0 },
+        { v: "d", label: "需要自己冷静很久，甚至先消失一会儿", ax: 0, av: 2 },
+        { v: "f", label: "一边想逃，一边又怕失去", ax: 1, av: 1 }
+      ] },
+
+    { key: "spend1", name: "金钱观", type: "choice", question: "你花钱的风格更接近？",
+      options: [
+        { v: "spendy", label: "喜欢就买，及时行乐，也愿意为对方砸钱", spend: 3 },
+        { v: "balanced", label: "该省省该花花，愿意为喜欢的人花", spend: 2 },
+        { v: "frugal", label: "精打细算，钱要花在刀刃上", spend: 1 },
+        { v: "tight", label: "对钱没安全感，不太舍得花", spend: 0 }
+      ] },
+    { key: "career", name: "事业 / 感情", type: "choice", question: "现阶段，事业和感情你怎么排？",
+      options: [
+        { v: "career", label: "事业优先，感情顺其自然" },
+        { v: "balance", label: "两者尽量平衡" },
+        { v: "love", label: "感情 / 家庭优先" },
+        { v: "unsure", label: "看阶段，暂时说不清" }
+      ] },
+    { key: "ritual", name: "仪式感 / 礼物", type: "choice", question: "你对待仪式感和礼物的态度？",
+      options: [
+        { v: "high", label: "很重要，礼物和仪式是爱的语言", spend: 3 },
+        { v: "mid", label: "有心就好，物质其次", spend: 2 },
+        { v: "low", label: "不太需要，务实一点", spend: 1 },
+        { v: "stress", label: "会因为这些感到压力", spend: 0 }
+      ] },
+    { key: "social", name: "社交圈", type: "choice", question: "你目前的社交接触范围？",
+      options: [
+        { v: "big", label: "圈子很大，经常认识新人", social: 3 },
+        { v: "mid", label: "一般，偶尔有新的", social: 2 },
+        { v: "small", label: "圈子小，基本是同事 / 室友", social: 1 },
+        { v: "none", label: "几乎零社交，两点一线", social: 0 }
+      ] },
+    { key: "active", name: "心动时的反应", type: "choice", question: "面对心动对象，你通常？",
+      options: [
+        { v: "go", label: "主动出击，直接表达", active: 3 },
+        { v: "hint", label: "给点暗示，看对方反应", active: 2 },
+        { v: "watch", label: "默默观察，不主动", active: 1 },
+        { v: "avoid", label: "干脆回避，怕搞砸", active: 0 }
+      ] },
+    { key: "standards", name: "择偶标准", type: "multi", question: "择偶时你最看重哪些？（最多选 3 个）", hint: "选不出 3 个就选最在意的 1-2 个。",
+      options: [
+        { v: "loyal", label: "忠诚专一" }, { v: "stable", label: "情绪稳定" }, { v: "values", label: "三观一致" },
+        { v: "ambition", label: "上进心" }, { v: "money", label: "经济实力" }, { v: "look", label: "外貌 / 身材" },
+        { v: "family", label: "家庭背景" }, { v: "funny", label: "幽默有趣" }
+      ] },
+    { key: "future", name: "未来规划", type: "choice", question: "你对未来的生活图景更偏向？",
+      options: [
+        { v: "bigcity", label: "想在大城市打拼" }, { v: "hometown", label: "想回小城 / 老家安稳" },
+        { v: "abroad", label: "想出国 / 旅居" }, { v: "unsure", label: "还没想好，走一步看一步" }
+      ] }
+  ];
+
+  /* 依恋类型资料（公开的大众心理学框架） */
+  var ATTACH = {
+    secure:   { seal: "安", name: "安全型依恋", alias: "定海神针 · 稳", desc: "你大体能信任对方，也信任自己。亲密与独立在你这里可以共存，冲突后倾向于沟通而不是逃或追。", need: "你需要的不多：一个同样稳定、说话算数的人。", match: "和任何类型都能磨合，尤其适合与焦虑型 / 回避型互补。" },
+    anxious:  { seal: "焦", name: "焦虑型依恋（痴迷型）", alias: "惊弓之鸟 · 患得患失", desc: "你渴望亲密，也容易担心被抛弃；对方一点语气变化就能牵动你，会想反复确认。", need: "你需要稳定、及时、可预期的回应。", match: "最适合安全型；与回避型容易陷入「你追我逃」的循环。" },
+    avoidant: { seal: "回", name: "回避型依恋（疏离型）", alias: "空中飞人 · 人间蒸发", desc: "你重视独立，亲密到一定程度会想拉开距离，常用「忙 / 冷静 / 无所谓」来保护自己。", need: "你需要空间，以及不被吞噬的安全感。", match: "安全型能同时给你空间与稳定；与焦虑型易触发追逃。" },
+    fearful:  { seal: "恐", name: "恐惧型依恋（混乱型）", alias: "薛定谔的心动 · 又菜又爱玩", desc: "你又想靠近又害怕受伤，容易在「热情」和「撤退」之间反复横跳，行为像谜语。", need: "你需要一个不因你反复试探就走的人。", match: "最需要安全型；尽量避开同样不稳定的对象，否则互相内耗。" }
+  };
+
+  /* ========================================================================
+     二、分析
+     ======================================================================== */
+  function optOf(q, v) {
+    for (var i = 0; i < q.options.length; i++) { if (q.options[i].v === v) return q.options[i]; }
+    return null;
+  }
+  function qByKey(k) { for (var i = 0; i < QUESTIONS.length; i++) { if (QUESTIONS[i].key === k) return QUESTIONS[i]; } return null; }
+  function val(k) { return state.answers[k]; }
+  function pts(k, field) { var q = qByKey(k), o = q ? optOf(q, val(k)) : null; return (o && o[field] != null) ? o[field] : 0; }
+
+  function analyze() {
+    var ax = pts("att1", "ax") + pts("att2", "ax") + pts("att3", "ax");
+    var av = pts("att1", "av") + pts("att2", "av") + pts("att3", "av");
+    var hiAx = ax >= 3, hiAv = av >= 3;
+    var attachKey = hiAx ? (hiAv ? "fearful" : "anxious") : (hiAv ? "avoidant" : "secure");
+
+    var active = pts("active", "active") + pts("social", "social");
+    var spend = pts("spend1", "spend") + pts("ritual", "spend");
+
+    return {
+      gender: val("gender"), age: val("age"),
+      ax: ax, av: av, attachKey: attachKey, attach: ATTACH[attachKey],
+      active: active, spend: spend, spendRaw: pts("spend1", "spend"), ritual: val("ritual"),
+      social: val("social"), activePref: val("active"),
+      career: val("career"), future: val("future"),
+      standards: state.answers.standards || []
+    };
+  }
+
+  function level3(score) {
+    if (score <= 2) return { key: "low", label: "偏低" };
+    if (score <= 4) return { key: "mid", label: "中等" };
+    return { key: "high", label: "偏高" };
+  }
+
+  /* ========================================================================
+     三、建议生成
+     ======================================================================== */
+  var STD_LABEL = { loyal: "忠诚专一", stable: "情绪稳定", values: "三观一致", ambition: "上进心", money: "经济实力", look: "外貌/身材", family: "家庭背景", funny: "幽默有趣" };
+
+  function generateSuggestions(r) {
+    var out = [];
+    var A = r.attachKey;
+    var aLevel = level3(r.active), sLevel = level3(r.spend);
+
+    /* 总评 */
+    out.push({ title: "一句话总评", body: "你是「" + r.attach.alias + "」（" + r.attach.name + "）。主动度" + aLevel.label + "，投入度" + sLevel.label + "。核心功课是：用适合你依恋类型的方式去爱，而不是用最用力的方式。", pr: 0 });
+
+    /* 依恋类型核心建议 */
+    var attachTip = {
+      secure: "你的稳定是稀缺资源。别因为「我很好养」就压抑需求——该要回应时要，该设边界时设。",
+      anxious: "你要的是「稳定的回应」，不是「更用力地追」。把「你是不是不爱我了」换成具体的请求（如：忙的时候提前说一声）。先学会自我安抚，别把安全感全部外包。",
+      avoidant: "亲密不会吞掉你。想撤退时，试着说「我需要缓一缓，晚点聊」，而不是直接消失——一句话能省掉对方十次胡思乱想。",
+      fearful: "又想要又害怕很正常。与其用行为反复试探对方会不会走，不如把害怕直接说出口。找一个「经得起你慢热」的安全型。"
+    };
+    out.push({ title: "依恋模式的功课", body: attachTip[A], pr: 5 });
+    out.push({ title: "适合你的伴侣", body: r.attach.match + " 判断标准很简单：和 TA 相处后，你是更放松，还是更紧绷？", pr: 4 });
+
+    /* 要不要主动 */
+    if (aLevel.key === "low") {
+      out.push({ title: "要不要主动？——要，而且现在就要", body: "你的主动度和社交接触都偏低。你不是不适合恋爱，是「样本量太小」。给自己定个小 KPI：每周认识 1 个新朋友（不限男女），先从扩圈开始，别一上来就奔着结果。" + (A === "avoidant" ? " 对回避型来说，别拿「随缘」当挡箭牌，主动不是掉价，是提高筛选效率。" : ""), pr: 5 });
+    } else if (aLevel.key === "mid") {
+      out.push({ title: "要不要主动？——半步主动刚好", body: "你已经有主动的意愿，可以再往前半步：把「暗示」换成「明确的邀约」（具体时间 + 具体事），成功率会明显上升。被拒绝只是过滤，不是否定你。" , pr: 3 });
+    } else {
+      out.push({ title: "要不要主动？——收一点，重质量", body: "你很敢主动，这是优势。但把力气花在「值得的人」上：先判断对方是否也主动回应，再决定投入多少。避免广撒网式热情撞上不对的人。" + (A === "anxious" ? " 焦虑型尤其注意：主动不等于黏，别用高频联系换安心。" : ""), pr: 3 });
+    }
+
+    /* 要不要多花钱买礼物 */
+    if (sLevel.key === "low") {
+      out.push({ title: "要不要多花钱买礼物？——不必多，但要「有心」", body: "你偏务实，这没什么错。礼物重在匹配对方在意的点，而不是价格：一束当季的花、一顿认真做的饭，往往比贵而无感的礼物有效。设个预算：约会/小礼物约占可支配收入的 5-10%，纪念日单次不超过月可支配的 15%，量力而行。", pr: 4 });
+    } else if (sLevel.key === "mid") {
+      out.push({ title: "要不要多花钱买礼物？——按阶段，别超前消费", body: "你愿意为喜欢的人花钱，这是加分项。但把投入和关系阶段对齐：暧昧期重体验（一起做件事）而非重礼，稳定后在纪念日适度升级。别用礼物替代表达，也别让花费超过自己的承受线。", pr: 3 });
+    } else {
+      out.push({ title: "要不要多花钱买礼物？——当心「用钱买安全感」", body: "你投入度高、也重仪式。" + (A === "anxious" || A === "fearful" ? "焦虑/恐惧型最容易用礼物换安心，但越换越不安——先确认对方要的是你，不是你的钱包。" : "这本身很好，但设一条线：单次大额支出不超过月可支配收入的 15%，别超前消费、别借贷示爱。") + " 花钱是匹配度，不是爱的计量单位。", pr: 4 });
+    }
+
+    /* 择偶标准分析 */
+    var std = r.standards;
+    if (std.length) {
+      var hard = std.slice(0, 3).map(function (k) { return STD_LABEL[k]; }).join("、");
+      var onlyExterior = std.every(function (k) { return k === "look" || k === "money" || k === "family"; });
+      var body = "你在意：" + hard + "。把它们分成「必须有 / 最好有 / 锦上添花」三档，只把 1 项列为硬性门槛，其余留弹性——门槛太多会把对的人挡在门外。";
+      if (onlyExterior) body += " 小提醒：只有外在/经济条件的关系，日常摩擦时很难扛住，建议至少加一项「情绪稳定」或「三观一致」。";
+      out.push({ title: "择偶标准 · 别全设成硬门槛", body: body, pr: 4 });
+    } else {
+      out.push({ title: "择偶标准 · 先想清楚 3 条", body: "你没选标准，说明还在探索。建议列出「必须有 1 条、最好有 3 条、不能碰 1 条」，在约会时带着问题去观察，而不是凭感觉。", pr: 3 });
+    }
+
+    /* 三观 / 未来规划 */
+    var careerBody = {
+      career: "你偏事业优先。适合找同样有自己节奏、不黏人的伴侣，并提前对齐「陪伴时间」的预期，否则容易被误解为不上心。",
+      balance: "你追求平衡。这是好底子，但要和对方明确「忙季怎么分配时间」，平衡是谈出来的，不是默认的。",
+      love: "你感情优先。注意别把全部重心压在关系上，保留自己的朋友和爱好——过度投入反而让对方有压力。",
+      unsure: "你还在看阶段。那就先在相处中诚实表达你的不确定，别用承诺去换对方的安心。"
+    }[r.career];
+    var futureBody = {
+      bigcity: "你想留大城市打拼。优先认识同样打算长期留下的对象，异地/回流分歧是长期关系里最常见的分手点。",
+      hometown: "你想回小城安稳。早点坦白你的规划，别和「一定要留大城市」的人互相耽误。",
+      abroad: "你想出国/旅居。适合找有同样流动意愿、或能接受异地的人；提前谈清「谁迁就谁」。",
+      unsure: "你未来还没定。保持开放，但要在关系变认真前把大方向聊清楚。"
+    }[r.future];
+    out.push({ title: "三观与未来 · 先对齐再投入", body: careerBody + " " + futureBody, pr: 3 });
+
+    /* 社交渠道 */
+    var socialBody = {
+      big: "你圈子大，优势是选择多。别陷入「下一个更好」的错觉——遇到三观合、相处放松的人，值得多给几次机会。",
+      mid: "你圈子中等。可以再增加一个「高浓度兴趣场景」（运动队、读书会、志愿活动），比泛泛社交更容易遇到同频的人。",
+      small: "你圈子偏小。建议从「熟人介绍 + 一个长期兴趣社群」双线扩展，熟人介绍的成功率和安全感都更高。",
+      none: "你几乎零社交。先别急着恋爱，从每周一次线下活动开始重建接触面；线上 App 可用作补充，但别只依赖它。"
+    }[r.social];
+    out.push({ title: "社交接触范围 · 怎么遇到人", body: socialBody, pr: 3 });
+
+    /* 年龄语境 */
+    if (r.age === "28" || r.age === "33") {
+      out.push({ title: "关于年龄与节奏", body: "到了会被催的阶段，但别让「年龄焦虑」替你做决定。相比「快点定下来」，明确底线、扩大有效接触面更重要。宁可晚一点，也别在错误的人身上消耗三年。", pr: 2 });
+    }
+
+    /* 雷区 */
+    var warn;
+    if (A === "secure") warn = "别因为太省心而被忽视：遇到不稳定的对象，你可能习惯性当「情绪垃圾桶」。先看对方是否也在为关系努力。";
+    else if (A === "anxious") warn = "雷区：把对方的每次冷淡都当成危机、查手机、用分手测试对方。这些只会把安全型也逼成回避型。";
+    else if (A === "avoidant") warn = "雷区：用「忙」和「无所谓」推开在意的人、冷处理冲突。沉默在你这儿是保护，在对方那儿是不爱。";
+    else warn = "雷区：一边说我想要，一边又把人推开；用忽冷忽热测试忠诚。把需求说清楚，比让对方猜有效十倍。";
+    out.push({ title: "你的雷区", body: warn, pr: 2 });
+
+    /* 保证至少 3 条 */
+    if (out.length < 3) out.push({ title: "给慢热的人", body: "给自己和对方多一点时间，感情的质量往往和推进速度无关。", pr: 0 });
+
+    var head = out.shift();
+    out.sort(function (a, b) { return (b.pr || 0) - (a.pr || 0); });
+    return [head].concat(out).slice(0, 8).map(function (x) { return { title: x.title, body: x.body }; });
+  }
+
+  /* ========================================================================
+     四、渲染
+     ======================================================================== */
+  var state = { stage: "welcome", step: 0, answers: { standards: [] } };
+  var app = document.getElementById("app");
+  var progressFill = document.getElementById("progressFill");
+
+  function setProgress(p) { progressFill.style.width = Math.max(0, Math.min(100, p)) + "%"; }
+
+  function render() {
+    if (state.stage === "welcome") return renderWelcome();
+    if (state.stage === "quiz") return renderQuestion();
+    return renderResult();
+  }
+
+  function renderWelcome() {
+    setProgress(0);
+    app.innerHTML =
+      '<div class="hero fade">' +
+        '<div class="kicker">LOVE & MATCH ADVISOR</div>' +
+        '<h1>恋爱择偶建议</h1>' +
+        '<div class="en">ATTACHMENT · VALUES · SOCIAL CIRCLE</div>' +
+        '<p class="sub">「随缘」这两个字，你可能说了好多年，缘分听了也挺随缘的。</p>' +
+        '<p class="sub">这台不插电的小机器，不会替你心动，也变不出对象——<br>它只陪你坐下来，把「我是谁、适合跟谁慢慢磨」聊清楚。 💘</p>' +
+        '<p class="sub" style="color:#7c5a68;font-size:13px;">🔒 全程离线：你说的话，连这台机器自己都不记得。</p>' +
+        '<div class="note">🧠 <b>它是怎么瞎猜的</b>：靠几个关于相处的小问题，套用公开的大众心理学概念（比如依恋类型）随便推一推。仅供自我了解、图一乐，请以真实相处的感受为准。</div>' +
+        '<div class="note" style="border-color:#6b5230;color:#d8b45a;">⚠️ <b>免责声明</b>：本工具非临床诊断、非专业心理咨询，也不是科学结论；它看不懂你，更看不懂你的心动对象。任何决定请自行判断，必要时求助专业人士——毕竟机器不用为你的感情负责，你要。</div>' +
+      '</div>' +
+      '<div class="nav"><button class="btn" id="startBtn">💌 开始自省（约 3 分钟）</button></div>';
+    document.getElementById("startBtn").addEventListener("click", function () { state.stage = "quiz"; state.step = 0; render(); });
+  }
+
+  function isAnswered(q) {
+    if (q.type === "multi") return (state.answers.standards || []).length > 0;
+    return !isBlank(state.answers[q.key]);
+  }
+
+  function renderQuestion() {
+    var q = QUESTIONS[state.step];
+    setProgress(((state.step + 1) / QUESTIONS.length) * 100);
+
+    var html = '<div class="fade">';
+    html += '<div class="q-head"><span class="q-no">' + pad2(state.step + 1) + ' / ' + pad2(QUESTIONS.length) + '</span>' +
+            '<span class="q-name">' + esc(q.name) + '</span></div>';
+    html += '<h2 class="q-title">' + esc(q.question) + '</h2>';
+    if (q.hint) html += '<p class="q-hint">' + esc(q.hint) + '</p>';
+
+    if (q.type === "multi") {
+      html += '<div class="chips" id="stdChips">';
+      q.options.forEach(function (o) {
+        var sel = (state.answers.standards || []).indexOf(o.v) >= 0;
+        html += '<button class="chip' + (sel ? " selected" : "") + '" data-std="' + o.v + '">' + esc(o.label) + '</button>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="opts">';
+      q.options.forEach(function (o) {
+        var sel = state.answers[q.key] === o.v;
+        html += '<button class="opt' + (sel ? " selected" : "") + '" data-v="' + o.v + '">' +
+                  '<span class="mark">' + (sel ? "✓" : "") + '</span>' +
+                  '<span class="txt">' + esc(o.label) + '</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="nav">';
+    if (state.step > 0) html += '<button class="btn ghost small" id="prevBtn">⬅️ 上一题</button>';
+    html += '<button class="btn" id="nextBtn">' + (state.step === QUESTIONS.length - 1 ? "💘 生成建议" : "➡️ 下一题") + '</button>';
+    html += '</div>';
+
+    app.innerHTML = html;
+
+    if (q.type === "multi") {
+      Array.prototype.forEach.call(app.querySelectorAll("[data-std]"), function (btn) {
+        btn.addEventListener("click", function () {
+          var k = btn.dataset.std;
+          if (!state.answers.standards) state.answers.standards = [];
+          var arr = state.answers.standards, i = arr.indexOf(k);
+          if (i >= 0) { arr.splice(i, 1); btn.classList.remove("selected"); }
+          else {
+            if (arr.length >= 3) { arr.shift(); }
+            arr.push(k); btn.classList.add("selected");
+            Array.prototype.forEach.call(app.querySelectorAll("[data-std]"), function (b) {
+              b.classList.toggle("selected", arr.indexOf(b.dataset.std) >= 0);
+            });
+          }
+          updateNav();
+        });
+      });
+    } else {
+      Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (btn) {
+        btn.addEventListener("click", function () {
+          state.answers[q.key] = btn.dataset.v;
+          Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (b) {
+            b.classList.remove("selected"); b.querySelector(".mark").textContent = "";
+          });
+          btn.classList.add("selected"); btn.querySelector(".mark").textContent = "✓";
+          updateNav();
+        });
+      });
+    }
+
+    if (state.step > 0) document.getElementById("prevBtn").addEventListener("click", function () { state.step--; render(); });
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      if (!isAnswered(q)) return;
+      if (state.step === QUESTIONS.length - 1) { state.stage = "result"; render(); window.scrollTo(0, 0); }
+      else { state.step++; render(); }
+    });
+
+    updateNav();
+  }
+
+  function updateNav() {
+    var btn = document.getElementById("nextBtn");
+    if (!btn) return;
+    var ok = isAnswered(QUESTIONS[state.step]);
+    btn.disabled = !ok;
+    btn.classList.toggle("disabled", !ok);
+  }
+
+  function genderLabel(g) { return g === "m" ? "男" : g === "f" ? "女" : "保密"; }
+  function ageLabel(a) { return ({ "18": "18-22 岁", "23": "23-27 岁", "28": "28-32 岁", "33": "33 岁以上" })[a] || a; }
+
+  function renderResult() {
+    setProgress(100);
+    var r = analyze();
+    var sugs = generateSuggestions(r);
+    var aLevel = level3(r.active), sLevel = level3(r.spend);
+
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">YOUR DATING PROFILE</div>';
+    html += '<h2 class="h">💘 恋爱择偶建议</h2>';
+    html += '<p class="summary">性别：' + genderLabel(r.gender) + ' · 年龄：' + ageLabel(r.age) + ' · 依恋：' + r.attach.name + '</p>';
+
+    html += '<div class="section-title">你的恋爱人格</div>';
+    html += '<div class="card gold">' +
+              '<div class="seal">' + r.attach.seal + '</div>' +
+              '<h3>' + esc(r.attach.name) + '</h3>' +
+              '<div class="alias">' + esc(r.attach.alias) + '</div>' +
+              '<p>' + esc(r.attach.desc) + '</p>' +
+              '<p><span class="k">你需要：</span>' + esc(r.attach.need) + '</p>' +
+            '</div>';
+
+    html += '<div class="section-title">两个关键倾向</div>';
+    html += '<div class="card">' +
+              '<div class="meter">' +
+                '<div class="top"><span class="lvl">主动度 · ' + aLevel.label + '</span><span class="sc">' + r.active + '/6</span></div>' +
+                '<div class="meter-track"><span class="meter-fill" data-w="' + (r.active / 6 * 100) + '"></span></div>' +
+                '<div class="txt">' + (aLevel.key === "low" ? "偏被动，容易错过机会 —— 建议多迈半步。" : aLevel.key === "mid" ? "有主动意愿，再明确一点会更好。" : "很敢主动，注意把力气用在值得的人身上。") + '</div>' +
+              '</div>' +
+            '</div>';
+    html += '<div class="card">' +
+              '<div class="meter">' +
+                '<div class="top"><span class="lvl">投入度 · ' + sLevel.label + '</span><span class="sc">' + r.spend + '/6</span></div>' +
+                '<div class="meter-track"><span class="meter-fill" data-w="' + (r.spend / 6 * 100) + '"></span></div>' +
+                '<div class="txt">' + (sLevel.key === "low" ? "偏务实/节俭 —— 不必多花钱，但要有「被在乎」的表达。" : sLevel.key === "mid" ? "愿意投入，按关系阶段对齐节奏即可。" : "很愿意投入 —— 当心用礼物换安全感，设好预算线。") + '</div>' +
+              '</div>' +
+            '</div>';
+
+    html += '<div class="section-title">三观与择偶偏好</div>';
+    html += '<div class="card">';
+    html += '<div class="tags">';
+    html += '<span class="tag">事业/感情：' + ({ career: "事业优先", balance: "追求平衡", love: "感情优先", unsure: "尚未确定" }[r.career]) + '</span>';
+    html += '<span class="tag">未来：' + ({ bigcity: "大城市打拼", hometown: "小城安稳", abroad: "出国/旅居", unsure: "待定" }[r.future]) + '</span>';
+    html += '<span class="tag">社交：' + ({ big: "圈子大", mid: "圈子中等", small: "圈子小", none: "几乎零社交" }[r.social]) + '</span>';
+    html += '</div>';
+    if (r.standards.length) {
+      html += '<div class="tags" style="margin-top:10px;">';
+      r.standards.forEach(function (k) { html += '<span class="tag">看重 · ' + esc(STD_LABEL[k]) + '</span>'; });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="section-title">给你的具体建议</div>';
+    sugs.forEach(function (s) {
+      html += '<div class="sug"><h4>' + esc(s.title) + '</h4><p>' + esc(s.body) + '</p></div>';
+    });
+
+    html += '<div class="nav">' +
+              '<button class="btn ghost" id="restartBtn">🔄 重新评估</button>' +
+              '<button class="btn" id="shareBtn">📸 分享截图</button>' +
+            '</div>';
+    html += '<div class="foot">⚠️ 免责声明：依恋类型等仅供自我了解与娱乐，非临床诊断、非专业心理咨询 · 请以真实相处的感受为准<br>数据仅在本地内存中处理 · 不写入任何存储 · 关闭即清空</div>';
+    html += '</div>';
+
+    html += '<div class="modal" id="shareModal">' +
+              '<div class="modal-card">' +
+                '<div class="modal-head">📸 截图预览 · 含当前时间</div>' +
+                '<img class="shot" id="shotImg" alt="恋爱择偶建议截图">' +
+                '<div class="modal-actions">' +
+                  '<button class="btn ghost small" id="closeShareBtn">✖️ 关闭</button>' +
+                  '<button class="btn small" id="saveShotBtn">💾 保存图片</button>' +
+                  (canSystemShare() ? '<button class="btn small" id="sysShareBtn">📤 系统分享</button>' : '') +
+                '</div>' +
+                '<div class="modal-note">图片由本地 Canvas 生成 · 不联网 · 不上传</div>' +
+              '</div>' +
+            '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state = { stage: "welcome", step: 0, answers: { standards: [] } }; render(); window.scrollTo(0, 0);
+    });
+
+    var shot = null;
+    function ensure() { if (!shot) shot = drawShareCard(r, sugs); return shot; }
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      document.getElementById("shotImg").src = ensure().toDataURL("image/png");
+      document.getElementById("shareModal").classList.add("open");
+    });
+    document.getElementById("closeShareBtn").addEventListener("click", function () {
+      document.getElementById("shareModal").classList.remove("open");
+    });
+    document.getElementById("saveShotBtn").addEventListener("click", function () {
+      var link = document.createElement("a");
+      link.href = ensure().toDataURL("image/png");
+      link.download = "恋爱择偶_" + fileStamp() + ".png";
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    });
+    var sysBtn = document.getElementById("sysShareBtn");
+    if (sysBtn) {
+      sysBtn.addEventListener("click", function () {
+        ensure().toBlob(function (blob) {
+          if (!blob) return;
+          var file = new File([blob], "恋爱择偶_" + fileStamp() + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: "恋爱择偶建议" }).catch(function () {});
+          }
+        }, "image/png");
+      });
+    }
+  }
+
+  /* ========================================================================
+     五、分享截图
+     ======================================================================== */
+  function wrapLines(ctx, text, maxWidth) {
+    var chars = String(text).split(""), out = [], cur = "";
+    for (var i = 0; i < chars.length; i++) {
+      var test = cur + chars[i];
+      if (cur && ctx.measureText(test).width > maxWidth) { out.push(cur); cur = chars[i]; }
+      else { cur = test; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  function drawShareCard(r, sugs) {
+    var W = 1080, H = 2600, pad = 90;
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var FONT = '"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Apple Color Emoji","Segoe UI Emoji",sans-serif';
+    function font(size, weight) { ctx.font = (weight ? weight + " " : "") + size + "px " + FONT; }
+    function txt(str, x, y, size, weight, color) { font(size, weight); ctx.fillStyle = color; ctx.fillText(str, x, y); }
+    function center(str, y, size, weight, color) { font(size, weight); ctx.fillStyle = color; ctx.fillText(str, (W - ctx.measureText(str).width) / 2, y); }
+    function divider(y) { ctx.strokeStyle = "#2a1a22"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke(); }
+    function block(label, y) { txt(label, pad, y, 28, "600", "#E8B04B"); return y + 52; }
+    function wrapped(text, y, size, weight, color) {
+      font(size, weight);
+      wrapLines(ctx, text, W - pad * 2).forEach(function (ln) { txt(ln, pad, y, size, weight || "400", color); y += size + 16; });
+      return y;
+    }
+
+    ctx.fillStyle = "#120a0f"; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+
+    var y = 120;
+    ctx.fillStyle = "#E0557A"; ctx.fillRect(pad, y, 120, 6); y += 46;
+    txt("LOVE & MATCH ADVISOR", pad, y, 28, "500", "#9a7684"); y += 50;
+    txt("恋爱择偶建议 💘", pad, y, 60, "700", "#F7EDF0"); y += 92;
+    txt(genderLabel(r.gender) + " · " + ageLabel(r.age) + " · " + fmtDateTime(new Date()), pad, y, 30, "400", "#9a7684"); y += 58;
+    divider(y); y += 40;
+
+    y = block("你的恋爱人格", y);
+    txt(r.attach.seal + "  " + r.attach.name, pad, y, 44, "700", "#F7EDF0"); y += 62;
+    txt(r.attach.alias, pad, y, 32, "400", "#E8B04B"); y += 56;
+    y = wrapped(r.attach.desc, y, 32, "400", "#cbb4bd"); y += 24;
+
+    y = block("两个关键倾向", y);
+    var aL = level3(r.active), sL = level3(r.spend);
+    txt("主动度 · " + aL.label + "   (" + r.active + "/6)", pad, y, 34, "400", "#cbb4bd"); y += 50;
+    txt("投入度 · " + sL.label + "   (" + r.spend + "/6)", pad, y, 34, "400", "#cbb4bd"); y += 62;
+
+    y = block("给你的建议", y);
+    sugs.slice(0, 3).forEach(function (s) {
+      font(34, "700"); ctx.fillStyle = "#F7EDF0";
+      wrapLines(ctx, s.title, W - pad * 2).forEach(function (ln) { txt(ln, pad, y, 34, "700", "#F7EDF0"); y += 46; });
+      y += 4;
+      y = wrapped(s.body, y, 30, "400", "#b79aa4"); y += 26;
+    });
+
+    divider(y); y += 40;
+    center("⚠️ 免责声明：仅供自我了解与娱乐 · 非临床诊断 · 非专业咨询", y, 26, "400", "#7c5a68"); y += 44;
+    center("本地生成 · 完全离线 · 不含个人信息", y, 26, "400", "#7c5a68"); y += 60;
+
+    var outH = Math.min(H, y);
+    var out = document.createElement("canvas");
+    out.width = W; out.height = outH;
+    out.getContext("2d").drawImage(canvas, 0, 0, W, outH, 0, 0, W, outH);
+    return out;
+  }
+
+  /* ========================================================================
+     六、工具函数
+     ======================================================================== */
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+  function isBlank(v) { return v === undefined || v === null || String(v).trim() === ""; }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+  function fmtDateTime(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+  function fileStamp() {
+    var d = new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + "_" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+  function canSystemShare() {
+    return typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare &&
+           typeof File !== "undefined" && typeof Blob !== "undefined";
+  }
+  function animateBars() {
+    var bars = app.querySelectorAll(".meter-fill");
+    var run = function () {
+      Array.prototype.forEach.call(bars, function (b) {
+        var w = b.getAttribute("data-w");
+        if (w != null) b.style.width = w + "%";
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+    else run();
+  }
+
+  var themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var isLight = document.body.classList.toggle("light");
+      themeToggle.textContent = isLight ? "🌙" : "💡";
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
