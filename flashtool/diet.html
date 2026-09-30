@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  饮食自评 · 饮食健康程度评估工具
+  ----------------------------------------------------------------------------
+  用途   ：选择评估范围（单餐 / 全天），完成饮食健康多维度自评（含烹饪方式、
+           常见食物热量快速估算），生成综合得分与针对性饮食建议。
+  作者   ：swimHelper
+  版本   ：v1.0（单餐/全天路由 + 烹饪方式 + 热量估算器 + 本地分享截图）
+  生成日 ：2026-09-29
+  声明   ：单文件 HTML · 完全离线 · 零数据持久化，
+           所有数据仅在内存中处理，关闭页面即清空，不写入任何浏览器存储。
+  说明   ：本文件不引用任何外部资源、外部字体、外部图片或远程接口，
+           双击即可在任意现代浏览器（含 iOS Safari / Android Chrome）打开。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<title>饮食自评</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #000; color: #fff; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.6; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  button { font-family: inherit; }
+
+  .progress-track { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: #1c1c1c; z-index: 50; }
+  .progress-fill { height: 100%; width: 0; background: #fff; transition: width .3s ease; }
+
+  .app { max-width: 520px; margin: 0 auto; padding: 32px 20px 40px; min-height: 100vh; display: flex; flex-direction: column; }
+  .fade { animation: fadeIn .3s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .hero .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 14px; }
+  .hero h1 { font-size: 34px; font-weight: 700; letter-spacing: 1px; margin-bottom: 18px; }
+  .hero .sub { font-size: 15px; color: #999; margin-bottom: 8px; }
+
+  .q-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+  .q-no { font-size: 12px; letter-spacing: 2px; color: #777; }
+  .q-name { font-size: 12px; letter-spacing: 1px; color: #fff; border: 1px solid #444; padding: 2px 8px; }
+  .q-title { font-size: 21px; font-weight: 600; line-height: 1.45; margin-bottom: 8px; }
+  .q-hint { font-size: 12px; color: #777; margin-bottom: 4px; }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    min-height: 52px; padding: 13px 16px; text-align: left;
+    background: #0c0c0c; border: 1px solid #2c2c2c; color: #ddd;
+    font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .opt .mark { flex: 0 0 auto; width: 22px; height: 22px; border: 1px solid #4a4a4a; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #666; }
+  .opt .txt { flex: 1; }
+  .opt .sc { flex: 0 0 auto; font-size: 11px; color: #555; letter-spacing: 1px; }
+  .opt .opt-sub { display: block; font-size: 12px; color: #777; margin-top: 2px; letter-spacing: 0; }
+  .opt:active { background: #1a1a1a; }
+  .opt.selected { background: #fff; color: #000; border-color: #fff; }
+  .opt.selected .mark { background: #000; color: #fff; border-color: #000; }
+  .opt.selected .sc { color: #777; }
+  .opt.selected .opt-sub { color: #555; }
+
+  /* ---------- 热量估算 ---------- */
+  .kcal-box { margin-top: 20px; border: 1px solid #222; padding: 16px; background: #0a0a0a; }
+  .kcal-total { font-size: 13px; color: #888; margin-bottom: 12px; }
+  .kcal-total b { color: #fff; font-size: 24px; font-weight: 700; }
+  .kcal-total span { color: #666; }
+  .food-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .food {
+    display: flex; align-items: center; gap: 8px; min-height: 50px; padding: 9px 12px;
+    background: #0c0c0c; border: 1px solid #2c2c2c; color: #ddd; font-size: 13px;
+    cursor: pointer; text-align: left; transition: background .15s, color .15s, border-color .15s;
+  }
+  .food:active { background: #1a1a1a; }
+  .food.on { background: #fff; color: #000; border-color: #fff; }
+  .food .fname { flex: 1; }
+  .food .fkcal { display: block; font-size: 11px; color: #666; }
+  .food.on .fkcal { color: #666; }
+  .food .fcount { flex: 0 0 auto; font-size: 11px; border: 1px solid currentColor; min-width: 20px; text-align: center; padding: 1px 3px; }
+  .kcal-input {
+    margin-top: 12px; width: 100%; background: #0c0c0c; border: 1px solid #2c2c2c; color: #fff;
+    font-size: 24px; padding: 12px 14px; font-family: inherit; letter-spacing: 1px;
+  }
+  .kcal-input:focus { outline: none; border-color: #fff; }
+  .kcal-input::placeholder { color: #333; }
+
+  /* ---------- 截图预览弹层 ---------- */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.94); display: none; z-index: 100; padding: 22px 20px 40px; overflow-y: auto; }
+  .modal.open { display: block; }
+  .modal-card { max-width: 520px; margin: 0 auto; }
+  .modal-head { font-size: 12px; letter-spacing: 3px; color: #888; margin-bottom: 14px; }
+  .shot { width: 100%; display: block; border: 1px solid #222; background: #000; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+  .modal-note { margin-top: 14px; font-size: 11px; color: #555; text-align: center; line-height: 1.7; }
+
+  .nav { display: flex; gap: 12px; margin-top: 32px; }
+  .btn {
+    flex: 1; min-height: 52px; padding: 0 16px; border: 1px solid #fff;
+    background: #fff; color: #000; font-size: 15px; letter-spacing: 2px; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: #000; color: #fff; border-color: #3a3a3a; }
+  .btn.small { flex: 0 0 auto; padding: 0 20px; letter-spacing: 1px; }
+  .btn[disabled], .btn.disabled { opacity: .28; cursor: not-allowed; }
+
+  .res { padding-top: 8px; }
+  .res .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 10px; }
+  .score { font-size: 68px; font-weight: 700; letter-spacing: -3px; line-height: 1; }
+  .score small { font-size: 20px; color: #555; font-weight: 400; letter-spacing: 0; margin-left: 4px; }
+  .grade { display: inline-block; margin-top: 14px; padding: 5px 14px; border: 1px solid #fff; font-size: 12px; letter-spacing: 3px; }
+  .res .summary { margin-top: 14px; font-size: 13px; color: #999; }
+
+  .section-title { font-size: 12px; letter-spacing: 3px; color: #666; margin: 34px 0 14px; padding-bottom: 8px; border-bottom: 1px solid #1e1e1e; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12px; }
+  .bar-label { flex: 0 0 64px; color: #aaa; }
+  .bar-track { flex: 1; height: 10px; background: #181818; }
+  .bar-fill { display: block; width: 0; height: 100%; background: #fff; transition: width .6s ease; }
+  .bar-val { flex: 0 0 34px; text-align: right; color: #888; font-variant-numeric: tabular-nums; }
+  .bar-note { margin-top: 12px; font-size: 11px; color: #555; line-height: 1.7; }
+
+  .sug { border: 1px solid #222; border-left: 3px solid #fff; padding: 14px 16px; margin-bottom: 12px; background: #0a0a0a; }
+  .sug h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .sug p { font-size: 13px; color: #9a9a9a; line-height: 1.7; }
+
+  .foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 11px; color: #4a4a4a; text-align: center; line-height: 1.8; }
+
+  @media (max-width: 380px) {
+    body { font-size: 14px; }
+    .hero h1 { font-size: 28px; }
+    .q-title { font-size: 18px; }
+    .score { font-size: 56px; }
+    .bar-label { flex-basis: 56px; }
+    .food-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">饮食自评 · v1.0</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="app" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========================================================================
+     一、评估范围、常见食物热量表与选项定义
+     ======================================================================== */
+  var SCOPES = [
+    { key: "meal", name: "单餐", desc: "早餐 / 午餐 / 晚餐 / 加餐" },
+    { key: "day",  name: "全天", desc: "一整天的全部饮食" }
+  ];
+
+  /* 常见食物热量（典型份量，单位 kcal，用于快速估算，非绝对精确） */
+  var FOODS = [
+    { name: "米饭", unit: "1碗", kcal: 200 },
+    { name: "面条", unit: "1碗", kcal: 280 },
+    { name: "馒头/面包", unit: "1份", kcal: 220 },
+    { name: "鸡胸/瘦肉", unit: "100g", kcal: 165 },
+    { name: "鱼虾", unit: "100g", kcal: 120 },
+    { name: "鸡蛋", unit: "1个", kcal: 75 },
+    { name: "牛奶/酸奶", unit: "250ml", kcal: 150 },
+    { name: "豆制品", unit: "100g", kcal: 90 },
+    { name: "蔬菜", unit: "1份", kcal: 30 },
+    { name: "水果", unit: "1份", kcal: 80 },
+    { name: "坚果", unit: "1小把", kcal: 170 },
+    { name: "油炸食品", unit: "1份", kcal: 300 },
+    { name: "甜点/蛋糕", unit: "1份", kcal: 300 },
+    { name: "含糖饮料", unit: "1杯", kcal: 150 }
+  ];
+
+  var OPT = {
+    regular: [
+      { label: "三餐规律定时", score: 5 },
+      { label: "基本规律，偶尔不规律", score: 4 },
+      { label: "时间不固定", score: 3 },
+      { label: "经常跳餐或暴食", score: 2 },
+      { label: "毫无规律", score: 1 }
+    ],
+    vegetable: [
+      { label: "每餐 ≥2 种、约一拳半，深色为主", score: 5 },
+      { label: "每餐约一拳蔬菜", score: 4 },
+      { label: "蔬菜量一般，偶尔吃", score: 3 },
+      { label: "蔬菜偏少，以肉 / 主食为主", score: 2 },
+      { label: "几乎不吃蔬菜", score: 1 }
+    ],
+    protein: [
+      { label: "每餐优质蛋白充足（鱼禽蛋豆奶）", score: 5 },
+      { label: "基本每餐都有蛋白", score: 4 },
+      { label: "蛋白来源单一（如只吃肉）", score: 3 },
+      { label: "蛋白偏少", score: 2 },
+      { label: "几乎无蛋白", score: 1 }
+    ],
+    carb: [
+      { label: "以全谷 / 杂豆 / 薯类为主", score: 5 },
+      { label: "粗细搭配，约一半粗粮", score: 4 },
+      { label: "以白米白面为主", score: 3 },
+      { label: "精制主食偏多，蔬果少", score: 2 },
+      { label: "大量精制碳水 + 甜食", score: 1 }
+    ],
+    cooking: [
+      { label: "蒸 / 煮 / 凉拌 / 生食", score: 5 },
+      { label: "白灼 / 快炒 / 少油烤", score: 4 },
+      { label: "家常炒 / 炖 / 红烧（适量油）", score: 3 },
+      { label: "煎炸 / 重油红烧 / 多勾芡", score: 2 },
+      { label: "油炸 / 烧烤 / 重油重盐", score: 1 }
+    ],
+    oilsalt: [
+      { label: "清淡，油盐控制好", score: 5 },
+      { label: "尚可，不太咸不油腻", score: 4 },
+      { label: "偏油或偏咸", score: 3 },
+      { label: "明显重油重盐", score: 2 },
+      { label: "非常重口", score: 1 }
+    ],
+    sugar: [
+      { label: "几乎不喝含糖饮料，添加糖很少", score: 5 },
+      { label: "偶尔（每周 ≤2 次）", score: 4 },
+      { label: "每周 3-5 次", score: 3 },
+      { label: "几乎每天", score: 2 },
+      { label: "每天多次，离不开甜饮 / 甜食", score: 1 }
+    ],
+    water: [
+      { label: "≥1700ml，少量多次", score: 5 },
+      { label: "1200-1700ml", score: 4 },
+      { label: "800-1200ml", score: 3 },
+      { label: "500-800ml", score: 2 },
+      { label: "<500ml", score: 1 }
+    ],
+    pace: [
+      { label: "细嚼慢咽 20min+，七八分饱", score: 5 },
+      { label: "速度适中，饱腹感合适", score: 4 },
+      { label: "偏快，常吃到撑", score: 3 },
+      { label: "很快，常过量", score: 2 },
+      { label: "狼吞虎咽 / 暴食", score: 1 }
+    ],
+    processed: [
+      { label: "几乎不外食 / 外卖，少加工食品", score: 5 },
+      { label: "每周 1-2 次", score: 4 },
+      { label: "每周 3-4 次", score: 3 },
+      { label: "几乎每天外卖 / 加工食品", score: 2 },
+      { label: "每餐外卖 / 超加工", score: 1 }
+    ],
+    emotion: [
+      { label: "进食有意识，能区分饥饿与情绪", score: 5 },
+      { label: "偶尔情绪性进食", score: 4 },
+      { label: "有时靠食物缓解压力", score: 3 },
+      { label: "经常情绪化进食", score: 2 },
+      { label: "几乎每次靠食物调节情绪", score: 1 }
+    ]
+  };
+
+  function scaleQ(key, name, short, question, options) {
+    return { key: key, name: name, short: short, type: "scale", question: question, options: options };
+  }
+
+  var QUESTIONS = [
+    scaleQ("regular",   "餐次规律",       "规律", "本次饮食的进餐是否规律？", OPT.regular),
+    scaleQ("vegetable", "蔬菜摄入",       "蔬菜", "蔬菜的摄入量与丰富度？", OPT.vegetable),
+    scaleQ("protein",   "优质蛋白",       "蛋白", "蛋白质来源与充足程度？", OPT.protein),
+    scaleQ("carb",      "主食质量",       "主食", "主食的种类与质量？", OPT.carb),
+    scaleQ("cooking",   "烹饪方式",       "烹饪", "本次食材主要的烹饪方式？", OPT.cooking),
+    scaleQ("oilsalt",   "油脂与盐",       "油盐", "口味与用油用盐情况？", OPT.oilsalt),
+    scaleQ("sugar",     "添加糖 / 饮料",  "糖",   "含糖饮料与添加糖摄入？", OPT.sugar),
+    scaleQ("water",     "饮水量",         "饮水", "本次（或当日）饮水量？", OPT.water),
+    scaleQ("pace",      "进食速度与饱腹", "进食", "进食速度与饱腹感控制？", OPT.pace),
+    scaleQ("processed", "加工食品 / 外卖","外卖", "加工食品与外卖频率？", OPT.processed),
+    { key: "calorie", name: "估算热量", short: "热量", type: "calories",
+      question: "本次饮食的估算热量？（可选）",
+      hint: "点击常见食物快速累加，或直接输入。单餐参考 400-700 kcal；全天参考 1800-2400 kcal。留空按中性计。" },
+    scaleQ("emotion",   "情绪化进食",     "情绪", "是否出现情绪化进食？", OPT.emotion)
+  ];
+
+  /* 内存状态：不写入任何存储 */
+  var state = { stage: "welcome", step: 0, answers: { foodCounts: {} } };
+  var app = document.getElementById("app");
+  var progressFill = document.getElementById("progressFill");
+
+  /* ========================================================================
+     二、评分换算
+     ======================================================================== */
+  function mean(arr) { return arr.reduce(function (a, b) { return a + b; }, 0) / arr.length; }
+  function isBlank(v) { return v === undefined || v === null || String(v).trim() === ""; }
+
+  /* 热量适宜度 0-100（单餐 / 全天两套参考区间，数值越接近适宜区间分越高） */
+  function calorieScore(kcal, scope) {
+    var bands = scope === "day"
+      ? [[1000, 35], [1500, 62], [1800, 82], [2400, 95], [2800, 72], [3500, 45], [Infinity, 25]]
+      : [[100, 30], [250, 55], [400, 80], [700, 95], [900, 70], [1200, 45], [Infinity, 28]];
+    for (var i = 0; i < bands.length; i++) {
+      if (kcal < bands[i][0]) return bands[i][1];
+    }
+    return 60;
+  }
+
+  function calorieTotal() {
+    var counts = state.answers.foodCounts || {}, total = 0;
+    FOODS.forEach(function (f, i) { total += (counts[i] || 0) * f.kcal; });
+    return total;
+  }
+
+  function dimPercent(q) {
+    if (q.key === "calorie") {
+      if (isBlank(state.answers.calorie)) return 60;
+      return calorieScore(Number(state.answers.calorie), state.answers.scope);
+    }
+    return (state.answers[q.key] / 5) * 100;
+  }
+
+  function computeResults() {
+    var pct = {}, vals = [];
+    QUESTIONS.forEach(function (q) {
+      pct[q.key] = dimPercent(q);
+      vals.push(pct[q.key]);
+    });
+    return { pct: pct, overall: Math.round(mean(vals)), questions: QUESTIONS };
+  }
+
+  function gradeLabel(score) {
+    if (score >= 85) return "EXCELLENT · 优秀";
+    if (score >= 70) return "GOOD · 良好";
+    if (score >= 55) return "FAIR · 中等";
+    if (score >= 40) return "NEEDS WORK · 需改进";
+    return "WARNING · 警示";
+  }
+
+  function scopeName(key) {
+    for (var i = 0; i < SCOPES.length; i++) { if (SCOPES[i].key === key) return SCOPES[i].name; }
+    return "";
+  }
+
+  /* ========================================================================
+     三、建议生成（按分组分支 + 优先级排序）
+     ======================================================================== */
+  function generateSuggestions(r) {
+    var p = r.pct, out = [];
+    var scope = state.answers.scope;
+
+    /* 总评（始终显示，置于最前） */
+    if (r.overall >= 85) {
+      out.push({ title: "整体饮食优质", body: "结构均衡、习惯良好，继续保持这种饮食模式。", pr: 0 });
+    } else if (r.overall < 60) {
+      out.push({ title: "整体待改善 · 重点调整", body: "先从烹饪方式、蔬菜摄入与添加糖 2-3 项入手，逐步替换而非一次性改变。", pr: 0 });
+    } else {
+      out.push({ title: "整体可优化", body: "饮食基本合理，按以下建议针对性优化 2-3 项即可。", pr: 0 });
+    }
+
+    /* 烹饪方式（用户重点） */
+    if (p.cooking < 50) {
+      out.push({ title: "烹饪方式偏重口", body: "多用蒸 / 煮 / 凉拌 / 少油烤，减少油炸、煎与重油红烧；同样食材换个做法，热量可降三成以上。", pr: 4 });
+    } else if (p.cooking < 80) {
+      out.push({ title: "烹饪方式可优化", body: "在红烧 / 家常炒基础上，穿插白灼、清蒸与凉拌，控制烹调用油。", pr: 2 });
+    }
+
+    /* 添加糖（健康优先级高） */
+    if (p.sugar < 50) out.push({ title: "添加糖偏高", body: "含糖饮料换成白水 / 无糖茶，添加糖尽量 <25g/天；留意酱料与甜点的隐形糖。", pr: 4 });
+
+    /* 蔬菜 */
+    if (p.vegetable < 50) out.push({ title: "蔬菜摄入不足", body: "每餐保证约一拳半蔬菜，深色蔬菜占一半，先吃菜再吃主食有助于控制总量。", pr: 3 });
+
+    /* 蛋白 */
+    if (p.protein < 50) out.push({ title: "优质蛋白不足", body: "每餐补充一掌心优质蛋白（鱼、禽、蛋、豆、奶），来源尽量多样。", pr: 3 });
+
+    /* 主食 */
+    if (p.carb < 50) out.push({ title: "主食质量待提升", body: "用全谷、杂豆、薯类替换一半精制主食，减少甜面包与含糖糕点。", pr: 3 });
+
+    /* 油盐 */
+    if (p.oilsalt < 50) out.push({ title: "油盐偏多", body: "每日烹调用油 25-30g、盐 <5g，用葱姜蒜、香草、醋替代部分盐与酱料。", pr: 3 });
+
+    /* 加工 / 外卖 */
+    if (p.processed < 50) out.push({ title: "加工食品 / 外卖偏多", body: "降低外卖与超加工食品频率，优先选择可辨识原食材的餐食。", pr: 3 });
+
+    /* 进食速度 */
+    if (p.pace < 50) out.push({ title: "进食过快", body: "把每餐时间放慢到 20min 以上，细嚼慢咽、七八分饱，帮助控制总量。", pr: 3 });
+
+    /* 热量（估算） */
+    if (!isBlank(state.answers.calorie)) {
+      var kcal = Math.round(Number(state.answers.calorie));
+      var hi = scope === "day" ? 2400 : 700;
+      var lo = scope === "day" ? 1500 : 250;
+      var unit = scope === "day" ? "全天" : "单餐";
+      if (kcal > hi) {
+        out.push({ title: "热量偏高 · 约 " + kcal + " kcal", body: unit + "估算热量偏高，减少油炸 / 甜点与主食份量，增加蔬菜与优质蛋白提升饱腹感。", pr: 4 });
+      } else if (kcal < lo) {
+        out.push({ title: "热量偏低 · 约 " + kcal + " kcal", body: unit + "估算热量偏低，适当增加优质蛋白与全谷主食，避免长期能量不足。", pr: 3 });
+      } else {
+        out.push({ title: "热量适宜 · 约 " + kcal + " kcal", body: "估算热量处于适宜区间，保持当前份量与结构。", pr: 1 });
+      }
+    }
+
+    /* 情绪化进食 */
+    if (p.emotion < 50) out.push({ title: "情绪化进食信号", body: "区分生理饥饿与情绪饥饿，尝试散步 / 饮水 / 深呼吸等非食物方式缓解压力。", pr: 3 });
+
+    /* 饮水 */
+    if (p.water < 50) out.push({ title: "饮水不足", body: "每日饮水 1500-1700ml，少量多次；可用无糖茶替代部分含糖饮料。", pr: 2 });
+
+    /* 规律 */
+    if (p.regular < 50) out.push({ title: "进餐不规律", body: "固定三餐时间，避免长时间空腹后报复性进食；两餐间隔约 4-6h。", pr: 2 });
+
+    /* 保证至少 3 条 */
+    if (out.length < 3) out.push({ title: "均衡搭配", body: "每餐尽量包含主食 + 蛋白 + 蔬菜三类，颜色越丰富通常营养越全面。", pr: 0 });
+    if (out.length < 3) out.push({ title: "记录饮食", body: "简单记录 3-5 天饮食，更容易发现隐形糖、油与份量问题。", pr: 0 });
+
+    /* 总评置顶；其余按优先级排序，安全与核心建议优先保留（最多 8 条） */
+    var summary = out.shift();
+    out.sort(function (a, b) { return (b.pr || 0) - (a.pr || 0); });
+    return [summary].concat(out).slice(0, 8).map(function (x) {
+      return { title: x.title, body: x.body };
+    });
+  }
+
+  /* ========================================================================
+     四、渲染
+     ======================================================================== */
+  function setProgress(percent) {
+    progressFill.style.width = Math.max(0, Math.min(100, percent)) + "%";
+  }
+
+  function render() {
+    if (state.stage === "welcome") return renderWelcome();
+    if (state.stage === "quiz") return renderQuestion();
+    return renderResult();
+  }
+
+  function renderWelcome() {
+    setProgress(0);
+    var s = state.answers.scope;
+    var cards = SCOPES.map(function (x) {
+      return '<button class="opt' + (s === x.key ? " selected" : "") + '" data-scope="' + x.key + '">' +
+               '<span class="mark">' + (s === x.key ? "✓" : "") + '</span>' +
+               '<span class="txt">' + esc(x.name) + '<span class="opt-sub">' + esc(x.desc) + '</span></span>' +
+             '</button>';
+    }).join("");
+    app.innerHTML =
+      '<div class="hero fade">' +
+        '<div class="kicker">DIET SELF-CHECK</div>' +
+        '<h1>饮食自评</h1>' +
+        '<p class="sub">3 分钟评估饮食健康程度，含烹饪方式与热量快速估算。</p>' +
+        '<p class="sub" style="color:#666;font-size:13px;">不上传 · 不保存 · 关闭页面即清空</p>' +
+        '<div class="section-title">选择评估范围</div>' +
+        '<div class="opts" id="scopeCards">' + cards + '</div>' +
+      '</div>' +
+      '<div class="nav"><button class="btn" id="startBtn"' + (s ? "" : " disabled") + '>开始评估</button></div>';
+
+    Array.prototype.forEach.call(app.querySelectorAll("#scopeCards .opt"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.answers.scope = btn.dataset.scope;
+        Array.prototype.forEach.call(app.querySelectorAll("#scopeCards .opt"), function (b) {
+          b.classList.remove("selected");
+          b.querySelector(".mark").textContent = "";
+        });
+        btn.classList.add("selected");
+        btn.querySelector(".mark").textContent = "✓";
+        var sb = document.getElementById("startBtn");
+        sb.disabled = false;
+        sb.classList.remove("disabled");
+      });
+    });
+    document.getElementById("startBtn").addEventListener("click", function () {
+      if (!state.answers.scope) return;
+      state.stage = "quiz";
+      state.step = 0;
+      render();
+    });
+  }
+
+  function isAnswered(q) {
+    if (q.type === "calories") return true; // 可选
+    return !isBlank(state.answers[q.key]);
+  }
+
+  function renderQuestion() {
+    var q = QUESTIONS[state.step];
+    setProgress(((state.step + 1) / QUESTIONS.length) * 100);
+
+    var html = '<div class="fade">';
+    html += '<div class="q-head"><span class="q-no">' + pad2(state.step + 1) + ' / ' + pad2(QUESTIONS.length) + '</span>' +
+            '<span class="q-name">' + esc(q.name) + '</span></div>';
+    html += '<h2 class="q-title">' + esc(q.question) + '</h2>';
+    if (q.hint) html += '<p class="q-hint">' + esc(q.hint) + '</p>';
+
+    if (q.type === "calories") {
+      var counts = state.answers.foodCounts || {};
+      var total = calorieTotal();
+      html += '<div class="kcal-box">';
+      html += '<div class="kcal-total">当前估算 <b id="kcalVal">' + total + '</b> <span>kcal</span></div>';
+      html += '<div class="food-grid" id="foodGrid">';
+      FOODS.forEach(function (f, i) {
+        var c = counts[i] || 0;
+        html += '<button class="food' + (c > 0 ? " on" : "") + '" data-idx="' + i + '">' +
+                  '<span class="fname">' + esc(f.name) + '<span class="fkcal">' + esc(f.unit) + ' · ' + f.kcal + ' kcal</span></span>' +
+                  (c > 0 ? '<span class="fcount">×' + c + '</span>' : '') +
+                '</button>';
+      });
+      html += '</div>';
+      html += '<input class="kcal-input" id="kcalInput" type="number" inputmode="numeric" min="0" max="20000" step="10" ' +
+              'placeholder="或直接输入 kcal" value="' + (isBlank(state.answers.calorie) ? "" : esc(String(state.answers.calorie))) + '">';
+      html += '<p class="q-hint" style="margin-top:10px;">点击食物累加（再次点击 +1，循环 0-3）；也可直接输入。留空按中性计入总分。</p>';
+      html += '</div>';
+    } else {
+      html += '<div class="opts">';
+      q.options.forEach(function (o) {
+        var isSel = state.answers[q.key] === o.score;
+        html += '<button class="opt' + (isSel ? " selected" : "") + '" data-score="' + o.score + '">' +
+                  '<span class="mark">' + (isSel ? "✓" : "") + '</span>' +
+                  '<span class="txt">' + esc(o.label) + '</span>' +
+                  '<span class="sc">' + o.score + ' 分</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="nav">';
+    if (state.step > 0) html += '<button class="btn ghost small" id="prevBtn">上一题</button>';
+    html += '<button class="btn" id="nextBtn">' + (state.step === QUESTIONS.length - 1 ? "生成报告" : "下一题") + '</button>';
+    html += '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    if (q.type === "calories") {
+      var input = document.getElementById("kcalInput");
+      Array.prototype.forEach.call(app.querySelectorAll("#foodGrid .food"), function (btn) {
+        btn.addEventListener("click", function () {
+          var i = Number(btn.dataset.idx);
+          if (!state.answers.foodCounts) state.answers.foodCounts = {};
+          var c = state.answers.foodCounts[i] || 0;
+          state.answers.foodCounts[i] = c >= 3 ? 0 : c + 1;
+          state.answers.calorie = String(calorieTotal());
+          renderQuestion(); // 重绘以更新计数与合计
+        });
+      });
+      input.addEventListener("input", function () {
+        state.answers.calorie = input.value;
+        var v = isBlank(input.value) ? 0 : Number(input.value);
+        var valEl = document.getElementById("kcalVal");
+        if (valEl) valEl.textContent = isNaN(v) ? 0 : v;
+        updateNav();
+      });
+    } else {
+      Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (btn) {
+        btn.addEventListener("click", function () {
+          state.answers[q.key] = Number(btn.dataset.score);
+          Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (b) {
+            b.classList.remove("selected");
+            b.querySelector(".mark").textContent = "";
+          });
+          btn.classList.add("selected");
+          btn.querySelector(".mark").textContent = "✓";
+          updateNav();
+        });
+      });
+    }
+
+    if (state.step > 0) {
+      document.getElementById("prevBtn").addEventListener("click", function () { state.step--; render(); });
+    }
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      if (!isAnswered(q)) return;
+      if (state.step === QUESTIONS.length - 1) { state.stage = "result"; render(); }
+      else { state.step++; render(); }
+    });
+
+    updateNav();
+  }
+
+  function updateNav() {
+    var q = QUESTIONS[state.step];
+    var btn = document.getElementById("nextBtn");
+    if (!btn) return;
+    var ok = isAnswered(q);
+    btn.disabled = !ok;
+    btn.classList.toggle("disabled", !ok);
+  }
+
+  function renderResult() {
+    setProgress(100);
+    var r = computeResults();
+    var sugs = generateSuggestions(r);
+    var scope = state.answers.scope;
+
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">OVERALL SCORE</div>';
+    html += '<div class="score">' + r.overall + '<small>/100</small></div>';
+    html += '<div class="grade">' + gradeLabel(r.overall) + '</div>';
+
+    var line = "评估范围：" + scopeName(scope);
+    if (!isBlank(state.answers.calorie)) line += " · 估算热量：" + Math.round(Number(state.answers.calorie)) + " kcal";
+    html += '<p class="summary" style="color:#ccc;margin-top:6px;">' + esc(line) + '</p>';
+    html += '<p class="summary">' + QUESTIONS.length + ' 个评估维度 · ' + sugs.length + ' 条建议</p>';
+
+    html += '<div class="section-title">维度得分</div><div class="bars">';
+    QUESTIONS.forEach(function (q) {
+      var v = Math.round(r.pct[q.key]);
+      var valText = (q.key === "calorie" && isBlank(state.answers.calorie)) ? "—" : v;
+      html += '<div class="bar-row">' +
+                '<span class="bar-label">' + esc(q.short) + '</span>' +
+                '<span class="bar-track"><span class="bar-fill" data-w="' + (isBlank(state.answers.calorie) && q.key === "calorie" ? 60 : v) + '"></span></span>' +
+                '<span class="bar-val">' + valText + '</span>' +
+              '</div>';
+    });
+    html += '</div>';
+    html += '<p class="bar-note">热量项：未填写时按中性（60）计入；数值越接近适宜区间（单餐 400-700 / 全天 1800-2400 kcal）得分越高。</p>';
+
+    html += '<div class="section-title">饮食建议</div>';
+    sugs.forEach(function (s) {
+      html += '<div class="sug"><h4>' + esc(s.title) + '</h4><p>' + esc(s.body) + '</p></div>';
+    });
+
+    html += '<div class="nav">' +
+              '<button class="btn ghost" id="restartBtn">重新评估</button>' +
+              '<button class="btn" id="shareBtn">分享截图</button>' +
+            '</div>';
+    html += '<div class="foot">数据仅在本地内存中处理 · 不写入任何存储<br>关闭页面即清空 · 完全离线运行</div>';
+    html += '</div>';
+
+    html += '<div class="modal" id="shareModal">' +
+              '<div class="modal-card">' +
+                '<div class="modal-head">截图预览 · 含当前时间</div>' +
+                '<img class="shot" id="shotImg" alt="饮食自评结果截图">' +
+                '<div class="modal-actions">' +
+                  '<button class="btn ghost small" id="closeShareBtn">关闭</button>' +
+                  '<button class="btn small" id="saveShotBtn">保存图片</button>' +
+                  (canSystemShare() ? '<button class="btn small" id="sysShareBtn">系统分享</button>' : '') +
+                '</div>' +
+                '<div class="modal-note">图片由本地 Canvas 生成 · 不联网 · 不上传</div>' +
+              '</div>' +
+            '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state = { stage: "welcome", step: 0, answers: { foodCounts: {} } };
+      render();
+      window.scrollTo(0, 0);
+    });
+
+    var shareCanvas = null;
+    function ensureShot() {
+      if (!shareCanvas) shareCanvas = drawShareCard(r, sugs);
+      return shareCanvas;
+    }
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      var c = ensureShot();
+      document.getElementById("shotImg").src = c.toDataURL("image/png");
+      document.getElementById("shareModal").classList.add("open");
+    });
+    document.getElementById("closeShareBtn").addEventListener("click", function () {
+      document.getElementById("shareModal").classList.remove("open");
+    });
+    document.getElementById("saveShotBtn").addEventListener("click", function () {
+      var c = ensureShot();
+      var link = document.createElement("a");
+      link.href = c.toDataURL("image/png");
+      link.download = "饮食自评_" + fileStamp() + ".png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+    var sysBtn = document.getElementById("sysShareBtn");
+    if (sysBtn) {
+      sysBtn.addEventListener("click", function () {
+        ensureShot().toBlob(function (blob) {
+          if (!blob) return;
+          var file = new File([blob], "饮食自评_" + fileStamp() + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: "饮食自评" }).catch(function () {});
+          }
+        }, "image/png");
+      });
+    }
+  }
+
+  /* ========================================================================
+     五、工具函数
+     ======================================================================== */
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  function fmtDateTime(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+           " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+
+  function fileStamp() {
+    var d = new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+           "_" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+
+  function canSystemShare() {
+    return typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare &&
+           typeof File !== "undefined" && typeof Blob !== "undefined";
+  }
+
+  function wrapLines(ctx, text, maxWidth) {
+    var chars = String(text).split(""), out = [], cur = "";
+    for (var i = 0; i < chars.length; i++) {
+      var test = cur + chars[i];
+      if (cur && ctx.measureText(test).width > maxWidth) { out.push(cur); cur = chars[i]; }
+      else { cur = test; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  /* 用 Canvas 本地绘制分享卡片（不依赖任何外部截图库，完全离线） */
+  function drawShareCard(r, sugs) {
+    var W = 1080, H = 2600, pad = 80;
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var FONT = '"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif';
+    function font(size, weight) { ctx.font = (weight ? weight + " " : "") + size + "px " + FONT; }
+    function txt(str, x, y, size, weight, color) {
+      font(size, weight); ctx.fillStyle = color; ctx.fillText(str, x, y);
+    }
+    function center(str, y, size, weight, color) {
+      font(size, weight); ctx.fillStyle = color;
+      ctx.fillText(str, (W - ctx.measureText(str).width) / 2, y);
+    }
+    function line(y) { ctx.strokeStyle = "#222"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke(); }
+
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+
+    var y = 120;
+    ctx.fillStyle = "#fff"; ctx.fillRect(pad, y, 120, 6);
+    y += 42;
+    txt("DIET SELF-CHECK", pad, y, 30, "500", "#666");
+    y += 54;
+    txt("饮食自评", pad, y, 60, "700", "#fff");
+    y += 120;
+
+    font(190, "700"); ctx.fillStyle = "#fff";
+    var scoreText = String(r.overall);
+    ctx.fillText(scoreText, pad, y);
+    var sw = ctx.measureText(scoreText).width;
+    txt("/100", pad + sw + 16, y + 128, 46, "400", "#555");
+    y += 250;
+
+    var grade = gradeLabel(r.overall);
+    font(30, "500");
+    var gw = ctx.measureText(grade).width;
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+    ctx.strokeRect(pad, y, gw + 48, 62);
+    txt(grade, pad + 24, y + 16, 30, "500", "#fff");
+    y += 62 + 46;
+
+    var head = "评估范围：" + scopeName(state.answers.scope);
+    if (!isBlank(state.answers.calorie)) head += "  ·  估算热量：" + Math.round(Number(state.answers.calorie)) + " kcal";
+    txt(head, pad, y, 34, "400", "#cfcfcf");
+    y += 46;
+    txt(fmtDateTime(new Date()) + " 生成", pad, y, 30, "400", "#888");
+    y += 64;
+    line(y); y += 42;
+
+    txt("维度得分 / 0-100", pad, y, 28, "500", "#666");
+    y += 56;
+    var dims = r.questions;
+    var perCol = Math.ceil(dims.length / 2);
+    var colGap = 60, colW = (W - pad * 2 - colGap) / 2, rowH = 54;
+    var labelW = 96, valW = 56;
+    dims.forEach(function (q, i) {
+      var col = i < perCol ? 0 : 1, row = i % perCol;
+      var x = pad + col * (colW + colGap), ry = y + row * rowH;
+      var val = Math.round(r.pct[q.key]);
+      var neutral = (q.key === "calorie" && isBlank(state.answers.calorie));
+      txt(q.short, x, ry + 4, 26, "400", "#9a9a9a");
+      var bx = x + labelW, bw = colW - labelW - valW - 12;
+      ctx.fillStyle = "#1c1c1c"; ctx.fillRect(bx, ry + 8, bw, 14);
+      ctx.fillStyle = neutral ? "#3a3a3a" : "#fff";
+      ctx.fillRect(bx, ry + 8, bw * (neutral ? 0.6 : val / 100), 14);
+      txt(neutral ? "—" : String(val), bx + bw + 12, ry + 3, 24, "400", "#888");
+    });
+    y += perCol * rowH + 30;
+    line(y); y += 38;
+
+    txt("饮食建议", pad, y, 28, "500", "#666");
+    y += 54;
+    function wrapSet(str, size, weight) { font(size, weight); return wrapLines(ctx, str, W - pad * 2); }
+    sugs.slice(0, 3).forEach(function (s) {
+      var tl = wrapSet(s.title, 34, "600");
+      ctx.fillStyle = "#fff";
+      tl.forEach(function (ln, i) { ctx.fillText(ln, pad, y + i * 46); });
+      y += tl.length * 46 + 6;
+      var bl = wrapSet(s.body, 30, "400");
+      ctx.fillStyle = "#9a9a9a";
+      bl.forEach(function (ln, i) { ctx.fillText(ln, pad, y + i * 44); });
+      y += bl.length * 44 + 34;
+    });
+
+    y += 12;
+    center("本地生成 · 完全离线 · 不含个人信息", y, 26, "400", "#444");
+    y += 64;
+
+    var outH = Math.min(H, y);
+    var out = document.createElement("canvas");
+    out.width = W; out.height = outH;
+    out.getContext("2d").drawImage(canvas, 0, 0, W, outH, 0, 0, W, outH);
+    return out;
+  }
+
+  function animateBars() {
+    var bars = app.querySelectorAll(".bar-fill");
+    var run = function () {
+      Array.prototype.forEach.call(bars, function (b) {
+        var w = b.getAttribute("data-w");
+        if (w != null) b.style.width = w + "%";
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+    else run();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

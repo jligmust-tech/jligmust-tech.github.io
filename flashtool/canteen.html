@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  HKUST 食堂决策引擎 · 本地单文件版
+  ----------------------------------------------------------------------------
+  用途   ：为科大清湾校园（HKUST Clear Water Bay）学生 / 教职工 / 访客提供
+           餐饮推荐：硬性约束过滤 + 多因子动态加权评分，输出 Top-3 推荐。
+  依据   ：canteenDecision.txt（HKUST Catering Decision Engine Spec）
+  作者   ：swimHelper
+  版本   ：v1.4（位置校正：UniBar/UniBistro→Tower C、UniQue→Conference Lodge、Hana→CYT 1/F、Donburi→LTJ、Nourish→CYT 对面新楼；新增 WeBite Space）
+  生成日 ：2026-09-29
+  声明   ：单文件 HTML · 完全离线 · 零数据持久化，
+           所有数据仅在内存中处理，关闭页面即清空，不写入任何浏览器存储。
+  说明   ：本文件不引用任何外部资源、外部字体、外部图片或远程接口，
+           双击即可在任意现代浏览器（含 iOS Safari / Android Chrome）打开。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<title>科大食堂决策</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #000; color: #fff; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 15px; line-height: 1.6; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  button { font-family: inherit; }
+
+  /* 麦当劳配色：红 #DA291C · 黄 #FFC72C · 白 #FFF · 黑 #000 */
+  .progress-track { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: #2a2a2a; z-index: 50; }
+  .progress-fill { height: 100%; width: 0; background: #FFC72C; transition: width .3s ease; }
+
+  .app { max-width: 520px; margin: 0 auto; padding: 32px 20px 40px; min-height: 100vh; display: flex; flex-direction: column; }
+  .fade { animation: fadeIn .3s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .hero .kicker { font-size: 12px; letter-spacing: 3px; color: #FFC72C; margin-bottom: 14px; }
+  .hero h1 { font-size: 34px; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; user-select: none; color: #fff; }
+  .hero .en { font-size: 12px; letter-spacing: 2px; color: #DA291C; margin-bottom: 18px; }
+  .hero .sub { font-size: 15px; color: #999; margin-bottom: 8px; }
+  .clock { display: inline-block; margin-top: 6px; padding: 6px 12px; border: 1px solid #3a3a3a; font-size: 12px; color: #ddd; letter-spacing: 1px; }
+  .clock .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+  .clock.open .dot { background: #FFC72C; }
+  .clock.closed .dot { background: #555; }
+
+  .banner { margin-top: 18px; border: 1px solid #DA291C; background: #1a0705; padding: 12px 14px; font-size: 13px; color: #ffd7d3; }
+  .banner b { color: #FFC72C; display: block; margin-bottom: 4px; }
+
+  .q-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+  .q-no { font-size: 12px; letter-spacing: 2px; color: #999; }
+  .q-name { font-size: 12px; letter-spacing: 1px; color: #FFC72C; border: 1px solid #FFC72C; padding: 2px 8px; }
+  .q-title { font-size: 21px; font-weight: 600; line-height: 1.45; margin-bottom: 8px; }
+  .q-hint { font-size: 12px; color: #999; margin-bottom: 4px; }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    min-height: 52px; padding: 13px 16px; text-align: left;
+    background: #0d0d0d; border: 1px solid #2a2a2a; color: #e5e5e5;
+    font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .opt .mark { flex: 0 0 auto; width: 22px; height: 22px; border: 1px solid #555; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; }
+  .opt .txt { flex: 1; }
+  .opt .opt-sub { display: block; font-size: 12px; color: #888; margin-top: 2px; letter-spacing: 0; }
+  .opt:active { background: #1c1c1c; }
+  .opt.selected { background: #FFC72C; color: #000; border-color: #FFC72C; }
+  .opt.selected .mark { background: #000; color: #FFC72C; border-color: #000; }
+  .opt.selected .opt-sub { color: #6b5200; }
+
+  .sub-head { font-size: 12px; letter-spacing: 2px; color: #FFC72C; margin: 24px 0 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 9px 14px; min-height: 44px; display: inline-flex; align-items: center;
+    background: #0d0d0d; border: 1px solid #2a2a2a; color: #e5e5e5; font-size: 13px; cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .chip:active { background: #1c1c1c; }
+  .chip.selected { background: #FFC72C; color: #000; border-color: #FFC72C; }
+
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.94); display: none; z-index: 100; padding: 22px 20px 40px; overflow-y: auto; }
+  .modal.open { display: block; }
+  .modal-card { max-width: 520px; margin: 0 auto; }
+  .modal-head { font-size: 12px; letter-spacing: 3px; color: #FFC72C; margin-bottom: 14px; }
+  .shot { width: 100%; display: block; border: 1px solid #3a3a3a; background: #000; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+  .modal-note { margin-top: 14px; font-size: 11px; color: #777; text-align: center; line-height: 1.7; }
+
+  .nav { display: flex; gap: 12px; margin-top: 32px; }
+  .btn {
+    flex: 1; min-height: 52px; padding: 0 16px; border: 1px solid #DA291C;
+    background: #DA291C; color: #fff; font-size: 15px; letter-spacing: 2px; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: #000; color: #FFC72C; border-color: #FFC72C; }
+  .btn.small { flex: 0 0 auto; padding: 0 18px; letter-spacing: 1px; font-size: 14px; }
+  .btn.red { background: #FFC72C; color: #000; border-color: #FFC72C; }
+  .btn[disabled], .btn.disabled { opacity: .28; cursor: not-allowed; }
+
+  .res { padding-top: 8px; }
+  .res .kicker { font-size: 12px; letter-spacing: 3px; color: #FFC72C; margin-bottom: 10px; }
+  .res h2.h { font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+  .res .summary { font-size: 13px; color: #999; margin-bottom: 4px; }
+  .section-title { font-size: 12px; letter-spacing: 3px; color: #FFC72C; margin: 30px 0 14px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a; }
+
+  .card { border: 1px solid #2a2a2a; background: #0d0d0d; padding: 16px; margin-bottom: 14px; }
+  .card.rank1 { border-color: #FFC72C; }
+  .card .top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .card .rank { font-size: 12px; letter-spacing: 2px; color: #999; }
+  .card.rank1 .rank { color: #FFC72C; }
+  .card .name { font-size: 19px; font-weight: 700; margin: 4px 0 2px; color: #fff; }
+  .card .name-en { font-size: 11px; letter-spacing: 1px; color: #777; margin-bottom: 10px; }
+  .card .score { font-size: 26px; font-weight: 700; letter-spacing: -1px; color: #FFC72C; }
+  .card .score small { font-size: 11px; color: #888; font-weight: 400; }
+  .card .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .tag { font-size: 11px; border: 1px solid #3a3a3a; color: #cfcfcf; padding: 2px 8px; }
+  .card .why { font-size: 13px; color: #ccc; margin-top: 8px; }
+  .card .why b { color: #FFC72C; font-weight: 600; }
+  .bars { margin-top: 12px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 11px; }
+  .bar-label { flex: 0 0 44px; color: #999; }
+  .bar-track { flex: 1; height: 7px; background: #2a2a2a; }
+  .bar-fill { display: block; width: 0; height: 100%; background: #FFC72C; transition: width .6s ease; }
+  .bar-val { flex: 0 0 30px; text-align: right; color: #999; font-variant-numeric: tabular-nums; }
+
+  .empty { border: 1px solid #DA291C; padding: 20px; text-align: center; color: #ffd7d3; font-size: 14px; }
+  .foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 11px; color: #5a5a5a; text-align: center; line-height: 1.8; }
+
+  /* Red Bird easter egg */
+  .bird-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.94); display: none; z-index: 120; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 30px; }
+  .bird-overlay.open { display: flex; }
+  .bird { width: 130px; height: 130px; position: relative; margin-bottom: 26px; animation: shake .45s ease-in-out infinite; }
+  .bird .body { position: absolute; inset: 8px 16px 20px 8px; background: #DA291C; border-radius: 50% 55% 45% 50%; }
+  .bird .wing { position: absolute; left: 34px; top: 48px; width: 46px; height: 30px; background: #a50115; border-radius: 50%; }
+  .bird .beak { position: absolute; right: 0; top: 44px; width: 0; height: 0; border-left: 24px solid #FFC72C; border-top: 12px solid transparent; border-bottom: 12px solid transparent; }
+  .bird .eye { position: absolute; right: 40px; top: 30px; width: 16px; height: 16px; background: #fff; border-radius: 50%; }
+  .bird .eye::after { content: ""; position: absolute; right: 3px; top: 4px; width: 8px; height: 8px; background: #000; border-radius: 50%; }
+  @keyframes shake { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+  .bird-overlay .ttl { font-size: 12px; letter-spacing: 4px; color: #FFC72C; margin-bottom: 10px; }
+  .bird-overlay .pick { font-size: 22px; font-weight: 700; margin-bottom: 10px; color: #FFC72C; }
+  .bird-overlay .line { font-size: 14px; color: #bbb; max-width: 320px; margin-bottom: 26px; line-height: 1.7; }
+
+  @media (max-width: 380px) {
+    body { font-size: 14px; }
+    .hero h1 { font-size: 27px; }
+    .q-title { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">科大食堂决策 · v1.4</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="app" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========================================================================
+     一、餐厅数据库（依据 PRD 的 Seed Data，JSON 内联）
+     ======================================================================== */
+  var DB = [
+    { "id": "hft_life", "name_cn": "HFT Life (鸿福堂)", "name_en": "HFT Life", "zone": "Shaw Auditorium", "elevation": "G/F", "avg_price": 45, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["LIGHT_MEAL", "SOUP", "HK_SNACK", "BAKERY"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "07:30-19:00", "weekend": "08:00-19:00" }, "crowd_risk": "LOW" },
+    { "id": "hana_musubi", "name_cn": "華御結", "name_en": "Hana-musubi", "zone": "CYT", "elevation": "1/F", "avg_price": 30, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["JAPANESE", "RICE_BALL", "LIGHT_MEAL"], "dietary": ["NONE"], "seating_capacity": "NONE", "opening_hours": { "weekday": "08:00-20:00", "weekend": "08:00-20:00" }, "crowd_risk": "LOW" },
+    { "id": "american_diner", "name_cn": "American Diner", "name_en": "American Diner", "zone": "Academic Concourse", "elevation": "1/F", "avg_price": 50, "speed_level": "FAST", "cuisine_tags": ["WESTERN", "BURGER", "SANDWICH", "FAST_FOOD"], "dietary": ["NONE"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "08:00-21:00", "weekend": "08:00-18:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "joa_korean", "name_cn": "JoA (韩式料理)", "name_en": "JoA", "zone": "Academic Concourse", "elevation": "1/F", "avg_price": 60, "speed_level": "MEDIUM", "cuisine_tags": ["KOREAN", "FRIED_CHICKEN", "RICE_BOWL", "SPICY"], "dietary": ["NONE"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "10:00-21:00", "weekend": "CLOSED" }, "crowd_risk": "HIGH" },
+    { "id": "subway_cyt", "name_cn": "Subway (赛百味)", "name_en": "Subway", "zone": "CYT", "elevation": "G/F", "avg_price": 50, "speed_level": "FAST", "cuisine_tags": ["SANDWICH", "LIGHT_MEAL", "SALAD", "HEALTHY"], "dietary": ["VEGETARIAN_FRIENDLY", "HALAL_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "08:00-20:00", "weekend": "09:00-19:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "tamjai_samgor", "name_cn": "谭仔三哥", "name_en": "TamJai SamGor", "zone": "Academic Concourse", "elevation": "LG7", "avg_price": 45, "speed_level": "FAST", "cuisine_tags": ["NOODLES", "SPICY", "HK_STYLE"], "dietary": ["NONE"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "11:00-21:00", "weekend": "11:00-21:00" }, "crowd_risk": "HIGH" },
+    { "id": "mcdonalds", "name_cn": "麦当劳 / McCafé", "name_en": "McDonald's", "zone": "Academic Concourse", "elevation": "LG5", "avg_price": 35, "speed_level": "FAST", "cuisine_tags": ["FAST_FOOD", "BURGER"], "dietary": ["NONE"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "07:00-24:00", "weekend": "07:00-24:00" }, "crowd_risk": "HIGH" },
+    { "id": "ebeneezers", "name_cn": "Ebeneezer's Kebabs", "name_en": "Ebeneezer's", "zone": "LSK", "elevation": "G/F", "avg_price": 65, "speed_level": "MEDIUM", "cuisine_tags": ["INDIAN", "KEBAB", "PIZZA"], "dietary": ["HALAL", "VEGETARIAN_FRIENDLY"], "seating_capacity": "MEDIUM", "opening_hours": { "weekday": "10:00-22:00", "weekend": "10:00-22:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "seafront", "name_cn": "Seafront 宿舍食堂", "name_en": "Seafront Cafeteria", "zone": "Hall Zone", "elevation": "G/F", "avg_price": 35, "speed_level": "FAST", "cuisine_tags": ["NIGHT_SNACK", "HK_STYLE", "RICE"], "dietary": ["NONE"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "17:00-00:30", "weekend": "17:00-00:30" }, "crowd_risk": "MEDIUM" },
+    /* 便利店 / 超市（依据 CSO 最新营业时间） */
+    { "id": "fusion_lg7", "name_cn": "Fusion 超市", "name_en": "Fusion (Supermarket)", "zone": "Academic Concourse", "elevation": "LG7", "avg_price": 40, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["SUPERMARKET", "CONVENIENCE", "HOT_FOOD"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "NONE", "opening_hours": { "weekday": "08:30-24:00", "weekend": "08:30-21:00" }, "crowd_risk": "LOW" },
+    { "id": "seven_eleven_lg5", "name_cn": "7-Eleven LG5", "name_en": "7-Eleven (LG5)", "zone": "Academic Concourse", "elevation": "LG5", "avg_price": 25, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["CONVENIENCE", "HOT_FOOD", "BAKERY"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "NONE", "opening_hours": { "weekday": "00:00-24:00", "weekend": "00:00-24:00" }, "crowd_risk": "LOW" },
+    /* LG1 / LG7 餐厅（依据 CSO 最新营业时间） */
+    { "id": "canteenii_lg1", "name_cn": "LG1 餐厅 (Can.teen II)", "name_en": "Can.teen II (LG1 Restaurant)", "zone": "Academic Concourse", "elevation": "LG1", "avg_price": 40, "speed_level": "FAST", "cuisine_tags": ["HK_STYLE", "CHINESE", "RICE", "VEGETARIAN_FRIENDLY"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "07:30-21:00", "weekend": "07:30-21:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "gold_rice_bowl", "name_cn": "金饭碗", "name_en": "Gold Rice Bowl", "zone": "Academic Concourse", "elevation": "LG7", "avg_price": 45, "speed_level": "FAST", "cuisine_tags": ["CHINESE", "RICE", "ASIAN", "FUSION"], "dietary": ["NONE"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "11:00-21:00", "weekend": "11:00-21:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "apac", "name_cn": "亚太美食 (APAC)", "name_en": "Asia Pacific Catering", "zone": "Academic Concourse", "elevation": "LG7", "avg_price": 40, "speed_level": "FAST", "cuisine_tags": ["CHINESE", "HK_STYLE", "RICE", "NOODLES"], "dietary": ["NONE"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "07:30-21:00", "weekend": "09:00-21:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "super_sandwiches", "name_cn": "Oliver's Super Sandwiches", "name_en": "Oliver's Super Sandwiches", "zone": "Academic Concourse", "elevation": "LG7", "avg_price": 55, "speed_level": "FAST", "cuisine_tags": ["SANDWICH", "SALAD", "LIGHT_MEAL", "HEALTHY", "WESTERN"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "MEDIUM", "opening_hours": { "weekday": "07:30-19:30", "weekend": "11:00-19:00" }, "crowd_risk": "MEDIUM" },
+    /* 其它餐厅（依据 CSO 最新营业时间；楼层为公开资料的近似值） */
+    { "id": "china_garden", "name_cn": "南北小厨 (China Garden)", "name_en": "China Garden", "zone": "Academic Concourse", "elevation": "G/F", "avg_price": 120, "speed_level": "MEDIUM", "cuisine_tags": ["CHINESE", "TABLE_SERVICE"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "11:00-22:00", "weekend": "10:30-22:00" }, "crowd_risk": "LOW" },
+    { "id": "donburi_bowl", "name_cn": "Donburi Bowl 日式盖饭", "name_en": "Donburi Bowl", "zone": "LTJ", "elevation": "G/F", "avg_price": 50, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["JAPANESE", "RICE_BOWL"], "dietary": ["NONE"], "seating_capacity": "NONE", "opening_hours": { "weekday": "11:00-14:00", "weekend": "CLOSED" }, "crowd_risk": "HIGH" },
+    { "id": "nourish_go_green", "name_cn": "Nourish N' Go Green", "name_en": "Nourish N' Go Green", "zone": "CYT Annex", "elevation": "G/F", "avg_price": 55, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["SALAD", "HEALTHY", "LIGHT_MEAL"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "NONE", "opening_hours": { "weekday": "11:00-21:00", "weekend": "11:00-21:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "univeggie_ttr", "name_cn": "UniVeggie & This This Rice", "name_en": "UniVeggie & This This Rice", "zone": "Academic Concourse", "elevation": "LG5", "avg_price": 45, "speed_level": "GRAB_AND_GO", "cuisine_tags": ["VEGETARIAN", "RICE", "ASIAN"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "NONE", "opening_hours": { "weekday": "11:00-14:00", "weekend": "CLOSED" }, "crowd_risk": "HIGH" },
+    { "id": "pacific_coffee", "name_cn": "Pacific Coffee", "name_en": "Pacific Coffee", "zone": "LSK", "elevation": "G/F", "avg_price": 45, "speed_level": "FAST", "cuisine_tags": ["CAFE", "COFFEE", "SANDWICH", "SALAD"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "08:00-18:30", "weekend": "08:00-17:00" }, "crowd_risk": "LOW" },
+    { "id": "passione", "name_cn": "Passione", "name_en": "Passione", "zone": "Academic Concourse", "elevation": "1/F", "avg_price": 70, "speed_level": "FAST", "cuisine_tags": ["CAFE", "PASTRY", "SANDWICH", "SALAD", "WESTERN"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "07:30-20:00", "weekend": "07:30-18:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "starbucks", "name_cn": "Starbucks Coffee", "name_en": "Starbucks Coffee", "zone": "Academic Concourse", "elevation": "G/F", "avg_price": 45, "speed_level": "FAST", "cuisine_tags": ["CAFE", "COFFEE", "BAKERY", "SANDWICH"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "SMALL", "opening_hours": { "weekday": "08:00-20:00", "weekend": "08:30-19:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "unibar", "name_cn": "The UniBar", "name_en": "The UniBar", "zone": "Tower C", "elevation": "1/F", "avg_price": 90, "speed_level": "MEDIUM", "cuisine_tags": ["BAR", "SNACK", "WESTERN"], "dietary": ["NONE"], "seating_capacity": "MEDIUM", "opening_hours": { "weekday": "16:00-11:00", "weekend": "16:00-11:00" }, "crowd_risk": "LOW" },
+    { "id": "unibistro", "name_cn": "UniBistro", "name_en": "UniBistro", "zone": "Tower C", "elevation": "1/F", "avg_price": 120, "speed_level": "MEDIUM", "cuisine_tags": ["WESTERN", "MEDITERRANEAN", "SALAD", "PIZZA"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "12:00-21:00", "weekend": "12:00-21:00" }, "crowd_risk": "MEDIUM" },
+    { "id": "unique", "name_cn": "UniQue", "name_en": "UniQue", "zone": "Conference Lodge", "elevation": "G/F", "avg_price": 150, "speed_level": "MEDIUM", "cuisine_tags": ["WESTERN", "INTERNATIONAL", "HEALTHY", "VEGAN"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "LARGE", "opening_hours": { "weekday": "07:30-15:00", "weekend": "07:30-15:00" }, "crowd_risk": "LOW" },
+    { "id": "webite", "name_cn": "WeBite Space", "name_en": "WeBite Space", "zone": "LSK", "elevation": "G/F", "avg_price": 50, "speed_level": "FAST", "cuisine_tags": ["CHINESE", "HK_STYLE", "RICE", "NOODLES", "HEALTHY"], "dietary": ["VEGETARIAN_FRIENDLY"], "seating_capacity": "MEDIUM", "opening_hours": { "weekday": "07:30-21:00", "weekend": "08:00-21:00" }, "crowd_risk": "MEDIUM" }
+  ];
+
+  /* 位置（用户所在区域 + 楼层） */
+  var LOCATIONS = [
+    { value: "academic", label: "学术廊 / 学术大楼", zone: "Academic Concourse", level: 1 },
+    { value: "cyt", label: "CYT 郑裕彤楼", zone: "CYT", level: 0 },
+    { value: "lsk", label: "LSK 商学院", zone: "LSK", level: 1 },
+    { value: "shaw", label: "Shaw Auditorium 逸夫演艺厅", zone: "Shaw Auditorium", level: 0 },
+    { value: "hall", label: "宿舍区 Hall Zone", zone: "Hall Zone", level: 0 }
+  ];
+
+  var TIMES = [
+    { value: "rush", label: "很赶", sub: "15 分钟内解决" },
+    { value: "normal", label: "一般", sub: "约 30 分钟" },
+    { value: "relax", label: "充裕", sub: "1 小时以上" },
+    { value: "gathering", label: "聚餐", sub: "慢慢吃 / 请客 / 约会" }
+  ];
+
+  var BUDGETS = [
+    { value: "35", label: "≤ 35 HKD" },
+    { value: "50", label: "≤ 50 HKD" },
+    { value: "70", label: "≤ 70 HKD" },
+    { value: "999", label: "不限" }
+  ];
+
+  /* 口味偏好分组（映射到 DB 的 cuisine_tags） */
+  var PREFS = [
+    { key: "chinese", label: "中式 / 饭面", tags: ["NOODLES", "HK_STYLE", "RICE", "RICE_BOWL"] },
+    { key: "japanese", label: "日式", tags: ["JAPANESE", "RICE_BALL"] },
+    { key: "korean", label: "韩式", tags: ["KOREAN", "FRIED_CHICKEN"] },
+    { key: "western", label: "西式 / 汉堡", tags: ["WESTERN", "BURGER", "SANDWICH", "PIZZA", "FAST_FOOD"] },
+    { key: "indian", label: "印度 / 中东", tags: ["INDIAN", "KEBAB"] },
+    { key: "light", label: "轻食 / 健康", tags: ["SALAD", "HEALTHY", "LIGHT_MEAL", "SOUP"] },
+    { key: "spicy", label: "辣", tags: ["SPICY"] },
+    { key: "night", label: "宵夜 / 热食", tags: ["NIGHT_SNACK", "CONVENIENCE", "HOT_FOOD"] },
+    { key: "coffee", label: "咖啡 / 烘焙", tags: ["CAFE", "COFFEE", "BAKERY", "PASTRY"] }
+  ];
+
+  var DIETS = [
+    { value: "none", label: "无特殊要求" },
+    { value: "vegetarian", label: "素食" },
+    { value: "halal", label: "清真 (Halal)" }
+  ];
+
+  var SPEED_LABEL = { GRAB_AND_GO: "即取即走", FAST: "出餐快", MEDIUM: "出餐一般", SLOW: "出餐慢" };
+  var SEAT_LABEL = { LARGE: "座位多", MEDIUM: "有座位", SMALL: "座位少", NONE: "无堂食" };
+  var CROWD_LABEL = { LOW: "不挤", MEDIUM: "一般", HIGH: "易排队" };
+
+  /* 区域步行时间矩阵（分钟，对称近似值） */
+  var ZONE_WALK = {
+    "Academic Concourse": { "Academic Concourse": 1, "CYT": 4, "LSK": 5, "Shaw Auditorium": 6, "Hall Zone": 11, "Tower C": 2, "LTJ": 4, "CYT Annex": 5, "Conference Lodge": 14 },
+    "CYT": { "Academic Concourse": 4, "CYT": 1, "LSK": 4, "Shaw Auditorium": 7, "Hall Zone": 11, "Tower C": 4, "LTJ": 5, "CYT Annex": 2, "Conference Lodge": 15 },
+    "LSK": { "Academic Concourse": 5, "CYT": 4, "LSK": 1, "Shaw Auditorium": 6, "Hall Zone": 11, "Tower C": 4, "LTJ": 4, "CYT Annex": 5, "Conference Lodge": 12 },
+    "Shaw Auditorium": { "Academic Concourse": 6, "CYT": 7, "LSK": 6, "Shaw Auditorium": 1, "Hall Zone": 9, "Tower C": 6, "LTJ": 7, "CYT Annex": 7, "Conference Lodge": 8 },
+    "Hall Zone": { "Academic Concourse": 11, "CYT": 11, "LSK": 11, "Shaw Auditorium": 9, "Hall Zone": 1, "Tower C": 11, "LTJ": 11, "CYT Annex": 11, "Conference Lodge": 16 },
+    "Tower C": { "Academic Concourse": 2, "CYT": 4, "LSK": 4, "Shaw Auditorium": 6, "Hall Zone": 11, "Tower C": 1, "LTJ": 3, "CYT Annex": 5, "Conference Lodge": 14 },
+    "LTJ": { "Academic Concourse": 4, "CYT": 5, "LSK": 4, "Shaw Auditorium": 7, "Hall Zone": 11, "Tower C": 3, "LTJ": 1, "CYT Annex": 5, "Conference Lodge": 14 },
+    "CYT Annex": { "Academic Concourse": 5, "CYT": 2, "LSK": 5, "Shaw Auditorium": 7, "Hall Zone": 11, "Tower C": 5, "LTJ": 5, "CYT Annex": 1, "Conference Lodge": 15 },
+    "Conference Lodge": { "Academic Concourse": 14, "CYT": 15, "LSK": 12, "Shaw Auditorium": 8, "Hall Zone": 16, "Tower C": 14, "LTJ": 14, "CYT Annex": 15, "Conference Lodge": 1 }
+  };
+  var LEVEL = { "G/F": 0, "1/F": 1, "LG1": -1, "LG5": -5, "LG6": -6, "LG7": -7 };
+
+  var STEPS = [
+    { key: "location", name: "位置", type: "choice", question: "你现在在校园的哪里？", options: LOCATIONS },
+    { key: "time", name: "时间", type: "choice", question: "你现在有多赶？", options: TIMES },
+    { key: "budget", name: "预算", type: "choice", question: "人均预算上限？", options: BUDGETS },
+    { key: "prefs", name: "口味", type: "prefs", question: "口味与特殊饮食偏好？", hint: "口味可多选（不选＝随便），特殊饮食将作为硬性筛选。" }
+  ];
+
+  /* 内存状态：不写入任何存储 */
+  var state = { stage: "welcome", step: 0, answers: { prefs: [], diet: "none" }, shakeCount: 0, nightMode: false };
+  var app = document.getElementById("app");
+  var progressFill = document.getElementById("progressFill");
+
+  /* 随机 emoji（可爱一点） */
+  var EMOJIS = ["🍔", "🍟", "🌮", "🍜", "🍣", "🍕", "🥗", "🍗", "🍚", "🍙", "🥤", "🍦", "☕", "🍱", "🥟", "🌯", "🧋", "🍩", "🍇", "🥩", "🥪", "🌶️"];
+  function rndEmoji() { return EMOJIS[Math.floor(Math.random() * EMOJIS.length)]; }
+  function restEmoji(id) {
+    if (!state.emojiMap) state.emojiMap = {};
+    if (!state.emojiMap[id]) state.emojiMap[id] = rndEmoji();
+    return state.emojiMap[id];
+  }
+
+  /* ========================================================================
+     二、时间与营业状态
+     ======================================================================== */
+  function getNow() { return state.nowOverride ? new Date(state.nowOverride) : new Date(); }
+
+  function parseHM(s) { var p = s.split(":"); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
+
+  function isOpenNow(rest, now) {
+    var day = now.getDay();
+    var weekend = (day === 0 || day === 6);
+    var spec = rest.opening_hours[weekend ? "weekend" : "weekday"];
+    if (!spec || spec === "CLOSED") return false;
+    if (spec === "00:00-24:00") return true;
+    var parts = spec.split("-");
+    var start = parseHM(parts[0]), end = parseHM(parts[1]);
+    var cur = now.getHours() * 60 + now.getMinutes();
+    if (end <= start) end += 1440;                 // 跨午夜
+    if (cur < start && end > 1440) cur += 1440;    // 凌晨，店于前一晚开门
+    return cur >= start && cur < end;
+  }
+
+  function isPeak(now) {
+    var cur = now.getHours() * 60 + now.getMinutes();
+    return (cur >= 735 && cur < 795) || (cur >= 1080 && cur < 1140); // 12:15-13:15 / 18:00-19:00
+  }
+
+  function isLateNight(now) {
+    var cur = now.getHours() * 60 + now.getMinutes();
+    return cur >= 1290 || cur < 120; // 21:30 - 02:00
+  }
+
+  function fmtClock(d) { return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
+  function fmtDateTime(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + fmtClock(d);
+  }
+
+  /* ========================================================================
+     三、评分引擎
+     ======================================================================== */
+  function locInfo(value) {
+    for (var i = 0; i < LOCATIONS.length; i++) { if (LOCATIONS[i].value === value) return LOCATIONS[i]; }
+    return LOCATIONS[0];
+  }
+
+  function walkCost(rest, fromLoc) {
+    var fromZone = fromLoc.zone;
+    var table = ZONE_WALK[fromZone] || {};
+    var walk = table[rest.zone] != null ? table[rest.zone] : 8;
+    var floors = Math.abs((fromLoc.level || 0) - (LEVEL[rest.elevation] != null ? LEVEL[rest.elevation] : 0));
+    return { walk: walk, floors: floors, cost: walk + floors * 1.5 };
+  }
+
+  function sDist(rest, fromLoc) {
+    var c = walkCost(rest, fromLoc);
+    return { value: Math.max(0, 100 - c.cost * 8), walk: c.walk, floors: c.floors };
+  }
+
+  function sTime(rest, userTime, peak) {
+    var tables = {
+      rush: { GRAB_AND_GO: 100, FAST: 70, MEDIUM: 10, SLOW: 0 },
+      normal: { GRAB_AND_GO: 100, FAST: 95, MEDIUM: 75, SLOW: 40 },
+      relax: { GRAB_AND_GO: 80, FAST: 90, MEDIUM: 95, SLOW: 90 },
+      gathering: { GRAB_AND_GO: 70, FAST: 85, MEDIUM: 95, SLOW: 85 }
+    };
+    var base = (tables[userTime] || tables.normal)[rest.speed_level];
+    if (base == null) base = 60;
+    var penalty = (peak && rest.crowd_risk === "HIGH") ? 25 : 0;
+    return { value: Math.max(0, base - penalty), penalty: penalty };
+  }
+
+  function sTaste(rest, prefs) {
+    if (!prefs.length) return { value: 75, hit: [] };
+    var hit = [];
+    prefs.forEach(function (pk) {
+      var g = PREFS.filter(function (p) { return p.key === pk; })[0];
+      if (!g) return;
+      if (rest.cuisine_tags.some(function (t) { return g.tags.indexOf(t) >= 0; })) hit.push(g);
+    });
+    return { value: (hit.length / prefs.length) * 100, hit: hit };
+  }
+
+  function sVibe(rest) {
+    var map = { LARGE: 100, MEDIUM: 70, SMALL: 45, NONE: 10 };
+    return map[rest.seating_capacity] != null ? map[rest.seating_capacity] : 40;
+  }
+
+  function weightsFor(ans) {
+    if (ans.time === "gathering") return { dist: 0.10, time: 0.10, taste: 0.30, vibe: 0.50, scene: "聚餐 / 请客 / 约会" };
+    if (ans.time === "rush") return { dist: 0.45, time: 0.45, taste: 0.10, vibe: 0.00, scene: "赶时间 (15-20 分钟)" };
+    if (parseInt(ans.budget, 10) <= 35) return { dist: 0.20, time: 0.20, taste: 0.50, vibe: 0.10, scene: "低预算 / 省钱模式" };
+    return { dist: 0.30, time: 0.25, taste: 0.35, vibe: 0.10, scene: "常规推荐" };
+  }
+
+  /* 硬性过滤：营业时间 + 预算 + 特殊饮食 */
+  function hardFilter(rest, ans, now) {
+    if (!isOpenNow(rest, now)) return "已打烊";
+    var max = parseInt(ans.budget, 10);
+    if (!isNaN(max) && max < 999 && rest.avg_price > max) return "超预算";
+    if (ans.diet === "vegetarian" && rest.dietary.indexOf("VEGETARIAN_FRIENDLY") < 0) return "无素食";
+    if (ans.diet === "halal" && rest.dietary.indexOf("HALAL") < 0) return "非清真";
+    return null;
+  }
+
+  function recommend(ans) {
+    var now = getNow();
+    var fromLoc = locInfo(ans.location);
+    var peak = isPeak(now);
+    var W = weightsFor(ans);
+    var kept = [], rejected = [];
+    DB.forEach(function (rest) {
+      var why = hardFilter(rest, ans, now);
+      if (why) { rejected.push({ rest: rest, reason: why }); return; }
+      var d = sDist(rest, fromLoc), t = sTime(rest, ans.time, peak), taste = sTaste(rest, ans.prefs);
+      var vibe = sVibe(rest);
+      var score = W.dist * d.value + W.time * t.value + W.taste * taste.value + W.vibe * vibe;
+      kept.push({
+        rest: rest, score: Math.round(score), scene: W.scene, peak: t.penalty > 0,
+        parts: { dist: Math.round(d.value), time: Math.round(t.value), taste: Math.round(taste.value), vibe: Math.round(vibe) },
+        walk: d.walk, floors: d.floors, hit: taste.hit
+      });
+    });
+    kept.sort(function (a, b) { return b.score - a.score; });
+    return { ranked: kept, rejected: rejected, scene: W.scene, peak: peak, now: now };
+  }
+
+  /* ========================================================================
+     四、渲染
+     ======================================================================== */
+  function setProgress(p) { progressFill.style.width = Math.max(0, Math.min(100, p)) + "%"; }
+
+  function render() {
+    if (state.stage === "welcome") return renderWelcome();
+    if (state.stage === "quiz") return renderQuestion();
+    return renderResult();
+  }
+
+  function renderWelcome() {
+    setProgress(0);
+    var now = getNow();
+    var anyOpen = DB.some(function (r) { return isOpenNow(r, now); });
+    var late = isLateNight(now) || state.nightMode;
+    app.innerHTML =
+      '<div class="hero fade">' +
+        '<div class="kicker">🍔 HKUST CATERING DECISION 🍟</div>' +
+        '<h1 id="heroTitle">' + rndEmoji() + ' 科大食堂决策</h1>' +
+        '<div class="en">CLEAR WATER BAY CAMPUS</div>' +
+        '<p class="sub">' + rndEmoji() + ' 4 个问题，避开垂直交通与高峰排队，找到最适合你的那一餐 🍽️</p>' +
+        '<p class="sub" style="color:#777;font-size:13px;">🔒 不上传 · 不保存 · 完全离线</p>' +
+        '<div class="clock ' + (anyOpen ? "open" : "closed") + '"><span class="dot"></span>' + fmtClock(now) + ' · ' + (anyOpen ? "部分餐厅营业中" : "当前多数打烊") + '</div>' +
+        (late ? '<div class="banner"><b>🌙 深夜拯救计划已可用</b>21:30-02:00 自动生效；也可长按上方标题手动进入。</div>' : '') +
+      '</div>' +
+      '<div class="nav"><button class="btn" id="startBtn">🚀 开始决策</button>' +
+      (late ? '<button class="btn ghost small" id="nightBtn">🌙 深夜模式</button>' : '') + '</div>';
+
+    var title = document.getElementById("heroTitle");
+    var press = null;
+    function startPress() { press = setTimeout(function () { press = null; state.nightMode = true; render(); }, 700); }
+    function cancelPress() { if (press) { clearTimeout(press); press = null; } }
+    ["mousedown", "touchstart"].forEach(function (ev) { title.addEventListener(ev, startPress, { passive: true }); });
+    ["mouseup", "mouseleave", "touchend", "touchcancel"].forEach(function (ev) { title.addEventListener(ev, cancelPress, { passive: true }); });
+
+    document.getElementById("startBtn").addEventListener("click", function () {
+      state.stage = "quiz"; state.step = 0; render();
+    });
+    var nb = document.getElementById("nightBtn");
+    if (nb) nb.addEventListener("click", function () { state.nightMode = true; state.stage = "result"; state.step = 0; render(); });
+  }
+
+  function isStepAnswered(s) {
+    if (s.type === "prefs") return true;
+    return !isBlank(state.answers[s.key]);
+  }
+
+  function renderQuestion() {
+    var s = STEPS[state.step];
+    setProgress(((state.step + 1) / STEPS.length) * 100);
+
+    var html = '<div class="fade">';
+    html += '<div class="q-head"><span class="q-no">' + pad2(state.step + 1) + ' / ' + pad2(STEPS.length) + '</span>' +
+            '<span class="q-name">' + esc(s.name) + '</span></div>';
+    html += '<h2 class="q-title">' + rndEmoji() + ' ' + esc(s.question) + '</h2>';
+    if (s.hint) html += '<p class="q-hint">' + esc(s.hint) + '</p>';
+
+    if (s.type === "choice") {
+      html += '<div class="opts">';
+      s.options.forEach(function (o) {
+        var sel = state.answers[s.key] === o.value;
+        html += '<button class="opt' + (sel ? " selected" : "") + '" data-value="' + o.value + '">' +
+                  '<span class="mark">' + (sel ? "✓" : "") + '</span>' +
+                  '<span class="txt">' + esc(o.label) + (o.sub ? '<span class="opt-sub">' + esc(o.sub) + '</span>' : '') + '</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    } else if (s.type === "prefs") {
+      html += '<div class="sub-head">😋 口味偏好（可多选）</div><div class="chips" id="prefChips">';
+      PREFS.forEach(function (p) {
+        var sel = state.answers.prefs.indexOf(p.key) >= 0;
+        html += '<button class="chip' + (sel ? " selected" : "") + '" data-pref="' + p.key + '">' + esc(p.label) + '</button>';
+      });
+      html += '</div>';
+      html += '<div class="sub-head">🥬 特殊饮食</div><div class="chips" id="dietChips">';
+      DIETS.forEach(function (d) {
+        var sel = state.answers.diet === d.value;
+        html += '<button class="chip' + (sel ? " selected" : "") + '" data-diet="' + d.value + '">' + esc(d.label) + '</button>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="nav">';
+    if (state.step > 0) html += '<button class="btn ghost small" id="prevBtn">⬅️ 上一题</button>';
+    html += '<button class="btn" id="nextBtn">' + (state.step === STEPS.length - 1 ? "🎯 生成推荐" : "➡️ 下一题") + '</button>';
+    html += '</div>';
+
+    app.innerHTML = html;
+
+    if (s.type === "choice") {
+      Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (btn) {
+        btn.addEventListener("click", function () {
+          state.answers[s.key] = btn.dataset.value;
+          Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (b) {
+            b.classList.remove("selected");
+            b.querySelector(".mark").textContent = "";
+          });
+          btn.classList.add("selected");
+          btn.querySelector(".mark").textContent = "✓";
+          updateNav();
+        });
+      });
+    } else if (s.type === "prefs") {
+      Array.prototype.forEach.call(app.querySelectorAll("[data-pref]"), function (btn) {
+        btn.addEventListener("click", function () {
+          var k = btn.dataset.pref, arr = state.answers.prefs, i = arr.indexOf(k);
+          if (i >= 0) { arr.splice(i, 1); btn.classList.remove("selected"); }
+          else { arr.push(k); btn.classList.add("selected"); }
+        });
+      });
+      Array.prototype.forEach.call(app.querySelectorAll("[data-diet]"), function (btn) {
+        btn.addEventListener("click", function () {
+          state.answers.diet = btn.dataset.diet;
+          Array.prototype.forEach.call(app.querySelectorAll("[data-diet]"), function (b) { b.classList.remove("selected"); });
+          btn.classList.add("selected");
+        });
+      });
+    }
+
+    if (state.step > 0) {
+      document.getElementById("prevBtn").addEventListener("click", function () { state.step--; render(); });
+    }
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      if (!isStepAnswered(s)) return;
+      if (state.step === STEPS.length - 1) { state.stage = "result"; render(); }
+      else { state.step++; render(); }
+    });
+
+    updateNav();
+  }
+
+  function updateNav() {
+    var btn = document.getElementById("nextBtn");
+    if (!btn) return;
+    var ok = isStepAnswered(STEPS[state.step]);
+    btn.disabled = !ok;
+    btn.classList.toggle("disabled", !ok);
+  }
+
+  function renderResult() {
+    setProgress(100);
+    var now = getNow();
+
+    /* 深夜拯救模式 */
+    if (state.nightMode || isLateNight(now)) {
+      return renderNightMode(now);
+    }
+
+    var ans = state.answers;
+    var output = recommend(ans);
+
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">🏆 TOP RECOMMENDATIONS</div>';
+    html += '<h2 class="h">' + rndEmoji() + ' 为你推荐</h2>';
+    html += '<p class="summary">场景：' + esc(output.scene) + (output.peak ? ' · 高峰时段（排队惩罚生效）' : '') + '</p>';
+    html += '<p class="summary">' + fmtDateTime(now) + ' · 符合条件 ' + output.ranked.length + ' 家</p>';
+
+    if (!output.ranked.length) {
+      html += '<div class="section-title">😵 无匹配结果</div>';
+      html += '<div class="empty">当前时段 / 预算 / 饮食条件下暂无餐厅。试试放宽预算或更换饮食要求，或使用下方「随便帮我选」。</div>';
+    } else {
+      html += '<div class="section-title">🏅 Top ' + Math.min(3, output.ranked.length) + '</div>';
+      output.ranked.slice(0, 3).forEach(function (item, idx) {
+        html += cardHtml(item, idx + 1);
+      });
+      if (output.ranked.length > 3) {
+        html += '<div class="section-title">🎲 候补</div>';
+        output.ranked.slice(3).forEach(function (item) {
+          html += '<p class="summary" style="margin-bottom:6px;color:#888;">' + esc(item.rest.name_cn) + ' · ' + item.score + ' 分 · ' + esc(item.rest.zone) + ' ' + esc(item.rest.elevation) + '</p>';
+        });
+      }
+    }
+
+    html += '<div class="section-title">⚖️ 决策依据</div>';
+    html += '<p class="summary">权重 = 距离 ' + Math.round(weightsFor(ans).dist * 100) + '% · 速度 ' + Math.round(weightsFor(ans).time * 100) + '% · 口味 ' + Math.round(weightsFor(ans).taste * 100) + '% · 氛围 ' + Math.round(weightsFor(ans).vibe * 100) + '%</p>';
+    html += '<p class="summary" style="font-size:12px;color:#777;margin-top:6px;">公式：总分 = W_distance·S_distance + W_time·S_time + W_taste·S_taste + W_vibe·S_vibe</p>';
+
+    html += '<div class="nav">' +
+              '<button class="btn ghost" id="restartBtn">🔄 重新选择</button>' +
+              '<button class="btn red" id="luckyBtn">🎲 随便帮我选</button>' +
+            '</div>';
+    html += '<div class="nav"><button class="btn" id="shareBtn">📸 分享截图</button></div>';
+    html += '<div class="foot">数据为校园公开信息的静态近似模型 · 营业时间以现场为准<br>💡 仅在本地内存中处理 · 不联网 · 关闭即清空</div>';
+    html += '</div>';
+
+    html += shareModalHtml();
+    html += birdOverlayHtml();
+    app.innerHTML = html;
+    animateBars();
+
+    bindShare(output);
+    bindCommon();
+
+    document.getElementById("luckyBtn").addEventListener("click", function () {
+      state.shakeCount++;
+      if (state.shakeCount >= 3) { showRedBird(output); }
+      else {
+        var open = DB.filter(function (r) { return isOpenNow(r, getNow()); });
+        var pick = open.length ? open[Math.floor(Math.random() * open.length)] : DB[0];
+        alert("提示：🎲 随便就选它 —— " + restEmoji(pick.id) + " " + pick.name_cn + "。再点 " + (3 - state.shakeCount) + " 次会有惊喜 ✨");
+      }
+    });
+  }
+
+  function cardHtml(item, rank) {
+    var r = item.rest;
+    var tagHtml = "";
+    (item.hit || []).forEach(function (g) { tagHtml += '<span class="tag">命中 ' + esc(g.label) + '</span>'; });
+    tagHtml += '<span class="tag">' + esc(r.zone) + ' ' + esc(r.elevation) + '</span>';
+    tagHtml += '<span class="tag">$' + r.avg_price + '</span>';
+    tagHtml += '<span class="tag">' + esc(SPEED_LABEL[r.speed_level]) + '</span>';
+    tagHtml += '<span class="tag">' + esc(SEAT_LABEL[r.seating_capacity]) + '</span>';
+    tagHtml += '<span class="tag">' + esc(CROWD_LABEL[r.crowd_risk]) + '</span>';
+
+    var why = "步行约 " + item.walk + " 分钟" + (item.floors ? " · 电梯 " + item.floors + " 层" : "") +
+              " · " + SPEED_LABEL[r.speed_level] +
+              (item.hit.length ? " · 命中 " + item.hit.map(function (g) { return g.label; }).join("/") : "") +
+              (item.peak ? " · 高峰排队 -25" : "");
+
+    return '<div class="card' + (rank === 1 ? " rank1" : "") + '">' +
+             '<div class="top"><span class="rank">#' + rank + '</span><span class="score">' + item.score + '<small> /100</small></span></div>' +
+             '<div class="name">' + restEmoji(r.id) + ' ' + esc(r.name_cn) + '</div>' +
+             '<div class="name-en">' + esc(r.name_en) + '</div>' +
+             '<div class="meta">' + tagHtml + '</div>' +
+             '<div class="why">' + esc(why) + '</div>' +
+             '<div class="bars">' +
+               bar("距离", item.parts.dist) + bar("速度", item.parts.time) +
+               bar("口味", item.parts.taste) + bar("氛围", item.parts.vibe) +
+             '</div>' +
+           '</div>';
+  }
+
+  function bar(label, v) {
+    var w = Math.max(0, Math.min(100, v));
+    return '<div class="bar-row"><span class="bar-label">' + label + '</span>' +
+           '<span class="bar-track"><span class="bar-fill" data-w="' + w + '"></span></span>' +
+           '<span class="bar-val">' + v + '</span></div>';
+  }
+
+  /* ---------------- 深夜拯救模式 ---------------- */
+  function renderNightMode(now) {
+    var open = DB.filter(function (r) { return isOpenNow(r, now); });
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">🌙 LATE-NIGHT RESCUE MODE</div>';
+    html += '<h2 class="h">🌙 深夜拯救计划</h2>';
+    html += '<p class="summary">' + fmtDateTime(now) + ' · 已重置硬筛选条件，仅展示深夜营业节点</p>';
+
+    html += '<div class="section-title">🍜 营业中</div>';
+    if (open.length) {
+      open.forEach(function (r) {
+        html += '<div class="card">' +
+                  '<div class="name">' + restEmoji(r.id) + ' ' + esc(r.name_cn) + '</div>' +
+                  '<div class="name-en">' + esc(r.name_en) + '</div>' +
+                  '<div class="meta"><span class="tag">' + esc(r.zone) + ' ' + esc(r.elevation) + '</span>' +
+                    '<span class="tag">$' + r.avg_price + '</span>' +
+                    '<span class="tag">' + esc(SPEED_LABEL[r.speed_level]) + '</span>' +
+                    '<span class="tag">' + esc(r.opening_hours.weekday === "00:00-24:00" ? "24h" : r.opening_hours.weekday) + '</span></div>' +
+                '</div>';
+      });
+    } else {
+      html += '<div class="empty">😴 此深夜时段校内堂食基本打烊，建议前往便利店微波热食或外卖交接点。</div>';
+    }
+
+    html += '<div class="section-title">🛵 外卖交接点提示</div>';
+    html += '<p class="summary">北闸 North Gate · 南闸 South Gate · 各宿舍区门口；深夜取餐注意安全与保暖 🧣</p>';
+
+    html += '<div class="nav"><button class="btn ghost" id="restartBtn">🚪 退出深夜模式</button>' +
+            '<button class="btn" id="shareBtn">📸 分享截图</button></div>';
+    html += '<div class="foot">🌙 深夜模式 · 本地生成 · 不联网</div>';
+    html += '</div>';
+    html += shareModalHtml();
+    app.innerHTML = html;
+    animateBars();
+
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state.nightMode = false; state.stage = "welcome"; state.step = 0; render();
+    });
+    bindShare({ ranked: [], night: true });
+  }
+
+  /* ---------------- Red Bird 彩蛋 ---------------- */
+  var BIRD_LINES = [
+    "去 LG7 谭仔吧！算上排队时间，刚好能让你思考人生。",
+    "红鸟拍板：今天不纠结，吃什么都比饿着强。",
+    "命运选择了它——红鸟说，赶时间就别去排队最长的。",
+    "别问为什么，问就是红鸟摇的。"
+  ];
+
+  function birdOverlayHtml() {
+    return '<div class="bird-overlay" id="birdOverlay">' +
+             '<div class="bird"><span class="body"></span><span class="wing"></span><span class="beak"></span><span class="eye"></span></div>' +
+             '<div class="ttl">🐦 THE RED BIRD SHAKE 🐦</div>' +
+             '<div class="pick" id="birdPick">—</div>' +
+             '<div class="line" id="birdLine">—</div>' +
+             '<button class="btn small" id="birdClose" style="flex:0 0 auto;">😤 接受命运</button>' +
+           '</div>';
+  }
+
+  function showRedBird(output) {
+    var open = DB.filter(function (r) { return isOpenNow(r, getNow()); });
+    var pool = open.length ? open : DB;
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    var line = BIRD_LINES[Math.floor(Math.random() * BIRD_LINES.length)];
+    document.getElementById("birdPick").textContent = restEmoji(pick.id) + " " + pick.name_cn;
+    document.getElementById("birdLine").textContent = line;
+    document.getElementById("birdOverlay").classList.add("open");
+    document.getElementById("birdClose").addEventListener("click", function () {
+      document.getElementById("birdOverlay").classList.remove("open");
+    });
+  }
+
+  /* ---------------- 分享截图 ---------------- */
+  function shareModalHtml() {
+    return '<div class="modal" id="shareModal">' +
+             '<div class="modal-card">' +
+               '<div class="modal-head">📸 截图预览 · 含当前时间</div>' +
+               '<img class="shot" id="shotImg" alt="食堂推荐截图">' +
+               '<div class="modal-actions">' +
+                 '<button class="btn ghost small" id="closeShareBtn">✖️ 关闭</button>' +
+                 '<button class="btn small" id="saveShotBtn">💾 保存图片</button>' +
+                 (canSystemShare() ? '<button class="btn small" id="sysShareBtn">📤 系统分享</button>' : '') +
+               '</div>' +
+               '<div class="modal-note">图片由本地 Canvas 生成 · 不联网 · 不上传</div>' +
+             '</div>' +
+           '</div>';
+  }
+
+  function bindCommon() {
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state = { stage: "welcome", step: 0, answers: { prefs: [], diet: "none" }, shakeCount: 0, nightMode: false };
+      render();
+      window.scrollTo(0, 0);
+    });
+  }
+
+  function bindShare(output) {
+    var shot = null;
+    function ensure() { if (!shot) shot = drawShareCard(output); return shot; }
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      document.getElementById("shotImg").src = ensure().toDataURL("image/png");
+      document.getElementById("shareModal").classList.add("open");
+    });
+    document.getElementById("closeShareBtn").addEventListener("click", function () {
+      document.getElementById("shareModal").classList.remove("open");
+    });
+    document.getElementById("saveShotBtn").addEventListener("click", function () {
+      var link = document.createElement("a");
+      link.href = ensure().toDataURL("image/png");
+      link.download = "食堂决策_" + fileStamp() + ".png";
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    });
+    var sysBtn = document.getElementById("sysShareBtn");
+    if (sysBtn) {
+      sysBtn.addEventListener("click", function () {
+        ensure().toBlob(function (blob) {
+          if (!blob) return;
+          var file = new File([blob], "食堂决策_" + fileStamp() + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: "科大食堂决策" }).catch(function () {});
+          }
+        }, "image/png");
+      });
+    }
+  }
+
+  function wrapLines(ctx, text, maxWidth) {
+    var chars = String(text).split(""), out = [], cur = "";
+    for (var i = 0; i < chars.length; i++) {
+      var test = cur + chars[i];
+      if (cur && ctx.measureText(test).width > maxWidth) { out.push(cur); cur = chars[i]; }
+      else { cur = test; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  function drawShareCard(output) {
+    var W = 1080, H = 2600, pad = 80;
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var FONT = '"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif';
+    function font(size, weight) { ctx.font = (weight ? weight + " " : "") + size + "px " + FONT; }
+    function txt(str, x, y, size, weight, color) { font(size, weight); ctx.fillStyle = color; ctx.fillText(str, x, y); }
+    function center(str, y, size, weight, color) { font(size, weight); ctx.fillStyle = color; ctx.fillText(str, (W - ctx.measureText(str).width) / 2, y); }
+    function line(y) { ctx.strokeStyle = "#222"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke(); }
+
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+
+    var y = 120;
+    ctx.fillStyle = "#FFC72C"; ctx.fillRect(pad, y, 120, 6); y += 42;
+    txt("🍔 HKUST CATERING DECISION", pad, y, 30, "500", "#FFC72C"); y += 54;
+    txt("🍔 科大食堂决策 🍟", pad, y, 60, "700", "#fff"); y += 110;
+    txt(fmtDateTime(getNow()), pad, y, 34, "400", "#888"); y += 60;
+    line(y); y += 42;
+
+    if (output.night) {
+      txt("🌙 深夜拯救计划", pad, y, 44, "700", "#FFC72C"); y += 70;
+      var open = DB.filter(function (r) { return isOpenNow(r, getNow()); });
+      (open.length ? open : []).forEach(function (r) {
+        txt("· " + restEmoji(r.id) + " " + r.name_cn + "  (" + r.zone + " " + r.elevation + ")", pad, y, 34, "400", "#cfcfcf"); y += 52;
+      });
+      if (!open.length) { txt("· 校内堂食多已打烊，建议便利店 / 外卖交接点", pad, y, 34, "400", "#cfcfcf"); y += 52; }
+    } else {
+      txt("场景：" + output.scene, pad, y, 34, "400", "#cfcfcf"); y += 60;
+      (output.ranked || []).slice(0, 3).forEach(function (item, i) {
+        var r = item.rest;
+        var nm = "#" + (i + 1) + "  " + restEmoji(r.id) + " " + r.name_cn;
+        txt(nm, pad, y, 42, "700", "#fff");
+        var sw = ctx.measureText(nm).width;
+        txt(String(item.score) + " 分", pad + sw + 24, y + 8, 34, "700", "#FFC72C");
+        y += 58;
+        txt(r.zone + " " + r.elevation + " · $" + r.avg_price + " · " + SPEED_LABEL[r.speed_level] + " · 步行约 " + item.walk + " 分钟", pad, y, 30, "400", "#9a9a9a"); y += 46;
+        if (item.hit && item.hit.length) { txt("命中：" + item.hit.map(function (g) { return g.label; }).join("、"), pad, y, 30, "400", "#9a9a9a"); y += 46; }
+        y += 26;
+      });
+    }
+
+    y += 12;
+    center("🍔 本地生成 · 完全离线 · 营业与价格以现场为准", y, 26, "400", "#555");
+    y += 64;
+
+    var outH = Math.min(H, y);
+    var out = document.createElement("canvas");
+    out.width = W; out.height = outH;
+    out.getContext("2d").drawImage(canvas, 0, 0, W, outH, 0, 0, W, outH);
+    return out;
+  }
+
+  /* ========================================================================
+     五、工具函数
+     ======================================================================== */
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+  function isBlank(v) { return v === undefined || v === null || String(v).trim() === ""; }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+  function fileStamp() {
+    var d = new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + "_" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+  function canSystemShare() {
+    return typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare &&
+           typeof File !== "undefined" && typeof Blob !== "undefined";
+  }
+
+  /* 分数条：先以 0 宽插入，再于下一帧写入目标宽度，确保进入结果页即时更新 */
+  function animateBars() {
+    var bars = app.querySelectorAll(".bar-fill");
+    var run = function () {
+      Array.prototype.forEach.call(bars, function (b) {
+        var w = b.getAttribute("data-w");
+        if (w != null) b.style.width = w + "%";
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+    else run();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

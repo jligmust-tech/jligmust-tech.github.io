@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  随喜放生决策器 · 解压向随机决策工具
+  ----------------------------------------------------------------------------
+  用途   ：一款抽象的「随喜 / 放生」决策玩具。回答三件事：
+           要不要随喜 · 放生什么 · 怎么放生，并附功德、宜忌与禅语。
+  作者   ：swimHelper
+  版本   ：v1.0（心境路由 + 一卦三签 + 电子木鱼 + 本地分享截图）
+  生成日 ：2026-09-29
+  声明   ：单文件 HTML · 完全离线 · 零数据持久化，
+           所有数据仅在内存中处理，关闭页面即清空，不写入任何浏览器存储。
+           本应用仅供解压娱乐，请勿真的去市场买生放生；真正的放生是护生。
+  说明   ：本文件不引用任何外部资源、外部字体、外部图片或远程接口，
+           双击即可在任意现代浏览器（含 iOS Safari / Android Chrome）打开。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c0b09">
+<title>随喜放生决策</title>
+<style>
+  /* 配色：墨黑 #0c0b09 · 鎏金 #E8C15A · 朱砂 #C0392B · 米白 #EDE6D6 */
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #0c0b09; color: #EDE6D6; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 15px; line-height: 1.7; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    background-image: radial-gradient(rgba(232,193,90,.05) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  button { font-family: inherit; }
+
+  .progress-track { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: #26221a; z-index: 50; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #C0392B, #E8C15A); transition: width .3s ease; }
+
+  .app { max-width: 520px; margin: 0 auto; padding: 32px 20px 44px; min-height: 100vh; display: flex; flex-direction: column; }
+  .fade { animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .hero .kicker { font-size: 12px; letter-spacing: 5px; color: #8c7a4e; margin-bottom: 14px; }
+  .hero h1 { font-size: 34px; font-weight: 700; letter-spacing: 3px; margin-bottom: 8px; color: #F2E6C8; }
+  .hero .sub { font-size: 14px; color: #a99b7c; margin: 4px 0; }
+  .hero .en { font-size: 11px; letter-spacing: 3px; color: #6b5f45; margin-bottom: 22px; }
+
+  /* 电子木鱼 */
+  .muyu-wrap { position: relative; display: inline-flex; flex-direction: column; align-items: center; margin: 10px auto 6px; }
+  .muyu {
+    position: relative; width: 156px; height: 116px; border: none; cursor: pointer;
+    background: #7a4a1e; border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
+    box-shadow: inset 0 -10px 0 rgba(0,0,0,.28), 0 8px 20px rgba(0,0,0,.5);
+    transition: transform .08s ease;
+  }
+  .muyu:active { transform: scale(.94); }
+  .muyu::before { content: ""; position: absolute; left: 16%; top: 44%; width: 68%; height: 10px; background: #2c1a08; border-radius: 6px; }
+  .muyu::after { content: ""; position: absolute; left: 30%; top: 30%; width: 40%; height: 26%; background: #8f5a28; border-radius: 50%; box-shadow: inset 0 -4px 0 rgba(0,0,0,.25); }
+  .merit-badge { margin-top: 12px; font-size: 12px; letter-spacing: 2px; color: #E8C15A; }
+  .merit-badge b { font-size: 20px; font-weight: 700; }
+  .float { position: absolute; left: 50%; top: 6px; color: #E8C15A; font-size: 18px; font-weight: 700; pointer-events: none; animation: floatUp .9s ease-out forwards; }
+  @keyframes floatUp { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -64px); } }
+
+  .note { margin-top: 22px; border: 1px solid #3a3220; background: #14110b; padding: 12px 14px; font-size: 12px; color: #b3a67f; line-height: 1.75; text-align: left; }
+  .note b { color: #E8C15A; }
+
+  .q-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .q-no { font-size: 12px; letter-spacing: 2px; color: #8c7a4e; }
+  .q-name { font-size: 12px; letter-spacing: 1px; color: #E8C15A; border: 1px solid #5c4f2b; padding: 2px 8px; }
+  .q-title { font-size: 22px; font-weight: 600; line-height: 1.5; margin-bottom: 6px; color: #F2E6C8; }
+  .q-hint { font-size: 12px; color: #8a7e60; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+  .chip {
+    padding: 10px 14px; min-height: 46px; display: inline-flex; align-items: center; gap: 6px;
+    background: #17140d; border: 1px solid #3a3220; color: #d8cdb0; font-size: 14px; cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .chip:active { background: #221d12; }
+  .chip.selected { background: #E8C15A; color: #241a00; border-color: #E8C15A; }
+
+  .nav { display: flex; gap: 12px; margin-top: 32px; }
+  .btn {
+    flex: 1; min-height: 52px; padding: 0 16px; border: 1px solid #C0392B;
+    background: #C0392B; color: #fff6ea; font-size: 16px; letter-spacing: 2px; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: transparent; color: #E8C15A; border-color: #5c4f2b; }
+  .btn.small { flex: 0 0 auto; padding: 0 18px; letter-spacing: 1px; font-size: 14px; }
+  .btn[disabled], .btn.disabled { opacity: .3; cursor: not-allowed; }
+
+  .res { padding-top: 6px; }
+  .res .kicker { font-size: 12px; letter-spacing: 5px; color: #8c7a4e; margin-bottom: 12px; text-align: center; }
+  .section-title { font-size: 12px; letter-spacing: 4px; color: #E8C15A; margin: 26px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2519; }
+
+  .card { border: 1px solid #2e2818; background: #12100a; padding: 18px; margin-bottom: 14px; position: relative; }
+  .card.gold { border-color: #6b5a2c; }
+  .seal {
+    position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid #C0392B; color: #E8897c; font-size: 20px; font-weight: 700; border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(192,57,43,.25) inset;
+  }
+  .card h3 { font-size: 19px; font-weight: 700; color: #F2E6C8; margin-bottom: 8px; padding-right: 56px; }
+  .card p { font-size: 14px; color: #c3b795; }
+  .card .target { font-size: 22px; font-weight: 700; color: #F2E6C8; line-height: 1.5; margin-bottom: 6px; }
+  .card .addon { font-size: 13px; color: #a99b7c; }
+
+  .merit-line { display: flex; align-items: center; gap: 12px; }
+  .merit-line .num { font-size: 40px; font-weight: 700; color: #E8C15A; letter-spacing: -1px; }
+  .merit-line .tier { font-size: 13px; color: #b3a67f; }
+  .merit-track { flex: 1; height: 8px; background: #24200f; }
+  .merit-fill { height: 100%; width: 0; background: linear-gradient(90deg, #C0392B, #E8C15A); transition: width .8s ease; }
+
+  .yiji { display: flex; gap: 12px; }
+  .yiji .col { flex: 1; border: 1px solid #2e2818; background: #12100a; padding: 14px; }
+  .yiji .col .h { font-size: 12px; letter-spacing: 3px; margin-bottom: 6px; }
+  .yiji .yi .h { color: #7fbf7f; }
+  .yiji .ji .h { color: #d98a7f; }
+  .yiji .col .v { font-size: 16px; color: #EDE6D6; }
+
+  .quote { margin-top: 14px; text-align: center; font-size: 15px; color: #d8cdb0; font-style: italic; line-height: 1.9; }
+  .quote::before { content: "「"; color: #8c7a4e; }
+  .quote::after { content: "」"; color: #8c7a4e; }
+
+  .foot { margin-top: 30px; padding-top: 16px; border-top: 1px solid #201b10; font-size: 11px; color: #6b6046; text-align: center; line-height: 1.9; }
+
+  .modal { position: fixed; inset: 0; background: rgba(6,5,3,.95); display: none; z-index: 100; padding: 22px 20px 40px; overflow-y: auto; }
+  .modal.open { display: block; }
+  .modal-card { max-width: 520px; margin: 0 auto; }
+  .modal-head { font-size: 12px; letter-spacing: 3px; color: #E8C15A; margin-bottom: 14px; }
+  .shot { width: 100%; display: block; border: 1px solid #3a3220; background: #0c0b09; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+  .modal-note { margin-top: 14px; font-size: 11px; color: #6b6046; text-align: center; line-height: 1.7; }
+
+  @media (max-width: 380px) {
+    body { font-size: 14px; }
+    .hero h1 { font-size: 28px; }
+    .q-title { font-size: 19px; }
+    .muyu { width: 138px; height: 104px; }
+  }
+</style>
+</head>
+<body>
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">随喜放生 · v1.0</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="app" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========================================================================
+     一、签文素材库
+     ======================================================================== */
+  var MOODS = [
+    { key: "anxious", label: "焦虑", emoji: "😰" },
+    { key: "burnout", label: "内耗", emoji: "🫠" },
+    { key: "procrastinate", label: "拖延", emoji: "🦥" },
+    { key: "tired", label: "疲惫", emoji: "😮‍💨" },
+    { key: "flutter", label: "心动", emoji: "💗" },
+    { key: "calm", label: "平静", emoji: "😌" },
+    { key: "chaos", label: "混乱", emoji: "🌀" },
+    { key: "rich", label: "想暴富", emoji: "🤑" },
+    { key: "love", label: "想脱单", emoji: "💘" },
+    { key: "emo", label: "emo", emoji: "🌧️" },
+    { key: "lying", label: "想躺平", emoji: "🛌" },
+    { key: "rage", label: "无名火", emoji: "🔥" }
+  ];
+
+  /* 随喜签：bias 用于按心境优先命中 */
+  var VERDICTS = [
+    { tag: "宜", title: "宜 · 随喜", body: "此刻随喜，功德加倍。把别人的好当成自己的好，是最省力的修行。", bias: ["calm", "flutter", "rich"] },
+    { tag: "宜", title: "宜 · 先随喜自己", body: "先对自己随喜三秒，再随喜众生——空杯子倒不出水。", bias: ["burnout", "emo", "tired"] },
+    { tag: "缓", title: "缓一缓 · 先放生", body: "你手里攥得太紧了，先放生一样东西，再谈随喜。", bias: ["anxious", "burnout", "rage"] },
+    { tag: "随", title: "随心 · 不做也功德无量", body: "不随喜不等于不善良，别用功德绑架自己。", bias: ["lying", "tired", "calm"] },
+    { tag: "宜", title: "宜 · 随喜一只蚂蚁", body: "小到不值一提的善意也算数，何况你还没遇见那只蚂蚁。", bias: [] },
+    { tag: "忌", title: "忌 · 为截图而随喜", body: "为了发朋友圈而随喜，功德会被滤镜扣掉三成。", bias: ["rich"] },
+    { tag: "宜", title: "宜 · 转念即随喜", body: "把「凭什么」换成「挺好的」，这一念本身就是随喜。", bias: ["rage", "chaos"] },
+    { tag: "缓", title: "缓 · 先睡觉再决定", body: "深夜不适合做任何决定，包括随喜。睡醒再问一次。", bias: ["emo", "chaos", "procrastinate"] }
+  ];
+
+  /* 放生签（抽象） */
+  var TARGETS = [
+    "放生你的拖延——它已经养得比你胖了。",
+    "放生 3% 的焦虑，剩下的留着当燃料。",
+    "放生前任的聊天记录，云端也一起放。",
+    "放生一句还没发出去的狠话。",
+    "放生购物车里那件「冲动」。",
+    "放生一个未读的小红点。",
+    "放生完美主义的第 87 版草稿。",
+    "放生你对周一的所有预设。",
+    "放生一个 bug，让它回归大自然。",
+    "放生一段过期的心动。",
+    "放生反复复盘的第 6 遍。",
+    "放生 0.5 个内耗单位。",
+    "放生外卖里那颗有罪恶感的炸鸡。",
+    "放生那个总说「我不行」的声音。",
+    "放生今天的 KPI，明天再抓回来。",
+    "放生昨天。",
+    "放生一把年纪的起床气。",
+    "放生「随便」这两个字。",
+    "放生别人的看法（反正也拿不走）。",
+    "放生一段没人回复的长语音。",
+    "放生你给 TA 找的第 100 个借口。",
+    "放生凌晨三点的购物车。"
+  ];
+
+  /* 附加随喜（护生 · 云放生） */
+  var CREATURES = [
+    "顺手随喜一只自由飞翔的池鹭 🐦",
+    "顺手随喜一条河里的锦鲤 🐟",
+    "顺手随喜一只慢慢走的乌龟 🐢",
+    "顺手随喜一只路过的蝴蝶 🦋",
+    "顺手随喜一朵开在墙角的莲 🪷",
+    "顺手随喜一只晒太阳的流浪猫 🐈",
+    "顺手随喜广场上的一群鸽子 🕊️",
+    "顺手随喜窗台一只无名的小虫 🐜"
+  ];
+
+  /* 放生方式 */
+  var RITUALS = [
+    "打开备忘录把它写下来，然后删掉——这就是仪式。",
+    "深呼吸三次，想象把它放进一条河里。",
+    "对镜子说：这件事，到此为止。",
+    "手机调成飞行模式 5 分钟，让念头自己游走。",
+    "给很久没联系的人发一句问候（放生的是隔阂）。",
+    "把 TA 的备注改回名字，只此一步。",
+    "泡一杯茶，看着热气散完，就算放完了。",
+    "把它写在纸上折成船（冲下水道前记得别堵）。",
+    "念三遍「随喜」，然后去做一件早就该做的小事。",
+    "允许自己最后想它一次，然后设个闹钟不再复盘。"
+  ];
+
+  var YI = ["随喜", "早睡", "删一个备忘录", "夸人", "晒太阳", "少刷手机", "喝热水", "原谅自己", "吃顿好的", "给花浇水"];
+  var JI = ["内耗", "深夜复盘", "给前任动态点赞", "凌晨下单", "和别人比较", "硬撑", "劝人随喜", "翻旧账", "删聊天记录", "再刷五分钟"];
+
+  var QUOTES = [
+    "放下的那一刻，两手才空得出来接新的。",
+    "功德不是攒出来的，是松出来的。",
+    "随喜不是给别人面子，是给自己松绑。",
+    "你不是在放生它，你是在放生你自己。",
+    "舍与得之间，隔着一个深呼吸。",
+    "攥紧的拳头，握不住任何东西。",
+    "把「凭什么」换成「挺好的」，世界会轻一点。",
+    "不着急，功德不打烊。"
+  ];
+
+  /* ========================================================================
+     二、随机与评分
+     ======================================================================== */
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function rndInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+
+  function meritTier(m) {
+    if (m >= 108) return "大圆满 · 功德无量";
+    if (m >= 80) return "上上签 · 见喜";
+    if (m >= 40) return "中签 · 小悟";
+    return "初心 · 起步即功德";
+  }
+
+  function generate(moodKey) {
+    var pool = VERDICTS.filter(function (v) { return v.bias.indexOf(moodKey) >= 0; });
+    var verdict = pool.length ? pick(pool) : pick(VERDICTS);
+    var merit = rndInt(3, 108);
+    return {
+      mood: moodKey,
+      verdict: verdict,
+      target: pick(TARGETS),
+      creature: pick(CREATURES),
+      ritual: pick(RITUALS),
+      merit: merit,
+      yi: pick(YI),
+      ji: pick(JI),
+      quote: pick(QUOTES)
+    };
+  }
+
+  /* ========================================================================
+     三、状态与渲染
+     ======================================================================== */
+  var state = { stage: "welcome", mood: "", result: null, merit: 0, lastMood: "" };
+  var app = document.getElementById("app");
+  var progressFill = document.getElementById("progressFill");
+
+  function setProgress(p) { progressFill.style.width = Math.max(0, Math.min(100, p)) + "%"; }
+
+  function render() {
+    if (state.stage === "welcome") return renderWelcome();
+    if (state.stage === "mood") return renderMood();
+    return renderResult();
+  }
+
+  function muyuHtml(id, showBadge) {
+    return '<div class="muyu-wrap" id="' + id + 'Wrap">' +
+             '<button class="muyu" id="' + id + '" aria-label="敲木鱼"></button>' +
+             (showBadge ? '<div class="merit-badge">功德 <b id="meritNum">' + state.merit + '</b></div>' : '') +
+           '</div>';
+  }
+
+  function bindMuyu(id) {
+    var wrap = document.getElementById(id + "Wrap");
+    var btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      state.merit++;
+      var num = document.getElementById("meritNum");
+      if (num) num.textContent = state.merit;
+      var f = document.createElement("span");
+      f.className = "float";
+      f.textContent = "功德 +1";
+      wrap.appendChild(f);
+      setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 900);
+    });
+  }
+
+  function renderWelcome() {
+    setProgress(0);
+    app.innerHTML =
+      '<div class="hero fade">' +
+        '<div class="kicker">SUI XI · FANG SHENG</div>' +
+        '<h1>随喜放生决策</h1>' +
+        '<div class="en">A TINY MERIT ORACLE</div>' +
+        '<p class="sub">要不要随喜 · 放生什么 · 怎么放生 🪷</p>' +
+        '<p class="sub" style="color:#7d7154;font-size:13px;">不求签不开光 · 敲敲木鱼，随缘一卦</p>' +
+        muyuHtml("muyuHome", true) +
+        '<div class="note">🐟 <b>护生声明</b>：真正的放生是护生——不买不卖、不放外来物种，把善意用在护持环境上才是大功德。本应用只是一个解压玩具，请勿真的去市场买生放生。</div>' +
+      '</div>' +
+      '<div class="nav"><button class="btn" id="startBtn">🙏 开始结缘</button></div>';
+    bindMuyu("muyuHome");
+    document.getElementById("startBtn").addEventListener("click", function () {
+      state.stage = "mood"; render();
+    });
+  }
+
+  function renderMood() {
+    setProgress(50);
+    var chips = MOODS.map(function (m) {
+      var sel = state.mood === m.key ? " selected" : "";
+      return '<button class="chip' + sel + '" data-mood="' + m.key + '">' + m.emoji + ' ' + esc(m.label) + '</button>';
+    }).join("");
+    app.innerHTML =
+      '<div class="fade">' +
+        '<div class="q-head"><span class="q-no">一 / 二</span><span class="q-name">今日心境</span></div>' +
+        '<h2 class="q-title">你现在是什么状态？</h2>' +
+        '<p class="q-hint">选一个，卦象会顺着你的心境走；不选也可以，随缘。</p>' +
+        '<div class="chips" id="moodChips">' + chips + '</div>' +
+        muyuHtml("muyuMood", true) +
+      '</div>' +
+      '<div class="nav">' +
+        '<button class="btn ghost small" id="backBtn">↩︎ 返回</button>' +
+        '<button class="btn" id="castBtn">🪷 摇一卦</button>' +
+      '</div>';
+    bindMuyu("muyuMood");
+    Array.prototype.forEach.call(app.querySelectorAll("#moodChips .chip"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.mood = btn.dataset.mood;
+        Array.prototype.forEach.call(app.querySelectorAll("#moodChips .chip"), function (b) { b.classList.remove("selected"); });
+        btn.classList.add("selected");
+      });
+    });
+    document.getElementById("backBtn").addEventListener("click", function () { state.stage = "welcome"; render(); });
+    document.getElementById("castBtn").addEventListener("click", function () {
+      state.result = generate(state.mood);
+      state.lastMood = state.mood;
+      state.stage = "result";
+      render();
+      window.scrollTo(0, 0);
+    });
+  }
+
+  function renderResult() {
+    setProgress(100);
+    var r = state.result || (state.result = generate(state.mood));
+    var moodObj = MOODS.filter(function (m) { return m.key === state.lastMood; })[0];
+    var moodLine = moodObj ? moodObj.emoji + " " + moodObj.label : "🌸 随缘";
+
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">一 卦 三 签</div>';
+    html += '<p style="text-align:center;color:#a99b7c;font-size:13px;">今日心境：' + esc(moodLine) + '</p>';
+
+    html += '<div class="section-title">随喜签</div>';
+    html += '<div class="card gold">' +
+              '<div class="seal">' + esc(r.verdict.tag) + '</div>' +
+              '<h3>' + esc(r.verdict.title) + '</h3>' +
+              '<p>' + esc(r.verdict.body) + '</p>' +
+            '</div>';
+
+    html += '<div class="section-title">放生签</div>';
+    html += '<div class="card">' +
+              '<div class="target">' + esc(r.target) + '</div>' +
+              '<div class="addon">' + esc(r.creature) + '</div>' +
+            '</div>';
+
+    html += '<div class="section-title">放生方式</div>';
+    html += '<div class="card"><p>' + esc(r.ritual) + '</p></div>';
+
+    html += '<div class="section-title">功德</div>';
+    html += '<div class="card">' +
+              '<div class="merit-line">' +
+                '<div class="num">+' + r.merit + '</div>' +
+                '<div style="flex:1;">' +
+                  '<div class="tier">' + esc(meritTier(r.merit)) + '</div>' +
+                  '<div class="merit-track" style="margin-top:6px;"><div class="merit-fill" data-w="' + Math.min(100, r.merit / 108 * 100) + '"></div></div>' +
+                '</div>' +
+              '</div>' +
+              '<p class="addon" style="margin-top:10px;">功德可敲木鱼继续累积 ✨</p>' +
+            '</div>';
+
+    html += '<div class="section-title">今日宜忌</div>';
+    html += '<div class="yiji">' +
+              '<div class="col yi"><div class="h">宜</div><div class="v">' + esc(r.yi) + '</div></div>' +
+              '<div class="col ji"><div class="h">忌</div><div class="v">' + esc(r.ji) + '</div></div>' +
+            '</div>';
+
+    html += '<div class="quote">' + esc(r.quote) + '</div>';
+
+    html += muyuHtml("muyuRes", true);
+
+    html += '<div class="nav">' +
+              '<button class="btn ghost" id="againBtn">🔄 再摇一次</button>' +
+              '<button class="btn" id="shareBtn">📸 分享此签</button>' +
+            '</div>';
+    html += '<div class="nav"><button class="btn ghost small" id="restartBtn">重新结缘</button>' +
+            '<button class="btn ghost small" id="backMoodBtn">换个心境</button></div>';
+    html += '<div class="foot">功德只在本地内存 · 关闭即清零<br>🙏 仅供解压 · 真正的放生是护生</div>';
+    html += '</div>';
+
+    html += '<div class="modal" id="shareModal">' +
+              '<div class="modal-card">' +
+                '<div class="modal-head">📜 签文截图 · 含当前时间</div>' +
+                '<img class="shot" id="shotImg" alt="随喜放生签文">' +
+                '<div class="modal-actions">' +
+                  '<button class="btn ghost small" id="closeShareBtn">✖️ 关闭</button>' +
+                  '<button class="btn small" id="saveShotBtn">💾 保存</button>' +
+                  (canSystemShare() ? '<button class="btn small" id="sysShareBtn">📤 分享</button>' : '') +
+                '</div>' +
+                '<div class="modal-note">图片由本地 Canvas 生成 · 不联网 · 不上传</div>' +
+              '</div>' +
+            '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+    bindMuyu("muyuRes");
+
+    document.getElementById("againBtn").addEventListener("click", function () {
+      state.result = generate(state.lastMood); render(); window.scrollTo(0, 0);
+    });
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state = { stage: "welcome", mood: "", result: null, merit: 0, lastMood: "" }; render(); window.scrollTo(0, 0);
+    });
+    document.getElementById("backMoodBtn").addEventListener("click", function () { state.stage = "mood"; render(); });
+
+    var shot = null;
+    function ensure() { if (!shot) shot = drawShareCard(r); return shot; }
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      document.getElementById("shotImg").src = ensure().toDataURL("image/png");
+      document.getElementById("shareModal").classList.add("open");
+    });
+    document.getElementById("closeShareBtn").addEventListener("click", function () {
+      document.getElementById("shareModal").classList.remove("open");
+    });
+    document.getElementById("saveShotBtn").addEventListener("click", function () {
+      var link = document.createElement("a");
+      link.href = ensure().toDataURL("image/png");
+      link.download = "随喜放生_" + fileStamp() + ".png";
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    });
+    var sysBtn = document.getElementById("sysShareBtn");
+    if (sysBtn) {
+      sysBtn.addEventListener("click", function () {
+        ensure().toBlob(function (blob) {
+          if (!blob) return;
+          var file = new File([blob], "随喜放生_" + fileStamp() + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: "随喜放生决策" }).catch(function () {});
+          }
+        }, "image/png");
+      });
+    }
+  }
+
+  /* ========================================================================
+     四、分享截图（本地 Canvas）
+     ======================================================================== */
+  function wrapLines(ctx, text, maxWidth) {
+    var chars = String(text).split(""), out = [], cur = "";
+    for (var i = 0; i < chars.length; i++) {
+      var test = cur + chars[i];
+      if (cur && ctx.measureText(test).width > maxWidth) { out.push(cur); cur = chars[i]; }
+      else { cur = test; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  function drawShareCard(r) {
+    var W = 1080, H = 2600, pad = 90;
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var FONT = '"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Apple Color Emoji","Segoe UI Emoji",sans-serif';
+    function font(size, weight) { ctx.font = (weight ? weight + " " : "") + size + "px " + FONT; }
+    function txt(str, x, y, size, weight, color) { font(size, weight); ctx.fillStyle = color; ctx.fillText(str, x, y); }
+    function center(str, y, size, weight, color) { font(size, weight); ctx.fillStyle = color; ctx.fillText(str, (W - ctx.measureText(str).width) / 2, y); }
+    function divider(y) { ctx.strokeStyle = "#2e2818"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke(); }
+    function block(label, y) { txt(label, pad, y, 28, "600", "#E8C15A"); return y + 52; }
+
+    ctx.fillStyle = "#0c0b09"; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+
+    var y = 120;
+    ctx.fillStyle = "#C0392B"; ctx.fillRect(pad, y, 120, 6); y += 46;
+    txt("SUI XI · FANG SHENG", pad, y, 28, "500", "#8c7a4e"); y += 50;
+    txt("随喜放生决策 🪷", pad, y, 62, "700", "#F2E6C8"); y += 96;
+    txt(fmtDateTime(new Date()), pad, y, 30, "400", "#8c7a4e"); y += 58;
+    divider(y); y += 40;
+
+    // 随喜签
+    y = block("随喜签", y);
+    txt("[" + r.verdict.tag + "]  " + r.verdict.title, pad, y, 42, "700", "#F2E6C8"); y += 60;
+    wrapLines((font(34, "400"), ctx), r.verdict.body, W - pad * 2).forEach(function (ln) { txt(ln, pad, y, 34, "400", "#c3b795"); y += 52; });
+    y += 30;
+
+    // 放生签
+    y = block("放生签", y);
+    wrapLines((font(40, "700"), ctx), r.target, W - pad * 2).forEach(function (ln) { txt(ln, pad, y, 40, "700", "#F2E6C8"); y += 58; });
+    y += 8;
+    txt(r.creature, pad, y, 32, "400", "#a99b7c"); y += 66;
+
+    // 放生方式
+    y = block("放生方式", y);
+    wrapLines((font(32, "400"), ctx), r.ritual, W - pad * 2).forEach(function (ln) { txt(ln, pad, y, 32, "400", "#c3b795"); y += 50; });
+    y += 30;
+
+    // 功德
+    y = block("功德", y);
+    txt("+" + r.merit, pad, y, 66, "700", "#E8C15A");
+    var nw = ctx.measureText("+" + r.merit).width;
+    txt(meritTier(r.merit), pad + nw + 28, y + 26, 32, "400", "#b3a67f"); y += 96;
+
+    // 宜忌
+    y = block("今日宜忌", y);
+    txt("宜  " + r.yi, pad, y, 34, "400", "#9fd09f"); y += 52;
+    txt("忌  " + r.ji, pad, y, 34, "400", "#e2a09a"); y += 66;
+
+    divider(y); y += 40;
+    wrapLines((font(34, "400"), ctx), "「" + r.quote + "」", W - pad * 2).forEach(function (ln) { center(ln, y, 34, "400", "#d8cdb0"); y += 52; });
+    y += 30;
+
+    center("功德只在本地内存 · 关闭即清零", y, 26, "400", "#6b6046"); y += 44;
+    center("🙏 仅供解压 · 真正的放生是护生", y, 26, "400", "#6b6046"); y += 60;
+
+    var outH = Math.min(H, y);
+    var out = document.createElement("canvas");
+    out.width = W; out.height = outH;
+    out.getContext("2d").drawImage(canvas, 0, 0, W, outH, 0, 0, W, outH);
+    return out;
+  }
+
+  /* ========================================================================
+     五、工具函数
+     ======================================================================== */
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+  function fmtDateTime(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+  function fileStamp() {
+    var d = new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + "_" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+  function canSystemShare() {
+    return typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare &&
+           typeof File !== "undefined" && typeof Blob !== "undefined";
+  }
+  function animateBars() {
+    var bars = app.querySelectorAll(".merit-fill");
+    var run = function () {
+      Array.prototype.forEach.call(bars, function (b) {
+        var w = b.getAttribute("data-w");
+        if (w != null) b.style.width = w + "%";
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+    else run();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex, nofollow">
+<title>flashtool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #000; color: #fff; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.6; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 40px 20px 48px; }
+  .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 12px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 28px; }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .item {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 16px 16px; background: #0c0c0c; border: 1px solid #242424;
+    text-decoration: none; color: #eee; transition: background .15s, border-color .15s;
+  }
+  .item:active { background: #161616; }
+  .item .meta { min-width: 0; }
+  .item .name { font-size: 16px; font-weight: 600; letter-spacing: .5px; }
+  .item .desc { font-size: 12px; color: #777; margin-top: 3px; }
+  .item .ver { flex: 0 0 auto; font-size: 11px; letter-spacing: 1px; color: #999; border: 1px solid #333; padding: 2px 8px; }
+  .foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 11px; color: #4a4a4a; line-height: 1.8; }
+  @media (max-width: 380px) { h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">FLASHTOOL</div>
+  <h1>小工具集</h1>
+  <p class="sub">单文件 · 完全离线 · 零数据持久化，所有数据仅在内存中处理，关闭页面即清空。</p>
+
+  <div class="list">
+    <a class="item" href="swim.html">
+      <span class="meta">
+        <span class="name">游泳自评</span>
+        <span class="desc">训练后 12 维度自评 · 综合评分与训练建议</span>
+      </span>
+      <span class="ver">v1.1</span>
+    </a>
+    <a class="item" href="diet.html">
+      <span class="meta">
+        <span class="name">饮食自评</span>
+        <span class="desc">单餐 / 全天饮食健康自评 · 含烹饪方式与热量估算</span>
+      </span>
+      <span class="ver">v1.0</span>
+    </a>
+    <a class="item" href="fitness.html">
+      <span class="meta">
+        <span class="name">健身自评</span>
+        <span class="desc">训练类型路由 · 力量训练肌群多选自评</span>
+      </span>
+      <span class="ver">v1.0</span>
+    </a>
+    <a class="item" href="canteen.html">
+      <span class="meta">
+        <span class="name">科大食堂决策</span>
+        <span class="desc">硬性约束过滤 + 多因子加权评分 · Top-3 推荐</span>
+      </span>
+      <span class="ver">v1.4</span>
+    </a>
+    <a class="item" href="fangsheng.html">
+      <span class="meta">
+        <span class="name">随喜放生决策</span>
+        <span class="desc">解压向随机决策玩具 · 仅供娱乐</span>
+      </span>
+      <span class="ver">v1.0</span>
+    </a>
+  </div>
+
+  <div class="foot">
+    本页未在站点主页或导航中链接，仅供直接访问。<br>
+    各工具均为单文件 HTML，本地运行，不引用任何外部资源。
+  </div>
+</div>
+</body>
+</html>

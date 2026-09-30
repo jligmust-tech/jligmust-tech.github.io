@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  游泳自评 · 训练后即时评估工具
+  ----------------------------------------------------------------------------
+  用途   ：游泳者训练后完成 12 维度自评，生成综合得分与精细化建议。
+  作者   ：swimHelper
+  版本   ：v1.1（新增：距离/用时可选输入、配速计算、本地 Canvas 分享截图）
+  声明   ：单文件 HTML · 完全离线 · 零数据持久化，
+           所有数据仅在内存中处理，关闭页面即清空，不写入任何浏览器存储。
+  说明   ：本文件不引用任何外部资源、外部字体、外部图片或远程接口，
+           双击即可在任意现代浏览器（含 iOS Safari / Android Chrome）打开。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<title>游泳自评</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #000; color: #fff; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.6; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  button { font-family: inherit; }
+
+  /* ---------- 进度条 ---------- */
+  .progress-track { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: #1c1c1c; z-index: 50; }
+  .progress-fill { height: 100%; width: 0; background: #fff; transition: width .3s ease; }
+
+  /* ---------- 布局 ---------- */
+  .app { max-width: 520px; margin: 0 auto; padding: 32px 20px 40px; min-height: 100vh; display: flex; flex-direction: column; }
+  .fade { animation: fadeIn .3s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- 欢迎页 ---------- */
+  .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .hero .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 14px; }
+  .hero h1 { font-size: 34px; font-weight: 700; letter-spacing: 1px; margin-bottom: 18px; }
+  .hero .sub { font-size: 15px; color: #999; margin-bottom: 8px; }
+  .hero .sub .dot { color: #444; margin: 0 8px; }
+  .hero .meta { font-size: 12px; color: #555; margin-top: 22px; line-height: 1.9; }
+  .hero .meta span { display: block; }
+
+  /* ---------- 题目页 ---------- */
+  .q-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+  .q-no { font-size: 12px; letter-spacing: 2px; color: #777; }
+  .q-name { font-size: 12px; letter-spacing: 1px; color: #fff; border: 1px solid #444; padding: 2px 8px; }
+  .q-title { font-size: 21px; font-weight: 600; line-height: 1.45; margin-bottom: 8px; }
+  .q-hint { font-size: 12px; color: #777; margin-bottom: 4px; }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    min-height: 52px; padding: 13px 16px; text-align: left;
+    background: #0c0c0c; border: 1px solid #2c2c2c; color: #ddd;
+    font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .opt .mark { flex: 0 0 auto; width: 22px; height: 22px; border: 1px solid #4a4a4a; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #666; }
+  .opt .txt { flex: 1; }
+  .opt .sc { flex: 0 0 auto; font-size: 11px; color: #555; letter-spacing: 1px; }
+  .opt:active { background: #1a1a1a; }
+  .opt.selected { background: #fff; color: #000; border-color: #fff; }
+  .opt.selected .mark { background: #000; color: #fff; border-color: #000; }
+  .opt.selected .sc { color: #777; }
+
+  .num-wrap { margin-top: 22px; }
+  .num-input {
+    width: 100%; background: #0c0c0c; border: 1px solid #2c2c2c; color: #fff;
+    font-size: 28px; padding: 14px 16px; font-family: inherit; letter-spacing: 1px;
+  }
+  .num-input:focus { outline: none; border-color: #fff; }
+  .num-input::placeholder { color: #333; }
+  .num-tag { margin-top: 12px; font-size: 12px; color: #666; }
+  .field-label { display: block; font-size: 12px; color: #777; letter-spacing: 1px; margin: 18px 0 8px; }
+  .pace-line { margin-top: 18px; font-size: 13px; color: #999; line-height: 1.7; }
+
+  /* ---------- 截图预览弹层 ---------- */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.94); display: none; z-index: 100; padding: 22px 20px 40px; overflow-y: auto; }
+  .modal.open { display: block; }
+  .modal-card { max-width: 520px; margin: 0 auto; }
+  .modal-head { font-size: 12px; letter-spacing: 3px; color: #888; margin-bottom: 14px; }
+  .shot { width: 100%; display: block; border: 1px solid #222; background: #000; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+  .modal-note { margin-top: 14px; font-size: 11px; color: #555; text-align: center; line-height: 1.7; }
+
+  /* ---------- 导航按钮 ---------- */
+  .nav { display: flex; gap: 12px; margin-top: 32px; }
+  .btn {
+    flex: 1; min-height: 52px; padding: 0 16px; border: 1px solid #fff;
+    background: #fff; color: #000; font-size: 15px; letter-spacing: 2px; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: #000; color: #fff; border-color: #3a3a3a; }
+  .btn.small { flex: 0 0 auto; padding: 0 20px; letter-spacing: 1px; }
+  .btn[disabled], .btn.disabled { opacity: .28; cursor: not-allowed; }
+
+  /* ---------- 结果页 ---------- */
+  .res { padding-top: 8px; }
+  .res .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 10px; }
+  .score { font-size: 68px; font-weight: 700; letter-spacing: -3px; line-height: 1; }
+  .score small { font-size: 20px; color: #555; font-weight: 400; letter-spacing: 0; margin-left: 4px; }
+  .grade { display: inline-block; margin-top: 14px; padding: 5px 14px; border: 1px solid #fff; font-size: 12px; letter-spacing: 3px; }
+  .res .summary { margin-top: 14px; font-size: 13px; color: #999; }
+
+  .section-title { font-size: 12px; letter-spacing: 3px; color: #666; margin: 34px 0 14px; padding-bottom: 8px; border-bottom: 1px solid #1e1e1e; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12px; }
+  .bar-label { flex: 0 0 64px; color: #aaa; }
+  .bar-track { flex: 1; height: 10px; background: #181818; }
+  .bar-fill { display: block; width: 0; height: 100%; background: #fff; transition: width .6s ease; }
+  .bar-fill.neutral { background: #3a3a3a; }
+  .bar-fill.low { background: #fff; }
+  .bar-val { flex: 0 0 34px; text-align: right; color: #888; font-variant-numeric: tabular-nums; }
+  .bar-note { margin-top: 12px; font-size: 11px; color: #555; line-height: 1.7; }
+
+  .sug { border: 1px solid #222; border-left: 3px solid #fff; padding: 14px 16px; margin-bottom: 12px; background: #0a0a0a; }
+  .sug.alert { border-left-color: #fff; }
+  .sug h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .sug p { font-size: 13px; color: #9a9a9a; line-height: 1.7; }
+
+  .foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 11px; color: #4a4a4a; text-align: center; line-height: 1.8; }
+
+  @media (max-width: 380px) {
+    body { font-size: 14px; }
+    .hero h1 { font-size: 28px; }
+    .q-title { font-size: 18px; }
+    .score { font-size: 56px; }
+    .bar-label { flex-basis: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">游泳自评 · v1.1</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="app" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========================================================================
+     一、12 维度定义
+     每项：{ key, no, name, short, type, question, hint?, options? }
+     type: "scale"(五级量表) | "rpe"(1-10) | "number"(可选数字输入)
+     ======================================================================== */
+  var DIMS = [
+    {
+      key: "stroke", no: 1, name: "划水经济性", short: "划水", type: "scale",
+      question: "本次训练中，你的划水效率感觉如何？",
+      options: [
+        { label: "轻松推进，每划都有效", score: 5 },
+        { label: "多数有效，偶有空划", score: 4 },
+        { label: "一般，推进感不强", score: 3 },
+        { label: "常有空划，靠频率弥补", score: 2 },
+        { label: "很吃力，抓水不稳", score: 1 }
+      ]
+    },
+    {
+      key: "swolf", no: 2, name: "训练数据", short: "SWOLF", type: "metrics",
+      question: "本次主项训练数据？",
+      hint: "全部可选，不填按中性计。只知道距离和用时即可算出配速；SWOLF = 划数 + 用时（秒），25m 池参考：男 35-50 / 女 40-55 优秀。"
+    },
+    {
+      key: "body", no: 3, name: "身体位置", short: "身位", type: "scale",
+      question: "水中身体位置感觉如何？（头、肩、髋是否成一线）",
+      options: [
+        { label: "高位平漂，髋部接近水面", score: 5 },
+        { label: "基本水平，偶有下沉", score: 4 },
+        { label: "髋部略沉，需主动维持", score: 3 },
+        { label: "明显下沉，腿部拖沓", score: 2 },
+        { label: "沉得厉害，前进阻力大", score: 1 }
+      ]
+    },
+    {
+      key: "breathe", no: 4, name: "呼吸", short: "呼吸", type: "scale",
+      question: "呼吸节奏与稳定性？",
+      options: [
+        { label: "顺畅自然，不影响节奏", score: 5 },
+        { label: "基本稳定，偶有憋气", score: 4 },
+        { label: "需刻意控制，节奏被打断", score: 3 },
+        { label: "常跟不上，吸不进气", score: 2 },
+        { label: "很挣扎，憋气严重", score: 1 }
+      ]
+    },
+    {
+      key: "kick", no: 5, name: "打腿", short: "打腿", type: "scale",
+      question: "打腿效率与负担感？",
+      options: [
+        { label: "轻盈推进，几乎不费力", score: 5 },
+        { label: "有效但不沉重", score: 4 },
+        { label: "一般，耗能但不显著推进", score: 3 },
+        { label: "沉重，拖慢整体节奏", score: 2 },
+        { label: "剧烈抽筋或完全无效", score: 1 }
+      ]
+    },
+    {
+      key: "heart", no: 6, name: "心率恢复", short: "心率", type: "scale",
+      question: "训练强度停下后 60 秒心率下降（bpm）？",
+      options: [
+        { label: ">25 bpm，优秀有氧基础", score: 5 },
+        { label: "18-25 bpm，良好", score: 4 },
+        { label: "12-17 bpm，一般", score: 3 },
+        { label: "6-11 bpm，偏弱", score: 2 },
+        { label: "<6 bpm 或长时间高居不下", score: 1 }
+      ]
+    },
+    {
+      key: "pace", no: 7, name: "配速保持", short: "配速", type: "scale",
+      question: "本次训练后半程配速保持？",
+      options: [
+        { label: "末段比前半更快（负分段）", score: 5 },
+        { label: "基本持平，波动 <5%", score: 4 },
+        { label: "末段略慢 5-10%", score: 3 },
+        { label: "明显掉速 10-20%", score: 2 },
+        { label: "掉速 >20% 或完全崩掉", score: 1 }
+      ]
+    },
+    {
+      key: "rpe", no: 8, name: "RPE 主观强度", short: "RPE", type: "rpe",
+      question: "本次训练主观强度？(RPE 1-10)",
+      options: [
+        { label: "极限", score: 10 },
+        { label: "极难", score: 9 },
+        { label: "很难", score: 8 },
+        { label: "吃力", score: 7 },
+        { label: "较强", score: 6 },
+        { label: "中等", score: 5 },
+        { label: "轻松", score: 4 },
+        { label: "较轻松", score: 3 },
+        { label: "很轻松", score: 2 },
+        { label: "极轻松", score: 1 }
+      ]
+    },
+    {
+      key: "volume", no: 9, name: "训练量", short: "距离", type: "scale",
+      question: "本次训练总距离？(米)",
+      options: [
+        { label: ">3000m 大训练量", score: 5 },
+        { label: "2000-3000m 中等", score: 4 },
+        { label: "1000-2000m 常规", score: 3 },
+        { label: "500-1000m 短训", score: 2 },
+        { label: "<500m 恢复/技术", score: 1 }
+      ]
+    },
+    {
+      key: "muscle", no: 10, name: "肌肉状态", short: "肌肉", type: "scale",
+      question: "训练后肌肉酸胀 / 疲劳感？",
+      options: [
+        { label: "无明显感觉", score: 5 },
+        { label: "轻度疲劳，4-6h 恢复", score: 4 },
+        { label: "明显酸胀，次日有感", score: 3 },
+        { label: "很疲劳，1-2 天恢复", score: 2 },
+        { label: "极度疲劳，影响行动", score: 1 }
+      ]
+    },
+    {
+      key: "joint", no: 11, name: "关节与肩袖", short: "关节", type: "scale",
+      question: "肩、膝、踝等关节是否有不适？",
+      options: [
+        { label: "完全无不适", score: 5 },
+        { label: "轻微紧绷，可忽视", score: 4 },
+        { label: "训练中可感不适但不影响", score: 3 },
+        { label: "明显疼痛，影响动作", score: 2 },
+        { label: "急性疼痛，需立即停止", score: 1 }
+      ]
+    },
+    {
+      key: "mind", no: 12, name: "心理状态", short: "心理", type: "scale",
+      question: "训练后整体心态与专注度？",
+      options: [
+        { label: "兴奋充实，专注度极高", score: 5 },
+        { label: "满足感强，状态平稳", score: 4 },
+        { label: "一般，完成任务感", score: 3 },
+        { label: "疲惫感明显，注意力涣散", score: 2 },
+        { label: "厌烦或抗拒，需要休整", score: 1 }
+      ]
+    }
+  ];
+
+  var TECH_KEYS = ["stroke", "body", "breathe", "kick"]; // 技术组（忽略 SWOLF）
+  var TOTAL = DIMS.length;
+
+  /* 内存状态：不写入任何存储 */
+  var state = { stage: "welcome", step: 0, answers: {} };
+  var app = document.getElementById("app");
+  var progressFill = document.getElementById("progressFill");
+
+  /* ========================================================================
+     二、评分换算
+     ======================================================================== */
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function mean(arr) { return arr.reduce(function (a, b) { return a + b; }, 0) / arr.length; }
+
+  /* SWOLF → 0-100（25m 池，数值越低越好；35 → 100，75 → 20） */
+  function swolfScore(swolf) {
+    return clamp(100 - (swolf - 35) * 2, 0, 100);
+  }
+
+  /* RPE → 0-100「负荷质量分」：最优区间 6-7，过高/过低均为负荷失衡 */
+  function rpeQuality(rpe) {
+    var table = { 1: 20, 2: 35, 3: 50, 4: 62, 5: 78, 6: 90, 7: 92, 8: 70, 9: 45, 10: 30 };
+    return table[rpe] != null ? table[rpe] : 60;
+  }
+
+  /* 单维度原始答案 → 0-100 */
+  function dimPercent(dim) {
+    var v = state.answers[dim.key];
+    if (dim.key === "rpe") return rpeQuality(v);
+    if (dim.key === "swolf") return isBlank(v) ? 60 : swolfScore(Number(v));
+    return (v / 5) * 100;
+  }
+
+  function isBlank(v) { return v === undefined || v === null || String(v).trim() === ""; }
+
+  function computeResults() {
+    var pct = {};
+    DIMS.forEach(function (d) { pct[d.key] = dimPercent(d); });
+    var overall = Math.round(mean(DIMS.map(function (d) { return pct[d.key]; })));
+    return {
+      pct: pct,
+      overall: overall,
+      swolfFilled: !isBlank(state.answers.swolf),
+      metrics: computeMetrics()
+    };
+  }
+
+  function gradeLabel(score) {
+    if (score >= 85) return "EXCELLENT · 优秀";
+    if (score >= 70) return "GOOD · 良好";
+    if (score >= 55) return "FAIR · 中等";
+    if (score >= 40) return "NEEDS WORK · 需改进";
+    return "WARNING · 警示";
+  }
+
+  /* ========================================================================
+     三、建议生成（核心逻辑，严格按分组分支）
+     输入 dim 百分比数组 + RPE，返回建议数组
+     ======================================================================== */
+  function generateSuggestions(r) {
+    var p = r.pct, out = [], i;
+    var rpe = state.answers.rpe;
+
+    /* 3.7 总评 */
+    if (r.overall >= 85) {
+      out.push({ title: "整体状态优秀", body: "继续保持，稳定的训练比突击式训练更能带来长期进步。" });
+    } else if (r.overall < 60) {
+      out.push({ title: "多维警示 · 全面调整", body: "本周减少训练量 30-50%，优先解决最低分维度。" });
+    } else {
+      out.push({ title: "整体可改进", body: "按以下建议针对性调整 2-3 项，避免一次改动过多。" });
+    }
+
+    /* 3.1 技术组（维度 1,3,4,5 均值，忽略 2） */
+    var techVals = TECH_KEYS.map(function (k) { return p[k]; });
+    var tech = mean(techVals);
+    if (tech < 60) {
+      var lowestKey = TECH_KEYS[0], lowestVal = p[TECH_KEYS[0]];
+      for (i = 1; i < TECH_KEYS.length; i++) {
+        if (p[TECH_KEYS[i]] < lowestVal) { lowestVal = p[TECH_KEYS[i]]; lowestKey = TECH_KEYS[i]; }
+      }
+      var lowestName = DIMS.filter(function (d) { return d.key === lowestKey; })[0].name;
+      out.push({
+        title: "技术重点突破",
+        body: "当前最薄弱环节：" + lowestName + "。建议 800m 分解练习（每项 100m×3，每次只专注单一技术点）。"
+      });
+    } else if (tech < 80) {
+      out.push({ title: "技术打磨期", body: "下次训练加入 4×50m 单项技术游（身体位置 / 划水 / 呼吸各一项）。" });
+    } else {
+      out.push({ title: "技术保持 + 速度融合", body: "练 8×50m 配速游，技术分 <2 分/50m，确保快起来也不变形。" });
+    }
+
+    /* 3.2 SWOLF 专项（若填了且换算分 <65） */
+    if (r.swolfFilled && p.swolf < 65) {
+      out.push({ title: "SWOLF · 少划多游", body: "25m 池刻意每趟少 1-2 划，优先提升每划推进距离而非划频。" });
+    }
+
+    /* 3.3 体能组（维度 6,7） */
+    if (p.heart < 50) {
+      out.push({ title: "有氧基础偏低", body: "加入 Zone 2 长游 40-60min，每周 2 次，保持可对话强度。" });
+    }
+    if (p.pace < 50) {
+      out.push({ title: "配速耐力短板", body: "10×100m @目标比赛配速 + 20s 间歇，训练后半程不掉速。" });
+    }
+
+    /* 3.4 负荷组（维度 8 RPE，强制分支） */
+    if (rpe >= 9) {
+      out.push({ title: "高负荷后强制恢复", body: "下次降低强度 (RPE 5-6) 或休息 1-2 天；警惕过度训练综合征。" });
+    } else if (rpe <= 3) {
+      out.push({ title: "强度偏低 · 刺激不足", body: "建议加入间歇训练 (10×100m) 或冲刺组，提升心肺上限。" });
+    } else if (rpe >= 7) {
+      out.push({ title: "强度合理 · 注意恢复", body: "24h 充分补给（蛋白 + 碳水 + 睡眠 7h+），下次降一档强度。" });
+    }
+
+    /* 3.5 恢复组（维度 10,11） */
+    if (p.muscle < 50) {
+      out.push({ title: "主动恢复", body: "轻量游泳 / 散步 / 泡沫轴放松，不追求每天高强度。" });
+    }
+    if (p.joint < 50) {
+      out.push({ title: "关节 · 肩袖警示", body: "检查动作（避免耸肩 / 膝内扣 / 踝过度绷）；加强肩袖 / 核心 / 臀中肌训练；必要时就医。" });
+    }
+
+    /* 3.6 心理组（维度 12） */
+    if (p.mind < 50) {
+      out.push({ title: "心理疲劳信号", body: "安排 2-3 天完全休息或换项；不要「硬撑」。" });
+    } else if (p.mind >= 80) {
+      out.push({ title: "状态高峰 · 把握节奏", body: "适度挑战更高难度（比赛配速模拟、突破性长距离）。" });
+    }
+
+    /* 保证至少 3 条 */
+    if (out.length < 3) {
+      out.push({ title: "补水与补给", body: "训练后按体重损失补足水分与电解质，30min 内补充蛋白 + 碳水有助恢复。" });
+    }
+    if (out.length < 3) {
+      out.push({ title: "规律性优先", body: "每周固定 2-3 次训练比偶尔高强度更有效，保持节奏。" });
+    }
+
+    /* 最多 8 条 */
+    return out.slice(0, 8);
+  }
+
+  /* ========================================================================
+     四、渲染
+     ======================================================================== */
+  function setProgress(percent) {
+    progressFill.style.width = clamp(percent, 0, 100) + "%";
+  }
+
+  function render() {
+    if (state.stage === "welcome") return renderWelcome();
+    if (state.stage === "quiz") return renderQuestion();
+    return renderResult();
+  }
+
+  function renderWelcome() {
+    setProgress(0);
+    app.innerHTML =
+      '<div class="hero fade">' +
+        '<div class="kicker">SWIM SELF-CHECK</div>' +
+        '<h1>游泳自评</h1>' +
+        '<p class="sub">训练后 3 分钟，完成 12 维度快速评估，获得针对性训练建议。</p>' +
+        '<p class="sub" style="color:#666;font-size:13px;">不上传 · 不保存 · 关闭页面即清空</p>' +
+        '<div class="meta">' +
+          '<span>技术 · 体能 · 负荷 · 恢复 · 心理 五大维度</span>' +
+          '<span>依据 Swim Smooth / Total Immersion / US Masters / Polar OwnIndex</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="nav"><button class="btn" id="startBtn">开始评估</button></div>';
+    document.getElementById("startBtn").addEventListener("click", function () {
+      state.stage = "quiz"; state.step = 0; render();
+    });
+  }
+
+  function isAnswered(dim) {
+    if (dim.type === "number" || dim.type === "metrics") return true; // 均可选填
+    return !isBlank(state.answers[dim.key]);
+  }
+
+  function renderQuestion() {
+    var dim = DIMS[state.step];
+    setProgress(((state.step + 1) / TOTAL) * 100);
+
+    var html = '<div class="fade">';
+    html += '<div class="q-head"><span class="q-no">' + pad2(state.step + 1) + ' / ' + TOTAL + '</span>' +
+            '<span class="q-name">' + dim.name + '</span></div>';
+    html += '<h2 class="q-title">' + esc(dim.question) + '</h2>';
+    if (dim.hint) html += '<p class="q-hint">' + esc(dim.hint) + '</p>';
+
+    if (dim.type === "metrics") {
+      var a = state.answers;
+      html += '<div class="num-wrap">' +
+                '<label class="field-label" for="inDist">距离（米）</label>' +
+                '<input class="num-input" id="inDist" type="number" inputmode="decimal" min="0" max="20000" step="1" ' +
+                'placeholder="例如 1500" value="' + (isBlank(a.distance) ? "" : esc(String(a.distance))) + '">' +
+                '<label class="field-label" for="inTime">用时（分:秒，或直接填秒）</label>' +
+                '<input class="num-input" id="inTime" type="text" inputmode="decimal" ' +
+                'placeholder="例如 28:30" value="' + (isBlank(a.time) ? "" : esc(String(a.time))) + '">' +
+                '<label class="field-label" for="inSwolf">SWOLF（可选，需要划数）</label>' +
+                '<input class="num-input" id="inSwolf" type="number" inputmode="decimal" min="1" max="400" step="1" ' +
+                'placeholder="例如 48" value="' + (isBlank(a.swolf) ? "" : esc(String(a.swolf))) + '">' +
+                '<div class="pace-line" id="paceLine"></div>' +
+              '</div>';
+    } else if (dim.type === "number") {
+      var val = state.answers[dim.key];
+      html += '<div class="num-wrap">' +
+                '<input class="num-input" id="numInput" type="number" inputmode="decimal" ' +
+                'min="1" max="400" step="1" placeholder="例如 48" value="' + (isBlank(val) ? "" : esc(String(val))) + '">' +
+                '<div class="num-tag">数值越低越好 · 不填按中性计入总分</div>' +
+              '</div>';
+    } else {
+      html += '<div class="opts">';
+      dim.options.forEach(function (o) {
+        var sel = state.answers[dim.key] === o.score ? " selected" : "";
+        var mark = dim.type === "rpe" ? String(o.score) : "";
+        var scoreTag = dim.type === "rpe" ? o.score + " 分" : o.score + " 分";
+        html += '<button class="opt' + sel + '" data-score="' + o.score + '">' +
+                  '<span class="mark">' + (state.answers[dim.key] === o.score ? "✓" : mark) + '</span>' +
+                  '<span class="txt">' + esc(o.label) + '</span>' +
+                  '<span class="sc">' + scoreTag + '</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>'; // fade
+
+    html += '<div class="nav">';
+    if (state.step > 0) html += '<button class="btn ghost small" id="prevBtn">上一题</button>';
+    html += '<button class="btn" id="nextBtn">' + (state.step === TOTAL - 1 ? "生成报告" : "下一题") + '</button>';
+    html += '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    // 绑定选项
+    Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.answers[dim.key] = Number(btn.dataset.score);
+        Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (b) {
+          b.classList.remove("selected");
+          b.querySelector(".mark").textContent = dim.type === "rpe" ? b.dataset.score : "";
+        });
+        btn.classList.add("selected");
+        btn.querySelector(".mark").textContent = "✓";
+        updateNav();
+      });
+    });
+
+    // 绑定数字输入（不触发整页重绘，避免输入丢焦）
+    if (dim.type === "metrics") {
+      var inDist = document.getElementById("inDist");
+      var inTime = document.getElementById("inTime");
+      var inSwolf = document.getElementById("inSwolf");
+      var onMetric = function () {
+        state.answers.distance = inDist.value;
+        state.answers.time = inTime.value;
+        state.answers.swolf = inSwolf.value;
+        updatePaceLine();
+        updateNav();
+      };
+      inDist.addEventListener("input", onMetric);
+      inTime.addEventListener("input", onMetric);
+      inSwolf.addEventListener("input", onMetric);
+      updatePaceLine();
+    }
+    if (dim.type === "number") {
+      var numInput = document.getElementById("numInput");
+      numInput.addEventListener("input", function () {
+        state.answers[dim.key] = numInput.value;
+        updateNav();
+      });
+    }
+
+    if (state.step > 0) {
+      document.getElementById("prevBtn").addEventListener("click", function () {
+        state.step--; render();
+      });
+    }
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      if (!isAnswered(dim)) return;
+      if (state.step === TOTAL - 1) { state.stage = "result"; render(); }
+      else { state.step++; render(); }
+    });
+
+    updateNav();
+  }
+
+  function updateNav() {
+    var dim = DIMS[state.step];
+    var btn = document.getElementById("nextBtn");
+    if (!btn) return;
+    var ok = isAnswered(dim);
+    btn.disabled = !ok;
+    btn.classList.toggle("disabled", !ok);
+  }
+
+  function updatePaceLine() {
+    var el = document.getElementById("paceLine");
+    if (!el) return;
+    var m = computeMetrics();
+    var parts = [];
+    if (m.distance != null) parts.push("距离 " + m.distance + " m");
+    if (m.time != null) parts.push("用时 " + fmtSec(m.time));
+    if (m.pace != null) parts.push("配速 " + fmtSec(m.pace) + " /100m");
+    el.textContent = parts.length ? "已录入：" + parts.join(" · ") : "留空则以中性计入总分";
+  }
+
+  function renderResult() {
+    setProgress(100);
+    var r = computeResults();
+    var sugs = generateSuggestions(r);
+
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">OVERALL SCORE</div>';
+    html += '<div class="score">' + r.overall + '<small>/100</small></div>';
+    html += '<div class="grade">' + gradeLabel(r.overall) + '</div>';
+    html += '<p class="summary">12 维度综合评分 · 共生成 ' + sugs.length + ' 条建议</p>';
+
+    var m = r.metrics || {};
+    if (m.distance != null || m.time != null || m.pace != null) {
+      var mp = [];
+      if (m.distance != null) mp.push("距离 " + m.distance + " m");
+      if (m.time != null) mp.push("用时 " + fmtSec(m.time));
+      if (m.pace != null) mp.push("配速 " + fmtSec(m.pace) + " /100m");
+      html += '<p class="summary" style="color:#ccc;margin-top:6px;">' + esc(mp.join(" · ")) + '</p>';
+    }
+
+    html += '<div class="section-title">维度得分</div><div class="bars">';
+    DIMS.forEach(function (d) {
+      var v = Math.round(r.pct[d.key]);
+      var neutral = (d.key === "swolf" && !r.swolfFilled);
+      var valText = neutral ? "—" : v;
+      html += '<div class="bar-row">' +
+                '<span class="bar-label">' + esc(d.short) + '</span>' +
+                '<span class="bar-track"><span class="bar-fill' + (neutral ? " neutral" : "") + '" data-w="' + (neutral ? 60 : v) + '"></span></span>' +
+                '<span class="bar-val">' + valText + '</span>' +
+              '</div>';
+    });
+    html += '</div>';
+    html += '<p class="bar-note">SWOLF 越低越好，已换算为 0-100；未填写时按中性（60）计入。' +
+            'RPE 采用「负荷质量」换算（最优区间 6-7），过高或过低均会拉低该项得分。</p>';
+
+    html += '<div class="section-title">训练建议</div>';
+    sugs.forEach(function (s) {
+      html += '<div class="sug"><h4>' + esc(s.title) + '</h4><p>' + esc(s.body) + '</p></div>';
+    });
+
+    html += '<div class="nav">' +
+              '<button class="btn ghost" id="restartBtn">重新评估</button>' +
+              '<button class="btn" id="shareBtn">分享截图</button>' +
+            '</div>';
+    html += '<div class="foot">数据仅在本地内存中处理 · 不写入任何存储<br>关闭页面即清空 · 完全离线运行</div>';
+    html += '</div>';
+
+    // 截图预览弹层
+    html += '<div class="modal" id="shareModal">' +
+              '<div class="modal-card">' +
+                '<div class="modal-head">截图预览 · 含当前时间</div>' +
+                '<img class="shot" id="shotImg" alt="游泳自评结果截图">' +
+                '<div class="modal-actions">' +
+                  '<button class="btn ghost small" id="closeShareBtn">关闭</button>' +
+                  '<button class="btn small" id="saveShotBtn">保存图片</button>' +
+                  (canSystemShare() ? '<button class="btn small" id="sysShareBtn">系统分享</button>' : '') +
+                '</div>' +
+                '<div class="modal-note">图片由本地 Canvas 生成 · 不联网 · 不上传</div>' +
+              '</div>' +
+            '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state = { stage: "welcome", step: 0, answers: {} };
+      render();
+      window.scrollTo(0, 0);
+    });
+
+    // 分享截图：本地绘制 Canvas，不依赖任何外部库
+    var shareCanvas = null;
+    function ensureShot() {
+      if (!shareCanvas) shareCanvas = drawShareCard(r, sugs);
+      return shareCanvas;
+    }
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      var c = ensureShot();
+      document.getElementById("shotImg").src = c.toDataURL("image/png");
+      document.getElementById("shareModal").classList.add("open");
+    });
+    document.getElementById("closeShareBtn").addEventListener("click", function () {
+      document.getElementById("shareModal").classList.remove("open");
+    });
+    document.getElementById("saveShotBtn").addEventListener("click", function () {
+      var c = ensureShot();
+      var link = document.createElement("a");
+      link.href = c.toDataURL("image/png");
+      link.download = "游泳自评_" + fileStamp() + ".png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+    var sysBtn = document.getElementById("sysShareBtn");
+    if (sysBtn) {
+      sysBtn.addEventListener("click", function () {
+        ensureShot().toBlob(function (blob) {
+          if (!blob) return;
+          var file = new File([blob], "游泳自评_" + fileStamp() + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: "游泳自评" }).catch(function () {});
+          }
+        }, "image/png");
+      });
+    }
+  }
+
+  /* ========================================================================
+     五、工具函数
+     ======================================================================== */
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  function parseTimeToSec(v) {
+    if (isBlank(v)) return null;
+    var s = String(v).trim();
+    if (s.indexOf(":") >= 0) {
+      var p = s.split(":");
+      if (p.length !== 2) return null;
+      var m = parseInt(p[0], 10), sec = parseFloat(p[1]);
+      if (isNaN(m) || isNaN(sec)) return null;
+      return m * 60 + sec;
+    }
+    var n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+
+  function fmtSec(total) {
+    if (total == null || isNaN(total)) return "--";
+    var s = Math.round(total);
+    return Math.floor(s / 60) + ":" + pad2(s % 60);
+  }
+
+  function computeMetrics() {
+    var d = parseFloat(state.answers.distance);
+    if (isNaN(d) || d <= 0) d = null;
+    var t = parseTimeToSec(state.answers.time);
+    var pace = (d != null && t != null && t > 0) ? t / (d / 100) : null;
+    return { distance: d, time: t, pace: pace };
+  }
+
+  function fmtDateTime(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+           " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+
+  function fileStamp() {
+    var d = new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+           "_" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+
+  function canSystemShare() {
+    return typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare &&
+           typeof File !== "undefined" && typeof Blob !== "undefined";
+  }
+
+  function wrapLines(ctx, text, maxWidth) {
+    var chars = String(text).split(""), out = [], cur = "";
+    for (var i = 0; i < chars.length; i++) {
+      var test = cur + chars[i];
+      if (cur && ctx.measureText(test).width > maxWidth) { out.push(cur); cur = chars[i]; }
+      else { cur = test; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  /* 用 Canvas 本地绘制分享卡片（不依赖任何外部截图库，完全离线） */
+  function drawShareCard(r, sugs) {
+    var W = 1080, H = 2600, pad = 80;
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var FONT = '"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif';
+    function font(size, weight) { ctx.font = (weight ? weight + " " : "") + size + "px " + FONT; }
+    function txt(str, x, y, size, weight, color) {
+      font(size, weight); ctx.fillStyle = color; ctx.fillText(str, x, y);
+    }
+    function center(str, y, size, weight, color) {
+      font(size, weight); ctx.fillStyle = color;
+      ctx.fillText(str, (W - ctx.measureText(str).width) / 2, y);
+    }
+    function line(y) { ctx.strokeStyle = "#222"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke(); }
+
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+
+    var y = 120;
+    ctx.fillStyle = "#fff"; ctx.fillRect(pad, y, 120, 6);
+    y += 42;
+    txt("SWIM SELF-CHECK", pad, y, 30, "500", "#666");
+    y += 54;
+    txt("游泳自评", pad, y, 60, "700", "#fff");
+    y += 120;
+
+    font(190, "700"); ctx.fillStyle = "#fff";
+    var scoreText = String(r.overall);
+    ctx.fillText(scoreText, pad, y);
+    var sw = ctx.measureText(scoreText).width;
+    txt("/100", pad + sw + 16, y + 128, 46, "400", "#555");
+    y += 250;
+
+    var grade = gradeLabel(r.overall);
+    font(30, "500");
+    var gw = ctx.measureText(grade).width;
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+    ctx.strokeRect(pad, y, gw + 48, 62);
+    txt(grade, pad + 24, y + 16, 30, "500", "#fff");
+    y += 62 + 46;
+
+    txt(fmtDateTime(new Date()) + " 生成", pad, y, 32, "400", "#888");
+    y += 70;
+    line(y); y += 42;
+
+    var m = r.metrics || {};
+    if (m.distance != null || m.time != null || m.pace != null) {
+      var mp = [];
+      if (m.distance != null) mp.push("距离 " + m.distance + "m");
+      if (m.time != null) mp.push("用时 " + fmtSec(m.time));
+      if (m.pace != null) mp.push("配速 " + fmtSec(m.pace) + "/100m");
+      txt(mp.join("    ·    "), pad, y, 34, "400", "#cfcfcf");
+      y += 76;
+    }
+
+    txt("维度得分 / 0-100", pad, y, 28, "500", "#666");
+    y += 56;
+    var colGap = 60, colW = (W - pad * 2 - colGap) / 2, rowH = 54;
+    var labelW = 96, valW = 56;
+    DIMS.forEach(function (d, i) {
+      var col = i < 6 ? 0 : 1, row = i % 6;
+      var x = pad + col * (colW + colGap), ry = y + row * rowH;
+      var val = Math.round(r.pct[d.key]);
+      var neutral = (d.key === "swolf" && !r.swolfFilled);
+      txt(d.short, x, ry + 4, 26, "400", "#9a9a9a");
+      var bx = x + labelW, bw = colW - labelW - valW - 12;
+      ctx.fillStyle = "#1c1c1c"; ctx.fillRect(bx, ry + 8, bw, 14);
+      ctx.fillStyle = neutral ? "#3a3a3a" : "#fff";
+      ctx.fillRect(bx, ry + 8, bw * (neutral ? 0.6 : val / 100), 14);
+      txt(neutral ? "—" : String(val), bx + bw + 12, ry + 3, 24, "400", "#888");
+    });
+    y += 6 * rowH + 30;
+    line(y); y += 38;
+
+    txt("训练建议", pad, y, 28, "500", "#666");
+    y += 54;
+    function wrapSet(str, size, weight) { font(size, weight); return wrapLines(ctx, str, W - pad * 2); }
+    sugs.slice(0, 3).forEach(function (s) {
+      var tl = wrapSet(s.title, 34, "600");
+      ctx.fillStyle = "#fff";
+      tl.forEach(function (ln, i) { ctx.fillText(ln, pad, y + i * 46); });
+      y += tl.length * 46 + 6;
+      var bl = wrapSet(s.body, 30, "400");
+      ctx.fillStyle = "#9a9a9a";
+      bl.forEach(function (ln, i) { ctx.fillText(ln, pad, y + i * 44); });
+      y += bl.length * 44 + 34;
+    });
+
+    y += 12;
+    center("本地生成 · 完全离线 · 不含个人信息", y, 26, "400", "#444");
+    y += 64;
+
+    var outH = Math.min(H, y);
+    var out = document.createElement("canvas");
+    out.width = W; out.height = outH;
+    out.getContext("2d").drawImage(canvas, 0, 0, W, outH, 0, 0, W, outH);
+    return out;
+  }
+
+  function animateBars() {
+    var bars = app.querySelectorAll(".bar-fill");
+    var run = function () {
+      Array.prototype.forEach.call(bars, function (b) {
+        var w = b.getAttribute("data-w");
+        if (w != null) b.style.width = w + "%";
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+    else run();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

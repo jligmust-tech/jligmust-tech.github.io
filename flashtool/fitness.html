@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  健身自评 · 训练后即时评估工具
+  ----------------------------------------------------------------------------
+  用途   ：健身者训练后选择训练类型（有氧 / 无氧 / 力量 / 混合），力量训练
+           可多选目标肌群，完成自评并生成综合得分与针对性建议。
+  作者   ：swimHelper
+  版本   ：v1.0（训练类型路由 + 肌群多选 + 本地 Canvas 分享截图）
+  声明   ：单文件 HTML · 完全离线 · 零数据持久化，
+           所有数据仅在内存中处理，关闭页面即清空，不写入任何浏览器存储。
+  说明   ：本文件不引用任何外部资源、外部字体、外部图片或远程接口，
+           双击即可在任意现代浏览器（含 iOS Safari / Android Chrome）打开。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<title>健身自评</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #000; color: #fff; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.6; min-height: 100vh;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  button { font-family: inherit; }
+
+  /* ---------- 进度条 ---------- */
+  .progress-track { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: #1c1c1c; z-index: 50; }
+  .progress-fill { height: 100%; width: 0; background: #fff; transition: width .3s ease; }
+
+  /* ---------- 布局 ---------- */
+  .app { max-width: 520px; margin: 0 auto; padding: 32px 20px 40px; min-height: 100vh; display: flex; flex-direction: column; }
+  .fade { animation: fadeIn .3s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- 欢迎页 ---------- */
+  .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .hero .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 14px; }
+  .hero h1 { font-size: 34px; font-weight: 700; letter-spacing: 1px; margin-bottom: 18px; }
+  .hero .sub { font-size: 15px; color: #999; margin-bottom: 8px; }
+
+  /* ---------- 题目页 ---------- */
+  .q-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+  .q-no { font-size: 12px; letter-spacing: 2px; color: #777; }
+  .q-name { font-size: 12px; letter-spacing: 1px; color: #fff; border: 1px solid #444; padding: 2px 8px; }
+  .q-title { font-size: 21px; font-weight: 600; line-height: 1.45; margin-bottom: 8px; }
+  .q-hint { font-size: 12px; color: #777; margin-bottom: 4px; }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    min-height: 52px; padding: 13px 16px; text-align: left;
+    background: #0c0c0c; border: 1px solid #2c2c2c; color: #ddd;
+    font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .opt .mark { flex: 0 0 auto; width: 22px; height: 22px; border: 1px solid #4a4a4a; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #666; }
+  .opt .txt { flex: 1; }
+  .opt .sc { flex: 0 0 auto; font-size: 11px; color: #555; letter-spacing: 1px; }
+  .opt .opt-sub { display: block; font-size: 12px; color: #777; margin-top: 2px; letter-spacing: 0; }
+  .opt:active { background: #1a1a1a; }
+  .opt.selected { background: #fff; color: #000; border-color: #fff; }
+  .opt.selected .mark { background: #000; color: #fff; border-color: #000; }
+  .opt.selected .sc { color: #777; }
+  .opt.selected .opt-sub { color: #555; }
+
+  /* ---------- 截图预览弹层 ---------- */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.94); display: none; z-index: 100; padding: 22px 20px 40px; overflow-y: auto; }
+  .modal.open { display: block; }
+  .modal-card { max-width: 520px; margin: 0 auto; }
+  .modal-head { font-size: 12px; letter-spacing: 3px; color: #888; margin-bottom: 14px; }
+  .shot { width: 100%; display: block; border: 1px solid #222; background: #000; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+  .modal-note { margin-top: 14px; font-size: 11px; color: #555; text-align: center; line-height: 1.7; }
+
+  /* ---------- 导航按钮 ---------- */
+  .nav { display: flex; gap: 12px; margin-top: 32px; }
+  .btn {
+    flex: 1; min-height: 52px; padding: 0 16px; border: 1px solid #fff;
+    background: #fff; color: #000; font-size: 15px; letter-spacing: 2px; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: #000; color: #fff; border-color: #3a3a3a; }
+  .btn.small { flex: 0 0 auto; padding: 0 20px; letter-spacing: 1px; }
+  .btn[disabled], .btn.disabled { opacity: .28; cursor: not-allowed; }
+
+  /* ---------- 结果页 ---------- */
+  .res { padding-top: 8px; }
+  .res .kicker { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 10px; }
+  .score { font-size: 68px; font-weight: 700; letter-spacing: -3px; line-height: 1; }
+  .score small { font-size: 20px; color: #555; font-weight: 400; letter-spacing: 0; margin-left: 4px; }
+  .grade { display: inline-block; margin-top: 14px; padding: 5px 14px; border: 1px solid #fff; font-size: 12px; letter-spacing: 3px; }
+  .res .summary { margin-top: 14px; font-size: 13px; color: #999; }
+
+  .section-title { font-size: 12px; letter-spacing: 3px; color: #666; margin: 34px 0 14px; padding-bottom: 8px; border-bottom: 1px solid #1e1e1e; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12px; }
+  .bar-label { flex: 0 0 64px; color: #aaa; }
+  .bar-track { flex: 1; height: 10px; background: #181818; }
+  .bar-fill { display: block; width: 0; height: 100%; background: #fff; transition: width .6s ease; }
+  .bar-val { flex: 0 0 34px; text-align: right; color: #888; font-variant-numeric: tabular-nums; }
+  .bar-note { margin-top: 12px; font-size: 11px; color: #555; line-height: 1.7; }
+
+  .sug { border: 1px solid #222; border-left: 3px solid #fff; padding: 14px 16px; margin-bottom: 12px; background: #0a0a0a; }
+  .sug h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .sug p { font-size: 13px; color: #9a9a9a; line-height: 1.7; }
+
+  .foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 11px; color: #4a4a4a; text-align: center; line-height: 1.8; }
+
+  @media (max-width: 380px) {
+    body { font-size: 14px; }
+    .hero h1 { font-size: 28px; }
+    .q-title { font-size: 18px; }
+    .score { font-size: 56px; }
+    .bar-label { flex-basis: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="deploy-version" style="position:fixed;right:10px;bottom:8px;z-index:2;font-size:11px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.32);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:2px;pointer-events:none;">健身自评 · v1.0</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="app" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========================================================================
+     一、训练类型、肌群与选项定义
+     ======================================================================== */
+  var TYPES = [
+    { key: "aerobic",   name: "有氧", desc: "跑步 / 游泳 / 骑行 / 椭圆机" },
+    { key: "anaerobic", name: "无氧", desc: "冲刺 / 高强度间歇 HIIT" },
+    { key: "strength",  name: "力量", desc: "器械 / 自由重量 / 自重" },
+    { key: "mixed",     name: "混合", desc: "有氧 + 力量同堂" }
+  ];
+
+  var MUSCLES = [
+    { key: "chest",     label: "胸" },
+    { key: "back",      label: "背" },
+    { key: "shoulder",  label: "肩" },
+    { key: "biceps",    label: "肱二头" },
+    { key: "triceps",   label: "肱三头" },
+    { key: "core",      label: "核心 / 腹" },
+    { key: "quads",     label: "股四头" },
+    { key: "posterior", label: "腘绳 / 臀" },
+    { key: "calves",    label: "小腿" }
+  ];
+
+  var OPT = {
+    volume: [
+      { label: "超出计划，余力充足", score: 5 },
+      { label: "完成既定计划", score: 4 },
+      { label: "接近完成", score: 3 },
+      { label: "明显不足", score: 2 },
+      { label: "远低于计划", score: 1 }
+    ],
+    heart: [
+      { label: ">25 bpm，心肺恢复优秀", score: 5 },
+      { label: "18-25 bpm，良好", score: 4 },
+      { label: "12-17 bpm，一般", score: 3 },
+      { label: "6-11 bpm，偏弱", score: 2 },
+      { label: "<6 bpm 或长时间高居不下", score: 1 }
+    ],
+    endurance: [
+      { label: "全程平稳，后段仍有力", score: 5 },
+      { label: "基本平稳，略有起伏", score: 4 },
+      { label: "中途需刻意调整呼吸", score: 3 },
+      { label: "较早出现气短 / 力竭", score: 2 },
+      { label: "很快喘不上气，难以维持", score: 1 }
+    ],
+    strengthPerf: [
+      { label: "突破目标重量 / 次数", score: 5 },
+      { label: "顺利完成计划", score: 4 },
+      { label: "勉强完成，略吃力", score: 3 },
+      { label: "明显掉重量 / 次数不足", score: 2 },
+      { label: "状态很差，难以完成", score: 1 }
+    ],
+    tech: [
+      { label: "全程标准，目标肌群发力清晰", score: 5 },
+      { label: "动作标准，偶有代偿", score: 4 },
+      { label: "基本完成，借力明显", score: 3 },
+      { label: "动作变形，目标肌群感觉弱", score: 2 },
+      { label: "无法控制，以甩 / 借力完成", score: 1 }
+    ],
+    pump: [
+      { label: "强烈且持久", score: 5 },
+      { label: "明显", score: 4 },
+      { label: "一般", score: 3 },
+      { label: "较弱", score: 2 },
+      { label: "几乎没有", score: 1 }
+    ],
+    soreness: [
+      { label: "无明显感觉", score: 5 },
+      { label: "轻度疲劳，4-6h 恢复", score: 4 },
+      { label: "明显酸胀，次日有感", score: 3 },
+      { label: "很疲劳，1-2 天恢复", score: 2 },
+      { label: "极度疲劳，影响行动", score: 1 }
+    ],
+    joint: [
+      { label: "完全无不适", score: 5 },
+      { label: "轻微紧绷，可忽视", score: 4 },
+      { label: "训练中可感不适但不影响", score: 3 },
+      { label: "明显疼痛，影响动作", score: 2 },
+      { label: "急性疼痛，需立即停止", score: 1 }
+    ],
+    mind: [
+      { label: "兴奋充实，专注度极高", score: 5 },
+      { label: "满足感强，状态平稳", score: 4 },
+      { label: "一般，完成任务感", score: 3 },
+      { label: "疲惫感明显，注意力涣散", score: 2 },
+      { label: "厌烦或抗拒，需要休整", score: 1 }
+    ],
+    sleep: [
+      { label: "睡眠充足，恢复很好", score: 5 },
+      { label: "基本充足，恢复尚可", score: 4 },
+      { label: "一般，偶有疲惫", score: 3 },
+      { label: "睡眠不足，恢复差", score: 2 },
+      { label: "严重缺觉，明显透支", score: 1 }
+    ]
+  };
+
+  var RPE_OPTIONS = [
+    { label: "极限", score: 10 }, { label: "极难", score: 9 }, { label: "很难", score: 8 },
+    { label: "吃力", score: 7 }, { label: "较强", score: 6 }, { label: "中等", score: 5 },
+    { label: "轻松", score: 4 }, { label: "较轻松", score: 3 }, { label: "很轻松", score: 2 },
+    { label: "极轻松", score: 1 }
+  ];
+
+  function scaleQ(key, name, short, question, hint, options) {
+    return { key: key, name: name, short: short, type: "scale", question: question, hint: hint, options: options };
+  }
+
+  /* 内存状态：不写入任何存储 */
+  var state = { stage: "welcome", step: 0, answers: { parts: [] } };
+  var app = document.getElementById("app");
+  var progressFill = document.getElementById("progressFill");
+
+  /* ========================================================================
+     二、根据训练类型动态生成问卷
+     ======================================================================== */
+  function getQuestions() {
+    var t = state.answers.type;
+    var qs = [];
+    if (t === "strength" || t === "mixed") {
+      qs.push({
+        key: "parts", name: "训练部位", short: "部位", type: "multi",
+        question: "本次训练了哪些肌群？（可多选）",
+        hint: "选择主要训练部位，用于给出对抗肌群平衡与恢复建议。",
+        options: MUSCLES
+      });
+    }
+    qs.push(scaleQ("volume", "训练完成度", "完成度", "本次训练量与计划相比如何？", null, OPT.volume));
+    qs.push({ key: "rpe", name: "RPE 主观强度", short: "RPE", type: "rpe", question: "本次训练主观强度？(RPE 1-10)", options: RPE_OPTIONS });
+    qs.push(scaleQ("heart", "心率恢复", "心率", "训练结束后 60 秒心率下降（bpm）？", null, OPT.heart));
+    if (t === "strength") {
+      qs.push(scaleQ("perf", "力量表现", "力量", "本次力量训练的表现（重量 / 次数 / 力竭度）？", null, OPT.strengthPerf));
+      qs.push(scaleQ("tech", "动作质量与发力感", "动作", "动作质量与目标肌群发力感？", null, OPT.tech));
+      qs.push(scaleQ("pump", "泵感 / 充血", "泵感", "目标肌群的泵感 / 充血感？", null, OPT.pump));
+    } else if (t === "mixed") {
+      qs.push(scaleQ("perf", "呼吸与耐力", "耐力", "本次训练中呼吸与耐力的表现？", null, OPT.endurance));
+      qs.push(scaleQ("tech", "动作质量与发力感", "动作", "动作质量与目标肌群发力感？", null, OPT.tech));
+    } else {
+      qs.push(scaleQ("perf", "呼吸与耐力", "耐力", "本次训练中呼吸与耐力的表现？", null, OPT.endurance));
+    }
+    qs.push(scaleQ("soreness", "肌肉酸痛", "酸痛", "训练后肌肉酸胀 / 疲劳感？", null, OPT.soreness));
+    qs.push(scaleQ("joint", "关节状态", "关节", "关节与结缔组织是否有不适？", null, OPT.joint));
+    qs.push(scaleQ("mind", "心理状态", "心理", "训练后整体心态与专注度？", null, OPT.mind));
+    qs.push(scaleQ("sleep", "睡眠与恢复", "睡眠", "近期睡眠与整体恢复状态？", null, OPT.sleep));
+    return qs;
+  }
+
+  /* ========================================================================
+     三、评分换算
+     ======================================================================== */
+  function mean(arr) { return arr.reduce(function (a, b) { return a + b; }, 0) / arr.length; }
+
+  /* RPE → 0-100「负荷质量分」：最优区间 6-7 */
+  function rpeQuality(rpe) {
+    var table = { 1: 20, 2: 35, 3: 50, 4: 62, 5: 78, 6: 90, 7: 92, 8: 70, 9: 45, 10: 30 };
+    return table[rpe] != null ? table[rpe] : 60;
+  }
+
+  function isBlank(v) { return v === undefined || v === null || String(v).trim() === ""; }
+
+  function dimPercent(q) {
+    if (q.key === "rpe") return rpeQuality(state.answers.rpe);
+    return (state.answers[q.key] / 5) * 100;
+  }
+
+  function computeResults() {
+    var qs = getQuestions(), pct = {}, vals = [];
+    qs.forEach(function (q) {
+      if (q.type === "multi") return;
+      pct[q.key] = dimPercent(q);
+      vals.push(pct[q.key]);
+    });
+    return { pct: pct, overall: Math.round(mean(vals)), questions: qs };
+  }
+
+  function gradeLabel(score) {
+    if (score >= 85) return "EXCELLENT · 优秀";
+    if (score >= 70) return "GOOD · 良好";
+    if (score >= 55) return "FAIR · 中等";
+    if (score >= 40) return "NEEDS WORK · 需改进";
+    return "WARNING · 警示";
+  }
+
+  function typeName(key) {
+    for (var i = 0; i < TYPES.length; i++) { if (TYPES[i].key === key) return TYPES[i].name; }
+    return "";
+  }
+
+  function muscleLabel(key) {
+    for (var i = 0; i < MUSCLES.length; i++) { if (MUSCLES[i].key === key) return MUSCLES[i].label; }
+    return key;
+  }
+
+  /* ========================================================================
+     四、建议生成（按训练类型与分组分支）
+     ======================================================================== */
+  function hasPart(arr, k) { return arr.indexOf(k) >= 0; }
+
+  function partsSuggestion(parts) {
+    var names = parts.map(muscleLabel), tips = [];
+    if (hasPart(parts, "chest") && !hasPart(parts, "back")) tips.push("胸部偏多，补充背部（划船 / 下拉）平衡推拉，预防圆肩");
+    if (hasPart(parts, "back") && !hasPart(parts, "chest")) tips.push("背部偏多，补充推类（卧推 / 推举）保持前后平衡");
+    if (hasPart(parts, "biceps") && !hasPart(parts, "triceps")) tips.push("补充肱三头，保持手臂前后侧平衡");
+    if (hasPart(parts, "triceps") && !hasPart(parts, "biceps")) tips.push("补充肱二头，保持手臂前后侧平衡");
+    if (hasPart(parts, "quads") && !hasPart(parts, "posterior")) tips.push("补充腘绳 / 臀（硬拉 / 臀桥），平衡大腿前后侧与膝稳定");
+    if (hasPart(parts, "posterior") && !hasPart(parts, "quads")) tips.push("补充股四头（深蹲 / 腿举），平衡下肢力量");
+    if (hasPart(parts, "shoulder") && !hasPart(parts, "back")) tips.push("肩部建议搭配面拉 / 后束训练，维护肩关节健康");
+    if (parts.length >= 5) tips.push("覆盖肌群较多，保证 48-72h 恢复再练同一部位");
+    if (parts.length === 1) tips.push("本次为单部位训练，建议与对抗肌群交替安排");
+    if (!tips.length) tips.push("肌群搭配较均衡，注意目标肌群 48h 恢复与蛋白质摄入");
+    return { title: "训练部位 · 平衡建议", body: "本次训练部位：" + names.join("、") + "。" + tips.join("；") + "。" };
+  }
+
+  function generateSuggestions(r) {
+    var p = r.pct, out = [];
+    var type = state.answers.type;
+    var parts = state.answers.parts || [];
+    var rpe = state.answers.rpe;
+
+    /* 总评（始终显示，置于最前） */
+    if (r.overall >= 85) {
+      out.push({ title: "整体状态优秀", body: "继续保持，稳定的训练节奏比偶尔突击更能带来长期进步。", pr: 0 });
+    } else if (r.overall < 60) {
+      out.push({ title: "多维警示 · 全面调整", body: "本周降低训练量 30-50%，优先解决最低分维度，先恢复再上强度。", pr: 0 });
+    } else {
+      out.push({ title: "整体可改进", body: "按以下建议针对性调整 2-3 项，避免一次改动过多。", pr: 0 });
+    }
+
+    /* 训练类型专门 */
+    if (type === "strength") {
+      out.push({ title: "力量训练建议", body: "遵循渐进超负荷：每周小幅增加重量或次数；复合动作放前面，组间休息 2-3min，保证动作质量。", pr: 4 });
+    } else if (type === "aerobic") {
+      out.push({ title: "有氧训练建议", body: "以 Zone 2 打底（可对话强度），每周累计 150min 以上，穿插少量阈值 / 间歇提升上限。", pr: 4 });
+    } else if (type === "anaerobic") {
+      out.push({ title: "无氧 / 间歇建议", body: "注意工作:休息比（约 1:2~1:3），每周 2-3 次即可，其余时间做低强度恢复。", pr: 4 });
+    } else {
+      out.push({ title: "混合训练建议", body: "有氧与力量尽量分天或分时段；若同练，先力量后有氧，减少「干扰效应」。", pr: 4 });
+    }
+
+    /* 部位建议（力量 / 混合） */
+    if ((type === "strength" || type === "mixed") && parts.length) {
+      var psu = partsSuggestion(parts);
+      psu.pr = 4;
+      out.push(psu);
+    }
+
+    /* 完成度 */
+    if (p.volume < 50) out.push({ title: "训练量不足", body: "设定明确的组数 × 次数目标并记录，逐步累积训练容量，避免「差不多就行」。", pr: 2 });
+
+    /* 心率恢复 */
+    if (p.heart < 50) out.push({ title: "心肺恢复偏慢", body: "加入 Zone 2 有氧 30-45min，每周 2-3 次，提升有氧基础与恢复速度。", pr: 3 });
+
+    /* 表现 */
+    if (p.perf < 50) {
+      if (type === "strength") out.push({ title: "力量表现下滑", body: "回顾近两周睡眠 / 饮食与训练频率；必要时安排减载周（容量降 30-40%）后再冲重量。", pr: 3 });
+      else out.push({ title: "耐力表现不足", body: "加入 20-30min 持续有氧 + 短间歇，循序渐进提升心肺耐力。", pr: 3 });
+    }
+
+    /* 动作质量 */
+    if (p.tech != null && p.tech < 60) out.push({ title: "动作质量待打磨", body: "降低重量 10-20%，放慢离心 2-3 秒，专注目标肌群发力，必要时拍视频自查或请教练。", pr: 3 });
+
+    /* 泵感 */
+    if (p.pump != null && p.pump < 50) out.push({ title: "泵感不足", body: "尝试 8-15 次/组、组间休息缩短至 60-90s，重视念动一致与顶峰收缩。", pr: 2 });
+
+    /* 负荷组 RPE */
+    if (rpe >= 9) {
+      out.push({ title: "高负荷后强制恢复", body: "下次降低强度 (RPE 5-6) 或休息 1-2 天；警惕过度训练。", pr: 5 });
+    } else if (rpe <= 3) {
+      out.push({ title: "强度偏低 · 刺激不足", body: "逐步提高重量或缩短组间休息，加入接近力竭的正式组以产生足够刺激。", pr: 3 });
+    } else if (rpe >= 7) {
+      out.push({ title: "强度合理 · 注意恢复", body: "24h 内补足蛋白 (约 1.6g/kg) + 碳水与睡眠 7h+，下次可维持或微降强度。", pr: 3 });
+    }
+
+    /* 酸痛 */
+    if (p.soreness < 50) out.push({ title: "主动恢复", body: "轻度活动、拉伸与泡沫轴放松，保证同一肌群 48h 以上恢复窗口。", pr: 3 });
+
+    /* 关节（安全优先） */
+    if (p.joint < 50) out.push({ title: "关节警示", body: "检查动作轨迹与活动度（避免耸肩 / 膝内扣 / 腰部代偿）；加强稳定肌，必要时就医。", pr: 5 });
+
+    /* 心理 */
+    if (p.mind < 50) out.push({ title: "心理疲劳信号", body: "安排 2-3 天完全休息或换项训练，不要「硬撑」。", pr: 4 });
+    else if (p.mind >= 80) out.push({ title: "状态高峰 · 把握节奏", body: "可适度挑战更高强度（大重量复合动作 / 突破组），注意保护。", pr: 1 });
+
+    /* 睡眠 */
+    if (p.sleep < 50) out.push({ title: "恢复不足 · 优先补觉", body: "每晚保证 7-9h 睡眠，睡前减少蓝光与咖啡因；恢复不足时降低训练强度。", pr: 4 });
+
+    /* 保证至少 3 条 */
+    if (out.length < 3) out.push({ title: "补水与补给", body: "训练后及时补充水分与电解质，正餐保证优质蛋白 + 碳水有助恢复。", pr: 0 });
+    if (out.length < 3) out.push({ title: "记录与渐进", body: "记录每次训练的重量 / 次数 / 感受，用数据驱动渐进超负荷。", pr: 0 });
+
+    /* 总评置顶；其余按优先级排序，安全与核心建议优先保留（最多 8 条） */
+    var summary = out.shift();
+    out.sort(function (a, b) { return (b.pr || 0) - (a.pr || 0); });
+    return [summary].concat(out).slice(0, 8).map(function (x) {
+      return { title: x.title, body: x.body };
+    });
+  }
+
+  /* ========================================================================
+     五、渲染
+     ======================================================================== */
+  function setProgress(percent) {
+    progressFill.style.width = Math.max(0, Math.min(100, percent)) + "%";
+  }
+
+  function render() {
+    if (state.stage === "welcome") return renderWelcome();
+    if (state.stage === "quiz") return renderQuestion();
+    return renderResult();
+  }
+
+  function renderWelcome() {
+    setProgress(0);
+    var t = state.answers.type;
+    var cards = TYPES.map(function (x) {
+      return '<button class="opt' + (t === x.key ? " selected" : "") + '" data-type="' + x.key + '">' +
+               '<span class="mark">' + (t === x.key ? "✓" : "") + '</span>' +
+               '<span class="txt">' + esc(x.name) + '<span class="opt-sub">' + esc(x.desc) + '</span></span>' +
+             '</button>';
+    }).join("");
+    app.innerHTML =
+      '<div class="hero fade">' +
+        '<div class="kicker">WORKOUT SELF-CHECK</div>' +
+        '<h1>健身自评</h1>' +
+        '<p class="sub">训练后 3 分钟，选择训练类型并完成自评，获得训练与恢复建议。</p>' +
+        '<p class="sub" style="color:#666;font-size:13px;">不上传 · 不保存 · 关闭页面即清空</p>' +
+        '<div class="section-title">选择本次训练类型</div>' +
+        '<div class="opts" id="typeCards">' + cards + '</div>' +
+      '</div>' +
+      '<div class="nav"><button class="btn" id="startBtn"' + (t ? "" : " disabled") + '>开始评估</button></div>';
+
+    Array.prototype.forEach.call(app.querySelectorAll("#typeCards .opt"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.answers.type = btn.dataset.type;
+        Array.prototype.forEach.call(app.querySelectorAll("#typeCards .opt"), function (b) {
+          b.classList.remove("selected");
+          b.querySelector(".mark").textContent = "";
+        });
+        btn.classList.add("selected");
+        btn.querySelector(".mark").textContent = "✓";
+        var s = document.getElementById("startBtn");
+        s.disabled = false;
+        s.classList.remove("disabled");
+      });
+    });
+    document.getElementById("startBtn").addEventListener("click", function () {
+      if (!state.answers.type) return;
+      if (!state.answers.parts) state.answers.parts = [];
+      state.stage = "quiz";
+      state.step = 0;
+      render();
+    });
+  }
+
+  function isAnswered(q) {
+    if (q.type === "multi") return (state.answers.parts || []).length > 0;
+    return !isBlank(state.answers[q.key]);
+  }
+
+  function renderQuestion() {
+    var qs = getQuestions();
+    var q = qs[state.step];
+    setProgress(((state.step + 1) / qs.length) * 100);
+
+    var html = '<div class="fade">';
+    html += '<div class="q-head"><span class="q-no">' + pad2(state.step + 1) + ' / ' + pad2(qs.length) + '</span>' +
+            '<span class="q-name">' + esc(q.name) + '</span></div>';
+    html += '<h2 class="q-title">' + esc(q.question) + '</h2>';
+    if (q.hint) html += '<p class="q-hint">' + esc(q.hint) + '</p>';
+
+    html += '<div class="opts">';
+    if (q.type === "multi") {
+      q.options.forEach(function (o) {
+        var sel = (state.answers.parts || []).indexOf(o.key) >= 0;
+        html += '<button class="opt' + (sel ? " selected" : "") + '" data-key="' + o.key + '">' +
+                  '<span class="mark">' + (sel ? "✓" : "+") + '</span>' +
+                  '<span class="txt">' + esc(o.label) + '</span>' +
+                '</button>';
+      });
+    } else {
+      q.options.forEach(function (o) {
+        var isSel = state.answers[q.key] === o.score;
+        var mark = q.type === "rpe" ? String(o.score) : "";
+        html += '<button class="opt' + (isSel ? " selected" : "") + '" data-score="' + o.score + '">' +
+                  '<span class="mark">' + (isSel ? "✓" : mark) + '</span>' +
+                  '<span class="txt">' + esc(o.label) + '</span>' +
+                  '<span class="sc">' + o.score + ' 分</span>' +
+                '</button>';
+      });
+    }
+    html += '</div></div>';
+
+    html += '<div class="nav">';
+    if (state.step > 0) html += '<button class="btn ghost small" id="prevBtn">上一题</button>';
+    html += '<button class="btn" id="nextBtn">' + (state.step === qs.length - 1 ? "生成报告" : "下一题") + '</button>';
+    html += '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    if (q.type === "multi") {
+      Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (btn) {
+        btn.addEventListener("click", function () {
+          var k = btn.dataset.key;
+          if (!state.answers.parts) state.answers.parts = [];
+          var arr = state.answers.parts, idx = arr.indexOf(k);
+          if (idx >= 0) {
+            arr.splice(idx, 1);
+            btn.classList.remove("selected");
+            btn.querySelector(".mark").textContent = "+";
+          } else {
+            arr.push(k);
+            btn.classList.add("selected");
+            btn.querySelector(".mark").textContent = "✓";
+          }
+          updateNav();
+        });
+      });
+    } else {
+      Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (btn) {
+        btn.addEventListener("click", function () {
+          state.answers[q.key] = Number(btn.dataset.score);
+          Array.prototype.forEach.call(app.querySelectorAll(".opt"), function (b) {
+            b.classList.remove("selected");
+            b.querySelector(".mark").textContent = q.type === "rpe" ? b.dataset.score : "";
+          });
+          btn.classList.add("selected");
+          btn.querySelector(".mark").textContent = "✓";
+          updateNav();
+        });
+      });
+    }
+
+    if (state.step > 0) {
+      document.getElementById("prevBtn").addEventListener("click", function () { state.step--; render(); });
+    }
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      if (!isAnswered(q)) return;
+      if (state.step === qs.length - 1) { state.stage = "result"; render(); }
+      else { state.step++; render(); }
+    });
+
+    updateNav();
+  }
+
+  function updateNav() {
+    var qs = getQuestions();
+    var q = qs[state.step];
+    var btn = document.getElementById("nextBtn");
+    if (!btn) return;
+    var ok = isAnswered(q);
+    btn.disabled = !ok;
+    btn.classList.toggle("disabled", !ok);
+  }
+
+  function renderResult() {
+    setProgress(100);
+    var r = computeResults();
+    var sugs = generateSuggestions(r);
+    var type = state.answers.type;
+    var parts = state.answers.parts || [];
+    var scoredCount = r.questions.filter(function (q) { return q.type !== "multi"; }).length;
+
+    var html = '<div class="res fade">';
+    html += '<div class="kicker">OVERALL SCORE</div>';
+    html += '<div class="score">' + r.overall + '<small>/100</small></div>';
+    html += '<div class="grade">' + gradeLabel(r.overall) + '</div>';
+
+    var line = "训练类型：" + typeName(type);
+    if (parts.length) line += " · 部位：" + parts.map(muscleLabel).join("、");
+    html += '<p class="summary" style="color:#ccc;margin-top:6px;">' + esc(line) + '</p>';
+    html += '<p class="summary">' + scoredCount + ' 个评估维度 · ' + sugs.length + ' 条建议</p>';
+
+    html += '<div class="section-title">维度得分</div><div class="bars">';
+    r.questions.forEach(function (q) {
+      if (q.type === "multi") return;
+      var v = Math.round(r.pct[q.key]);
+      html += '<div class="bar-row">' +
+                '<span class="bar-label">' + esc(q.short) + '</span>' +
+                '<span class="bar-track"><span class="bar-fill" data-w="' + v + '"></span></span>' +
+                '<span class="bar-val">' + v + '</span>' +
+              '</div>';
+    });
+    html += '</div>';
+    html += '<p class="bar-note">RPE 采用「负荷质量」换算（最优区间 6-7），过高或过低都会拉低该项得分。</p>';
+
+    html += '<div class="section-title">训练建议</div>';
+    sugs.forEach(function (s) {
+      html += '<div class="sug"><h4>' + esc(s.title) + '</h4><p>' + esc(s.body) + '</p></div>';
+    });
+
+    html += '<div class="nav">' +
+              '<button class="btn ghost" id="restartBtn">重新评估</button>' +
+              '<button class="btn" id="shareBtn">分享截图</button>' +
+            '</div>';
+    html += '<div class="foot">数据仅在本地内存中处理 · 不写入任何存储<br>关闭页面即清空 · 完全离线运行</div>';
+    html += '</div>';
+
+    html += '<div class="modal" id="shareModal">' +
+              '<div class="modal-card">' +
+                '<div class="modal-head">截图预览 · 含当前时间</div>' +
+                '<img class="shot" id="shotImg" alt="健身自评结果截图">' +
+                '<div class="modal-actions">' +
+                  '<button class="btn ghost small" id="closeShareBtn">关闭</button>' +
+                  '<button class="btn small" id="saveShotBtn">保存图片</button>' +
+                  (canSystemShare() ? '<button class="btn small" id="sysShareBtn">系统分享</button>' : '') +
+                '</div>' +
+                '<div class="modal-note">图片由本地 Canvas 生成 · 不联网 · 不上传</div>' +
+              '</div>' +
+            '</div>';
+
+    app.innerHTML = html;
+    animateBars();
+
+    document.getElementById("restartBtn").addEventListener("click", function () {
+      state = { stage: "welcome", step: 0, answers: { parts: [] } };
+      render();
+      window.scrollTo(0, 0);
+    });
+
+    var shareCanvas = null;
+    function ensureShot() {
+      if (!shareCanvas) shareCanvas = drawShareCard(r, sugs);
+      return shareCanvas;
+    }
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      var c = ensureShot();
+      document.getElementById("shotImg").src = c.toDataURL("image/png");
+      document.getElementById("shareModal").classList.add("open");
+    });
+    document.getElementById("closeShareBtn").addEventListener("click", function () {
+      document.getElementById("shareModal").classList.remove("open");
+    });
+    document.getElementById("saveShotBtn").addEventListener("click", function () {
+      var c = ensureShot();
+      var link = document.createElement("a");
+      link.href = c.toDataURL("image/png");
+      link.download = "健身自评_" + fileStamp() + ".png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+    var sysBtn = document.getElementById("sysShareBtn");
+    if (sysBtn) {
+      sysBtn.addEventListener("click", function () {
+        ensureShot().toBlob(function (blob) {
+          if (!blob) return;
+          var file = new File([blob], "健身自评_" + fileStamp() + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: "健身自评" }).catch(function () {});
+          }
+        }, "image/png");
+      });
+    }
+  }
+
+  /* ========================================================================
+     六、工具函数
+     ======================================================================== */
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  function fmtDateTime(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+           " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+
+  function fileStamp() {
+    var d = new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+           "_" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+
+  function canSystemShare() {
+    return typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare &&
+           typeof File !== "undefined" && typeof Blob !== "undefined";
+  }
+
+  function wrapLines(ctx, text, maxWidth) {
+    var chars = String(text).split(""), out = [], cur = "";
+    for (var i = 0; i < chars.length; i++) {
+      var test = cur + chars[i];
+      if (cur && ctx.measureText(test).width > maxWidth) { out.push(cur); cur = chars[i]; }
+      else { cur = test; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  /* 用 Canvas 本地绘制分享卡片（不依赖任何外部截图库，完全离线） */
+  function drawShareCard(r, sugs) {
+    var W = 1080, H = 2600, pad = 80;
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var FONT = '"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif';
+    function font(size, weight) { ctx.font = (weight ? weight + " " : "") + size + "px " + FONT; }
+    function txt(str, x, y, size, weight, color) {
+      font(size, weight); ctx.fillStyle = color; ctx.fillText(str, x, y);
+    }
+    function center(str, y, size, weight, color) {
+      font(size, weight); ctx.fillStyle = color;
+      ctx.fillText(str, (W - ctx.measureText(str).width) / 2, y);
+    }
+    function line(y) { ctx.strokeStyle = "#222"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke(); }
+
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+
+    var y = 120;
+    ctx.fillStyle = "#fff"; ctx.fillRect(pad, y, 120, 6);
+    y += 42;
+    txt("WORKOUT SELF-CHECK", pad, y, 30, "500", "#666");
+    y += 54;
+    txt("健身自评", pad, y, 60, "700", "#fff");
+    y += 120;
+
+    font(190, "700"); ctx.fillStyle = "#fff";
+    var scoreText = String(r.overall);
+    ctx.fillText(scoreText, pad, y);
+    var sw = ctx.measureText(scoreText).width;
+    txt("/100", pad + sw + 16, y + 128, 46, "400", "#555");
+    y += 250;
+
+    var grade = gradeLabel(r.overall);
+    font(30, "500");
+    var gw = ctx.measureText(grade).width;
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+    ctx.strokeRect(pad, y, gw + 48, 62);
+    txt(grade, pad + 24, y + 16, 30, "500", "#fff");
+    y += 62 + 46;
+
+    var head = "训练类型：" + typeName(state.answers.type);
+    var parts = state.answers.parts || [];
+    if (parts.length) head += "  ·  部位：" + parts.map(muscleLabel).join("、");
+    txt(head, pad, y, 34, "400", "#cfcfcf");
+    y += 46;
+    txt(fmtDateTime(new Date()) + " 生成", pad, y, 30, "400", "#888");
+    y += 64;
+    line(y); y += 42;
+
+    txt("维度得分 / 0-100", pad, y, 28, "500", "#666");
+    y += 56;
+    var dims = r.questions.filter(function (q) { return q.type !== "multi"; });
+    var perCol = Math.ceil(dims.length / 2);
+    var colGap = 60, colW = (W - pad * 2 - colGap) / 2, rowH = 54;
+    var labelW = 96, valW = 56;
+    dims.forEach(function (q, i) {
+      var col = i < perCol ? 0 : 1, row = i % perCol;
+      var x = pad + col * (colW + colGap), ry = y + row * rowH;
+      var val = Math.round(r.pct[q.key]);
+      txt(q.short, x, ry + 4, 26, "400", "#9a9a9a");
+      var bx = x + labelW, bw = colW - labelW - valW - 12;
+      ctx.fillStyle = "#1c1c1c"; ctx.fillRect(bx, ry + 8, bw, 14);
+      ctx.fillStyle = "#fff"; ctx.fillRect(bx, ry + 8, bw * (val / 100), 14);
+      txt(String(val), bx + bw + 12, ry + 3, 24, "400", "#888");
+    });
+    y += perCol * rowH + 30;
+    line(y); y += 38;
+
+    txt("训练建议", pad, y, 28, "500", "#666");
+    y += 54;
+    function wrapSet(str, size, weight) { font(size, weight); return wrapLines(ctx, str, W - pad * 2); }
+    sugs.slice(0, 3).forEach(function (s) {
+      var tl = wrapSet(s.title, 34, "600");
+      ctx.fillStyle = "#fff";
+      tl.forEach(function (ln, i) { ctx.fillText(ln, pad, y + i * 46); });
+      y += tl.length * 46 + 6;
+      var bl = wrapSet(s.body, 30, "400");
+      ctx.fillStyle = "#9a9a9a";
+      bl.forEach(function (ln, i) { ctx.fillText(ln, pad, y + i * 44); });
+      y += bl.length * 44 + 34;
+    });
+
+    y += 12;
+    center("本地生成 · 完全离线 · 不含个人信息", y, 26, "400", "#444");
+    y += 64;
+
+    var outH = Math.min(H, y);
+    var out = document.createElement("canvas");
+    out.width = W; out.height = outH;
+    out.getContext("2d").drawImage(canvas, 0, 0, W, outH, 0, 0, W, outH);
+    return out;
+  }
+
+  function animateBars() {
+    var bars = app.querySelectorAll(".bar-fill");
+    var run = function () {
+      Array.prototype.forEach.call(bars, function (b) {
+        var w = b.getAttribute("data-w");
+        if (w != null) b.style.width = w + "%";
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+    else run();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
