@@ -1151,6 +1151,16 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-10-10", tag: "Research", title: "Small models, short contexts: why agentic AI is getting leaner",
+      desc: "The evidence that right-sizing models and shortening agent contexts improves results — LLM cascades and routing, long-context degradation, Chain-of-Agents, Anthropic's orchestrator-worker system, ensemble methods, and the counterargument from Cognition's 'Don't Build Multi-Agents'.",
+      url: "/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html"
+    },
+    {
+      date: "2026-10-10", tag: "Research", title: "Swarm intelligence for AI: from boids to societies of agents",
+      desc: "A survey of swarm-intelligence ideas reborn in modern AI — from PSO, ACO, and boids to LLM multi-agent frameworks, debate and society-of-minds, optimizable agent graphs, generative-agent simulation, many-agent civilizations, and autonomous science, with safety and evaluation caveats.",
+      url: "/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html"
+    },
+    {
       date: "2026-09-30", tag: "Research", title: "Given a target, find the drug: structure prediction, docking, and binding-affinity advances in 2026",
       desc: "A method-focused, source-linked tour of structure-based drug design — protein structure prediction, molecular docking, virtual screening, binding-affinity and free-energy prediction, generative design, and reverse target prediction — with the motivation behind each tool.",
       url: "/blog/posts/2026-09-30-target-to-drug-toolkit.html"

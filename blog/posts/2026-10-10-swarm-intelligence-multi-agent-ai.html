@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swarm Intelligence for AI: From Boids to Societies of Agents — scAI Index</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#big-picture">The big picture</a>
+          <a href="#classical">Classical swarm intelligence</a>
+          <a href="#foundations">LLM multi-agent foundations</a>
+          <a href="#debate">Debate and society-of-minds</a>
+          <a href="#graphs">Agents as optimizable graphs</a>
+          <a href="#social-sim">Generative agents &amp; simulation</a>
+          <a href="#civilization">Many-agent civilizations</a>
+          <a href="#science">Swarm science &amp; discovery</a>
+          <a href="#benchmarks">Benchmarks and evaluation</a>
+          <a href="#safety">Safety, security &amp; governance</a>
+          <a href="#next">What to watch next</a>
+          <a href="#papers">Selected papers</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-10</span>
+      </div>
+      <h1>Swarm Intelligence for AI: From Boids to Societies of Agents</h1>
+
+      <p>A survey of how the ideas behind <b>swarm intelligence</b> — collective behavior emerging from many simple, locally interacting agents — have been reborn inside modern AI. This note traces the arc from classical optimization swarms (particle swarms, ant colonies, flocking) to today's <b>large-language-model multi-agent systems</b> and, finally, to large populations of autonomous agents that simulate societies and run research pipelines.</p>
+      <p>The short version: <b>swarm intelligence supplied the metaphors, but LLMs supplied the actors.</b> Where a boid once followed three local rules, an LLM agent can read, reason, write code, call tools, and negotiate with peers. The result is a rapidly expanding field of "multi-agent systems," "collaborative agents," and "agent societies" that sits at the intersection of distributed AI, complex systems, and — increasingly — governance.</p>
+      <p>A caveat before we start: this is a fast-moving, hype-prone area. Below, peer-reviewed papers, preprints, frameworks, and press reports are labeled so you can weigh them differently.</p>
+      <p>A companion post, <a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html">Small Models, Short Contexts</a>, covers the other half of the design question: which models each agent should run, and how much context it should carry.</p>
+
+      <hr>
+
+      <h2 id="big-picture">1. The big picture</h2>
+      <p>Three threads explain the current wave:</p>
+      <ul>
+        <li><b>From rules to reasoning.</b> Classical swarm intelligence studied emergence from <i>fixed</i> local rules (alignment, cohesion, separation). LLM agents keep the "many interacting units" framing but replace the rules with natural-language reasoning, planning, and tool use.</li>
+        <li><b>From optimization to orchestration.</b> Particle swarm and ant-colony optimization searched a parameter space collectively. Modern systems instead <i>orchestrate</i> specialized roles — planner, coder, reviewer, critic — into a workflow that produces text, code, or experiments.</li>
+        <li><b>From dozens to thousands of agents.</b> Early multi-agent frameworks ran a handful of agents in a loop. Recent work scales to hundreds or thousands of agents to simulate populations and economies, or to swarm a research task.</li>
+      </ul>
+      <p>The key conceptual bridge is this: <b>a single strong model is limited by its own context and biases; a population can diversify, critique, and self-correct.</b> Whether that actually beats one well-prompted model is, as we will see, an empirical question without a settled answer.</p>
+
+      <h2 id="classical">2. Classical swarm intelligence</h2>
+      <p>The roots of the field are biological and pre-date LLMs by decades.</p>
+      <ul>
+        <li><b>Flocking / boids.</b> Craig Reynolds' 1987 "boids" showed that realistic flocking emerges from three local steering rules: separation, alignment, and cohesion. This is the canonical proof that global structure can arise without a central controller.</li>
+        <li><b>Particle Swarm Optimization (PSO).</b> Kennedy and Eberhart (1995) turned flocking into an optimizer: candidate solutions "fly" through a search space, pulled toward their own best position and the swarm's best.</li>
+        <li><b>Ant Colony Optimization (ACO).</b> Dorigo's work (systematized with Stützle in 2004) models ants depositing and following pheromone trails, an indirect, stigmergic form of communication that efficiently solves routing and combinatorial problems.</li>
+      </ul>
+      <p>These methods remain workhorses for scheduling, routing, and continuous optimization. Their lasting lesson for AI is architectural: <b>simple agents plus local interaction plus a shared medium can outperform individual cleverness.</b> The shared medium can be a pheromone field, a blackboard — or, today, a conversation history and a tool API.</p>
+
+      <h2 id="foundations">3. LLM multi-agent foundations</h2>
+      <p>The 2023–2024 period produced the core frameworks that turned multi-agent ideas into software.</p>
+
+      <h3>Multi-agent conversation and role-play</h3>
+      <ul>
+        <li><b>AutoGen</b> (Wu et al., arXiv:2308.08155) popularized "conversable agents" that solve tasks through natural-language <i>and</i> code conversation. Its "conversation programming" lets developers compose agents, tools, and humans into a chat topology, with or without a human in the loop.</li>
+        <li><b>CAMEL</b> (Li et al., arXiv:2303.17760) introduced role-playing agents (e.g., a "user" and an "assistant") that cooperatively solve tasks, a lightweight template for two-agent collaboration.</li>
+        <li><b>MetaGPT</b> (Hong et al., arXiv:2308.00352) encoded human <i>standard operating procedures</i> into prompt sequences, assigning a software company's roles — product manager, architect, engineer — in an assembly-line pipeline and routing structured artifacts between them.</li>
+        <li><b>OpenAI Swarm</b> (2024) offered a deliberately minimal orchestration layer built on "routines" and "handoffs," an educational precursor to the later OpenAI Agents SDK.</li>
+      </ul>
+      <p>Anthropic's widely read "Building Effective Agents" essay (2024) added an important design caution: start with the simplest thing that works, and prefer <b>workflows</b> (fixed control flow) to fully autonomous <b>agents</b> unless the task truly requires open-ended decision-making.</p>
+
+      <h3>The survey that mapped the field</h3>
+      <p>Guo et al.'s survey "Large Language Model based Multi-Agents" (arXiv:2402.01680) organized the space along three axes — <b>agent profiles</b> (how roles are defined), <b>agent communication</b> (topology and protocol), and <b>capacity growth</b> (how agents improve, e.g., via memory, reflection, or self-play) — and catalogued application domains including collaborative problem-solving and social simulation. It is the most useful single entry point for the literature.</p>
+
+      <h2 id="debate">4. Debate and the society of minds</h2>
+      <p>One of the clearest empirical results in this area is that <b>disagreement helps</b>.</p>
+      <ul>
+        <li><b>Multi-agent debate</b> (Du et al., arXiv:2305.14325) had multiple LLM instances answer a question, then critique each other's reasons over several rounds until they converged. On arithmetic and reasoning tasks, this improved factuality and reduced hallucination relative to any single instance, echoing Minsky's "society of mind."</li>
+        <li>The same idea recurs as <b>self-consistency ensembles</b>, <b>critic/generator</b> pairs, and <b>red-team/blue-team</b> agent arrangements, all of which trade more compute for more reliable output.</li>
+      </ul>
+      <p>The nuance: gains depend on diversity. If every agent shares the same model, prompt, and knowledge, debate can collapse into confident agreement — a failure mode that appears repeatedly in this literature.</p>
+
+      <h2 id="graphs">5. Agents as optimizable graphs</h2>
+      <p>The most "engineering" branch of the field asks a different question: given a population, <b>what is the best way to wire it up?</b></p>
+      <ul>
+        <li><b>GPTSwarm</b> (Zhuge et al., arXiv:2402.16823, ICML 2024) represents a multi-agent system as a computational <i>graph</i> whose nodes are prompts/agent operations and whose edges encode orchestration and information flow. Both node prompts and graph topology can then be optimized — for example by reinforcement learning that adds or merges edges — treating "swarm structure" itself as a learnable object.</li>
+      </ul>
+      <p>This is a clean synthesis of the two traditions: the swarm's <i>topology</i> becomes the optimization target, exactly as PSO optimizes positions, but with language-model nodes whose "fitness" is task accuracy.</p>
+
+      <h2 id="social-sim">6. Generative agents and social simulation</h2>
+      <p>If you replace the pheromone field with <b>memory</b>, you get agents that behave socially over time.</p>
+      <ul>
+        <li><b>Generative Agents</b> (Park et al., arXiv:2304.03442) gave 25 agents in a small sandbox town an architecture of <b>memory streams, reflection, and planning</b>. Without scripted events, they formed relationships and coordinated social behavior — the widely cited example being agents spontaneously organizing and propagating a Valentine's Day party invitation.</li>
+        <li>This line is now a recognized subfield of its own: interactive simulacra for studying social dynamics, economic games, and information diffusion.</li>
+      </ul>
+      <p>The research value is that these are <i>controllable</i> synthetic societies: you can hold the environment fixed and vary the agents, something impossible with human subjects.</p>
+
+      <h2 id="civilization">7. Many-agent civilizations</h2>
+      <p>The scale frontier is where "swarm" becomes literal.</p>
+      <ul>
+        <li><b>Project Sid</b> (Altera.AL et al., arXiv:2411.00114) ran up to 1,000+ agents in Minecraft using a "PIANO" architecture (parallel, internally-modulated, autonomous cognitive modules that keep agents coherent over long horizons). The paper reports emergent specialization into roles, agents altering game rules, and the transmission of cultural and religious memes — a company/industry preprint, but a serious attempt to study civilizational dynamics at population scale.</li>
+        <li>2026 continued the trajectory with population-level questions. A recent preprint, <b>"Ecology of AI Agents"</b> (arXiv:2610.12436), argues that collaboration creates a <b>population threshold</b> below which a swarm does not "take off," linking agent-population ecology to emergent capability.</li>
+      </ul>
+
+      <h2 id="science">8. Swarm science and autonomous discovery</h2>
+      <p>The most practically consequential use of agent swarms is scientific research itself.</p>
+      <ul>
+        <li><b>The AI Scientist</b> (Lu et al., arXiv:2408.06292) is an end-to-end pipeline that generates ideas, writes and runs code, executes experiments, drafts a paper, and even applies an automated reviewer — at roughly <b>under $15 per paper</b>. It is a proof of concept, not a replacement for peer review, but it demonstrated the full loop.</li>
+        <li><b>"A Society of Researchers"</b> (arXiv:2610.10468) reframes the problem as <i>institutional design</i>: how should review, credit, and replication be structured when the population of research agents grows beyond human ability to supervise?</li>
+        <li><b>"Can AI Agents Make Open-Ended Scientific Discovery?"</b> (arXiv:2610.08927) examines the Eastgate/Station-style agent systems and asks whether their discoveries are genuinely open-ended or merely recombination — a central, unresolved question.</li>
+      </ul>
+      <p>Taken together, these show a shift from "an agent that helps a scientist" to <b>a population of agents that constitutes a research organization</b>.</p>
+
+      <h2 id="benchmarks">9. Benchmarks and evaluation</h2>
+      <p>The field's weakest flank is measurement. Two issues dominate:</p>
+      <ul>
+        <li><b>What is one agent worth?</b> Multi-agent systems can beat a single model simply by spending more tokens. Honest evaluation must compare against a <i>single</i> strong model given an equal compute budget, not against a weak baseline.</li>
+        <li><b>Topology vs. model.</b> When a graph-optimized swarm wins, is the gain from the model, the prompts, or the wiring? Ablations that isolate each are still rare.</li>
+      </ul>
+      <p>Frameworks increasingly ship with their own evaluation harnesses, and 2026 work such as the <b>Mental-Models for Multi-Agent Systems</b> line (arXiv:2610.12453, NeurIPS 2026) tries to give agents a shared, inspectable model of each other so that coordination failures become diagnosable rather than mysterious.</p>
+
+      <h2 id="safety">10. Safety, security, and governance</h2>
+      <p>Populations of capable agents introduce failure modes that single agents do not.</p>
+      <ul>
+        <li><b>Emergent misbehavior.</b> Individually benign agents can, in aggregate, produce harmful strategies — the multi-agent analogue of a flash crowd. <b>SwarmReconGuard</b> (arXiv:2610.09138) studies black-box detection of distributed collective reconnaissance by agent populations that each look innocuous alone.</li>
+        <li><b>False consensus and collusion.</b> Debate can converge on a confident but wrong answer, and cooperating agents can quietly coordinate against a system's intent if their objectives are misaligned.</li>
+        <li><b>Accountability.</b> When a swarm produces a result, "which agent did it" is often unclear — the same attribution problem that dogged 2026's agentic biology discoveries, now multiplied by population size.</li>
+      </ul>
+      <p>The emerging design pattern is <b>observability and containment</b>: log every message and tool call, cap spend and agent count, insert human checkpoints at irreversible steps, and treat the swarm as a governed system rather than a loose collection of prompts.</p>
+
+      <h2 id="next">11. What to watch next</h2>
+      <ul>
+        <li><b>Compute-matched evaluation.</b> Expect more papers that pit a swarm against a single model with equal token budgets — and expect some swarm advantages to shrink.</li>
+        <li><b>Learnable topology.</b> Graph-based orchestration like GPTSwarm is likely to merge with RL-trained controllers, so the structure of the swarm becomes a trained artifact.</li>
+        <li><b>Institutions for agent societies.</b> Review, credit, and replication mechanisms for research swarms are an active design problem.</li>
+        <li><b>Security of swarms.</b> Detection and defense against emergent collective misbehavior will grow into its own subfield.</li>
+        <li><b>Convergence with tool ecosystems.</b> Agent swarms are converging on a common stack: frontier reasoning models plus domain tools plus an auditable, governed workspace.</li>
+      </ul>
+
+      <h2 id="papers">Selected papers and releases</h2>
+      <p>A curated list of the primary references cited above, in roughly chronological order of the modern LLM era.</p>
+
+      <h3>1. Boids — Flocks, Herds, and Schools</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1145/37402.37406">Flocks, herds and schools: A distributed behavioral model (Reynolds, SIGGRAPH 1987)</a></li>
+        <li><b>Category</b>: Classical Swarm Intelligence</li>
+        <li><b>Description</b>: Foundational demonstration that separation, alignment, and cohesion rules produce realistic flocking without central control.</li>
+      </ul>
+
+      <h3>2. Particle Swarm Optimization</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://doi.org/10.1109/ICNN.1995.488968">Particle swarm optimization (Kennedy &amp; Eberhart, 1995)</a></li>
+        <li><b>Category</b>: Classical Swarm Intelligence / Optimization</li>
+        <li><b>Description</b>: Turns flocking into a population-based optimizer; a canonical baseline across engineering optimization.</li>
+      </ul>
+
+      <h3>3. Ant Colony Optimization</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://mitpress.mit.edu/9780262042192/ant-colony-optimization/">Ant Colony Optimization (Dorigo &amp; Stützle, MIT Press 2004)</a></li>
+        <li><b>Category</b>: Classical Swarm Intelligence / Stigmergy</li>
+        <li><b>Description</b>: Systematizes pheromone-mediated indirect communication for routing and combinatorial optimization.</li>
+      </ul>
+
+      <h3>4. Generative Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2304.03442">Generative Agents: Interactive Simulacra of Human Behavior (Park et al., 2023)</a></li>
+        <li><b>Category</b>: Social Simulation / arXiv preprint</li>
+        <li><b>Description</b>: 25 agents with memory, reflection, and planning produce emergent social behavior in a sandbox town.</li>
+      </ul>
+
+      <h3>5. Multi-Agent Debate</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate (Du et al., 2023)</a></li>
+        <li><b>Category</b>: Reasoning / arXiv preprint</li>
+        <li><b>Description</b>: Multiple LLM instances debate over rounds to reach consensus, improving factuality and reducing hallucination.</li>
+      </ul>
+
+      <h3>6. CAMEL</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2303.17760">CAMEL: Communicative Agents for "Mind" Exploration of Large Language Model Society (Li et al., 2023)</a></li>
+        <li><b>Category</b>: Role-Playing Agents / NeurIPS 2023</li>
+        <li><b>Description</b>: Introduces role-playing agent pairs and a framework for studying cooperative LLM societies.</li>
+      </ul>
+
+      <h3>7. MetaGPT</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2308.00352">MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework (Hong et al., 2023)</a></li>
+        <li><b>Category</b>: Collaborative Framework / ICLR 2024 (oral)</li>
+        <li><b>Description</b>: Encodes standard operating procedures into prompt sequences and assembles role-specialized agents into an assembly-line pipeline. Code: <a href="https://github.com/geekan/MetaGPT">github.com/geekan/MetaGPT</a>.</li>
+      </ul>
+
+      <h3>8. AutoGen</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2308.08155">AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation (Wu et al., 2023)</a></li>
+        <li><b>Category</b>: Multi-Agent Framework</li>
+        <li><b>Description</b>: Conversable agents solve tasks via natural-language and code conversation; "conversation programming" composes agents, tools, and humans.</li>
+      </ul>
+
+      <h3>9. GPTSwarm — Language Agents as Optimizable Graphs</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2402.16823">Language Agents as Optimizable Graphs (Zhuge et al., 2024)</a></li>
+        <li><b>Category</b>: Multi-Agent Optimization / ICML 2024</li>
+        <li><b>Description</b>: Represents multi-agent systems as graphs with node (prompt) and edge (orchestration) optimizers, making swarm topology a learnable object. Code: <a href="https://github.com/metauto-ai/gptswarm">github.com/metauto-ai/gptswarm</a>.</li>
+      </ul>
+
+      <h3>10. LLM Multi-Agent Survey</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2402.01680">Large Language Model based Multi-Agents: A Survey of Progress and Challenges (Guo et al., 2024)</a></li>
+        <li><b>Category</b>: Survey / IJCAI 2024</li>
+        <li><b>Description</b>: Organizes the field by agent profiles, communication, and capacity growth, with application domains, datasets, and benchmarks.</li>
+      </ul>
+
+      <h3>11. Project Sid — Many-Agent Simulations</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2411.00114">Project Sid: Many-agent simulations toward AI civilization (Altera.AL et al., 2024)</a></li>
+        <li><b>Category</b>: Many-Agent Simulation / industry preprint</li>
+        <li><b>Description</b>: PIANO architecture scales to 10–1000+ agents in Minecraft, reporting emergent specialization, rule alteration, and cultural transmission.</li>
+      </ul>
+
+      <h3>12. The AI Scientist</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2408.06292">The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery (Lu et al., 2024)</a></li>
+        <li><b>Category</b>: Autonomous Discovery / arXiv preprint</li>
+        <li><b>Description</b>: End-to-end pipeline for idea generation, code execution, experimentation, paper writing, and automated review at under $15 per paper. Code: <a href="https://github.com/SakanaAI/AI-Scientist">github.com/SakanaAI/AI-Scientist</a>.</li>
+      </ul>
+
+      <h3>13. Ecology of AI Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2610.12436">Ecology of AI Agents: Collaboration Creates a Population Threshold for Takeoff (2026)</a></li>
+        <li><b>Category</b>: Population Dynamics / 2026 preprint</li>
+        <li><b>Description</b>: Argues collaboration induces a population threshold below which agent collectives fail to "take off," connecting population ecology to emergent capability.</li>
+      </ul>
+
+      <h3>14. A Society of Researchers</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2610.10468">A Society of Researchers: Designing Institutions for Populations of Autonomous Research Agents (2026)</a></li>
+        <li><b>Category</b>: Research Institutions / 2026 preprint</li>
+        <li><b>Description</b>: Reframes multi-agent science as institutional design — review, credit, and replication for populations of research agents.</li>
+      </ul>
+
+      <h3>15. Can AI Agents Make Open-Ended Scientific Discovery?</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2610.08927">Can AI Agents Make Open-Ended Scientific Discovery? Evidence from Station (2026)</a></li>
+        <li><b>Category</b>: Autonomous Discovery / 2026 preprint</li>
+        <li><b>Description</b>: Tests whether agent systems produce genuinely open-ended discoveries or recombination, a central unresolved question.</li>
+      </ul>
+
+      <h3>16. SwarmReconGuard</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2610.09138">SwarmReconGuard: Black-Box Detection of Distributed Collective Reconnaissance by Individually Benign-Looking Agent Populations (2026)</a></li>
+        <li><b>Category</b>: Multi-Agent Security / 2026 preprint</li>
+        <li><b>Description</b>: Detects harmful collective behavior from agent populations whose individual actions appear benign.</li>
+      </ul>
+
+      <h3>17. Mental-Models for Multi-Agent Systems</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2610.12453">Mental-Models for Multi-Agent Systems (2026)</a></li>
+        <li><b>Category</b>: Coordination &amp; Evaluation / NeurIPS 2026</li>
+        <li><b>Description</b>: Gives agents a shared, inspectable model of one another so coordination failures become diagnosable.</li>
+      </ul>
+
+      <h3>18. Building Effective Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/engineering/building-effective-agents">Building Effective Agents (Anthropic, 2024)</a></li>
+        <li><b>Category</b>: Engineering Guidance</li>
+        <li><b>Description</b>: Argues for the simplest workable design and for preferring fixed workflows over autonomous agents unless the task demands open-ended decision-making.</li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The through-line is a shift in what "swarm intelligence" means. In 1987 a flock emerged from three numeric rules; in 2026 a population of LLM agents can debate, write code, run experiments, and simulate a society. The biology-inspired metaphors proved durable, but the substance has changed: <b>the agents now reason, and the swarm now organizes work, not just motion.</b></p>
+      <p>Three practical lessons for anyone building or evaluating these systems:</p>
+      <ul>
+        <li><b>Compare against an equal-budget single model.</b> Much of the apparent advantage of multi-agent systems is additional compute by another name.</li>
+        <li><b>Diversity is the active ingredient.</b> Debate and critique help when agents differ; identical agents tend to agree.</li>
+        <li><b>Treat the swarm as a governed system.</b> Log messages and tool calls, cap spend and population size, and keep humans at irreversible steps.</li>
+      </ul>
+      <p>Classical swarm intelligence asked how simple parts produce complex wholes. The new question is harder: when the parts are themselves intelligent, what wholes do they produce — and who is accountable for them?</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

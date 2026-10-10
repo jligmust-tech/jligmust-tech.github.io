@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Small Models, Short Contexts: Why Agentic AI Is Getting Leaner — scAI Index</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#big-picture">The big picture</a>
+          <a href="#small-models">The case for smaller models</a>
+          <a href="#short-context">The case for shorter contexts</a>
+          <a href="#swarms">How swarms exploit both</a>
+          <a href="#ensemble">Ensembling the cheap</a>
+          <a href="#counterpoint">The counterpoint: don't build multi-agents</a>
+          <a href="#playbook">A practical playbook</a>
+          <a href="#evaluation">Evaluation and cost accounting</a>
+          <a href="#next">What to watch next</a>
+          <a href="#papers">Selected papers</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-10</span>
+      </div>
+      <h1>Small Models, Short Contexts: Why Agentic AI Is Getting Leaner</h1>
+
+      <p>A companion to our survey <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html">Swarm Intelligence for AI</a>. That post asked how many agents to wire together; this one asks a sharper, more practical question: <b>which models, and how much context, should each agent actually carry?</b></p>
+      <p>The counterintuitive claim gaining traction in 2025–2026 is that agentic systems often work <i>better</i> — not merely cheaper — when you use <b>smaller/faster models</b> for most of the work and keep each agent's <b>context short and clean</b>. A frontier model stays in the driver's seat for planning; fast specialists, sometimes with their own small context windows, do the rest.</p>
+      <p>This is a thesis with real evidence behind it, and real dissent. Below, the supporting results and the strongest counter-argument are laid out side by side, with peer-reviewed papers, preprints, and engineering write-ups labeled so you can weigh them differently.</p>
+
+      <hr>
+
+      <h2 id="big-picture">1. The big picture</h2>
+      <p>Two independent efficiency pressures are reshaping agent architecture:</p>
+      <ul>
+        <li><b>Model specialization.</b> Not every step in an agent loop needs a frontier model. Routing, cascades, and lead/worker splits assign cheap, fast models to the bulk of the tokens and reserve an expensive model for the hard calls.</li>
+        <li><b>Context engineering.</b> Long contexts are not free — they cost money, add latency, and <i>degrade</i> reasoning. Decomposing a task so each agent sees a short, relevant window can beat feeding everything into one giant context.</li>
+      </ul>
+      <p>These two pressures reinforce each other. A long context demands a big model to attend to it; a short context lets a small model perform near its best. That is why "small models + short contexts" is emerging as a single design stance rather than two separate tweaks.</p>
+
+      <h2 id="small-models">2. The case for smaller models</h2>
+
+      <h3>Cascades: match the big model for a fraction of the cost</h3>
+      <p>The foundational result is <b>FrugalGPT</b> (Chen, Zaharia, Zou, arXiv:2305.05176). It frames model choice as an <b>LLM cascade</b>: try a cheap model first, and only escalate to a stronger one when a scorer judges the answer insufficient. The paper reports matching the best individual model's quality (e.g., GPT-4) with <b>up to a 98% cost reduction</b>, or gaining about <b>+4% accuracy at the same cost</b>. Its key observation is that API pricing across models differs by <b>up to two orders of magnitude</b> — so routing decisions dominate the economics of any agentic pipeline.</p>
+
+      <h3>Routing: choose the cheapest model that suffices</h3>
+      <p><b>RouteLLM</b> (arXiv:2406.18665) turns that intuition into a trained router that sends easy queries to a weak model and hard ones to a strong model, aiming to preserve quality while cutting cost substantially. In an agent loop, this is the difference between one model doing everything and a planner that dispatches each subtask to a right-sized model.</p>
+
+      <h3>Small models are improving independently</h3>
+      <p>The premise of "use a small model" rests on small models being good enough. Surveys such as <b>"Small Language Models: Survey, Measurements, and Insights"</b> (arXiv:2409.15790) document how capable the sub-10B class has become on many narrow tasks — which is precisely where high-volume agent steps live.</p>
+      <p>The design implication: <b>assign models to roles by difficulty, not by uniformity.</b> A frontier model plans and resolves ambiguity; a fast model extracts, formats, retrieves, and executes.</p>
+
+      <h2 id="short-context">3. The case for shorter contexts</h2>
+
+      <h3>Long context degrades — the middle gets lost</h3>
+      <p>The canonical evidence is <b>"Lost in the Middle"</b> (Liu et al., arXiv:2307.03172, TACL 2023). Performance is highest when the needed information sits at the <b>beginning or end</b> of the context and degrades significantly when it is buried in the <b>middle</b> — and this holds even for models explicitly built for long context. Two consequences follow: stuffing more text into a prompt is not the same as giving the model more usable information, and irrelevant filler actively harms accuracy.</p>
+
+      <h3>Short contexts per agent: Chain-of-Agents</h3>
+      <p><b>Chain-of-Agents</b> (Zhang et al., arXiv:2406.02818) makes this operational. A long document is <i>segmented</i>, each chunk is handled by a worker agent that sees only a <b>short context</b>, and a manager agent synthesizes the workers' outputs. The paper reports <b>up to 10% improvements over RAG, full-context, and multi-agent baselines</b> on long-context QA, summarization, and code completion. The mechanism is exactly the efficiency thesis: each agent stays in the regime where it reasons well.</p>
+
+      <h3>Context management as an explicit engineering discipline</h3>
+      <p>Anthropic's write-up <b>"Effective context engineering for AI agents"</b> generalizes these findings into practice: compaction (summarize and discard), structured external memory, and sub-agent spawning with fresh windows. Related work like <b>MemGPT</b> (arXiv:2310.08560) treats the context window as a managed resource, paging information in and out of external storage.</p>
+
+      <h2 id="swarms">4. How swarms exploit both at once</h2>
+      <p>The clearest real-world synthesis is Anthropic's engineering report <b>"How we built our multi-agent research system"</b> (published 13 June 2025), which also appears in our swarm survey. Its architecture is a direct illustration of the lean thesis:</p>
+      <ul>
+        <li><b>Model specialization.</b> A lead agent powered by a frontier model (<b>Claude Opus 4</b>) plans and spawns parallel subagents driven by a smaller, faster model (<b>Claude Sonnet 4</b>).</li>
+        <li><b>Context isolation.</b> Each subagent works in its <b>own context window</b>, so no single agent has to hold the entire task. The lead summarizes completed phases, stores the plan to external memory, and spawns fresh subagents with clean contexts.</li>
+        <li><b>Filesystem handoff.</b> Subagents write outputs to a shared filesystem rather than passing them through a chain of messages, explicitly to avoid the "game of telephone" that corrupts information.</li>
+        <li><b>Results.</b> The multi-agent system outperformed a single frontier agent by <b>90.2%</b> on an internal research evaluation for breadth-first queries. Token usage alone explained <b>80%</b> of performance variance on BrowseComp; token usage plus tool-call count plus model choice explained <b>95%</b>.</li>
+      </ul>
+      <p>Two caveats the report itself raises matter enormously. First, the win is <b>compute-driven</b>: agents use about <b>4×</b> the tokens of chat and multi-agent systems about <b>15×</b>, so the 90.2% is partly "more thinking," not magic. Second, the approach <b>does not suit domains that need shared context or heavy inter-agent dependencies</b> — most coding among them. That is the seam where the counterpoint begins.</p>
+
+      <h2 id="ensemble">5. Ensembling the cheap</h2>
+      <p>A related line gets gains from <i>many</i> cheap models rather than one expensive one.</p>
+      <ul>
+        <li><b>"More Agents Is All You Need"</b> (Li et al., arXiv:2402.05120, TMLR) shows that a simple <b>sampling-and-voting</b> scheme ("Agent Forest") improves LLM performance simply by instantiating more agents and aggregating their answers. The method is orthogonal to other tricks, and the size of the gain <b>correlates with task difficulty</b>.</li>
+        <li><b>Mixture-of-Agents</b> (Wang et al., arXiv:2406.04692) stacks layers of LLM agents where each agent reads <i>all</i> previous-layer outputs. Using <b>open-source models only</b>, it reportedly reached <b>65.1% on AlpacaEval 2.0</b> versus <b>57.5% for GPT-4 Omni</b>, and set state of the art on MT-Bench and FLASK.</li>
+      </ul>
+      <p>Both results cut against the "one big model" instinct: aggregation of cheaper outputs can rival or exceed a single frontier pass. Both also reinforce that <b>extra compute is doing real work</b> — the honest comparison is against a single model given the same token budget.</p>
+
+      <h2 id="counterpoint">6. The counterpoint: don't build multi-agents</h2>
+      <p>The strongest dissent comes from Walden Yan of Cognition in <b>"Don't Build Multi-Agents"</b> (12 June 2025), an industry essay rather than a peer-reviewed study — but an influential one. Its context-engineering principles deserve to be read alongside the pro-swarm evidence:</p>
+      <ul>
+        <li><b>Share full traces, not fragments.</b> Agents should share complete context and decision history; handing off only individual messages loses the reasoning that justifies the work.</li>
+        <li><b>Actions carry implicit decisions.</b> When agents act on different assumptions, the conflicting decisions produce bad results. Parallelism multiplies this risk.</li>
+        <li><b>Prefer a single-threaded, linear agent</b> for many tasks, spending effort on context compression instead of coordination.</li>
+      </ul>
+      <p>Notably, Cognition's answer to the "short context" problem is itself a <b>small model</b>: they fine-tuned a dedicated <b>context-compression model</b>. They also report that a small "edit-apply" model rewriting a whole file from a plain-language description was <b>more reliable than a large model emitting a diff</b> — a concrete case of small models beating large ones on a narrow task. Their critique of OpenAI's Swarm and Microsoft's AutoGen is that dispersed decision-making yields fragile systems.</p>
+      <p>The reconciliation is not "swarms good" or "swarms bad" but <b>task-dependent</b>: read-heavy, breadth-first, parallelizable work favors swarms of small models with isolated short contexts; write-heavy, dependency-dense work (like code editing) favors one strong model with shared context and aggressive compression. Even Anthropic's own report concedes the coding case.</p>
+
+      <h2 id="playbook">7. A practical playbook</h2>
+      <ul>
+        <li><b>Right-size each role.</b> Frontier model for planning, ambiguity, and final judgment; fast model for retrieval, extraction, formatting, and routine tool calls.</li>
+        <li><b>Keep each agent's context short and on-topic.</b> Segment long inputs (Chain-of-Agents style) and give each worker only what its subtask needs.</li>
+        <li><b>Use external memory and compaction.</b> Summarize finished phases, persist plans and artifacts to disk or a store, and spawn fresh agents with clean windows.</li>
+        <li><b>Prefer structured handoffs over message relay.</b> Write subagent outputs to shared storage to avoid lossy "telephone" chains.</li>
+        <li><b>Match architecture to dependency structure.</b> Parallel swarms for independent, breadth-first subtasks; single-threaded for tightly coupled work.</li>
+        <li><b>Budget tokens explicitly.</b> Because token count predicts performance, treat compute as a knob, and compare against a single model at equal spend.</li>
+      </ul>
+
+      <h2 id="evaluation">8. Evaluation and cost accounting</h2>
+      <p>The efficiency thesis is easy to overstate, so measurement discipline is essential:</p>
+      <ul>
+        <li><b>Compare at equal cost.</b> A swarm that beats one model may simply have spent 15× the tokens. Report the single-model baseline at the <i>same</i> token budget.</li>
+        <li><b>Separate model, structure, and context.</b> When a lean system wins, attribute the gain to the model choice, the topology, or the context management — not all three at once.</li>
+        <li><b>Measure latency, not just quality.</b> A core promise of fast models is responsiveness; parallel tool calling reportedly cut research time by up to 90%, but synchronous coordination and cold starts are real bottlenecks.</li>
+        <li><b>Watch the middle.</b> If a "long-context" agent underperforms, the culprit may be information buried mid-prompt, not the model.</li>
+      </ul>
+
+      <h2 id="next">9. What to watch next</h2>
+      <ul>
+        <li><b>Learned routers inside agents.</b> RouteLLM-style controllers becoming a default component of agent frameworks, choosing a model per step.</li>
+        <li><b>Pressure-tested small models.</b> More head-to-head results like the edit-apply case, mapping exactly where a small model beats a large one.</li>
+        <li><b>Compression as a first-class model.</b> Dedicated context-compression models (as Cognition proposes) becoming standard infrastructure.</li>
+        <li><b>Honest multi-agent benchmarks.</b> Evaluations that fix the token budget and separate topology from model, echoing the "Mental-Models for Multi-Agent Systems" evaluation line.</li>
+        <li><b>Serving-layer gains.</b> Low-latency serving, prefix caching, and batching that make the "same model, faster" part of the thesis measurable independently of model choice.</li>
+      </ul>
+
+      <h2 id="papers">Selected papers and write-ups</h2>
+
+      <h3>1. FrugalGPT — LLM Cascades</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2305.05176">FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance (Chen, Zaharia, Zou, 2023)</a></li>
+        <li><b>Category</b>: Cost-Efficient Inference / arXiv preprint</li>
+        <li><b>Description</b>: Cascades across models to match the best single model with up to 98% cost reduction, leveraging pricing that spans two orders of magnitude.</li>
+      </ul>
+
+      <h3>2. Lost in the Middle</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2307.03172">Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023)</a></li>
+        <li><b>Category</b>: Long-Context / TACL 2023</li>
+        <li><b>Description</b>: Shows accuracy is highest at the start/end of context and degrades for information in the middle, even in long-context models.</li>
+      </ul>
+
+      <h3>3. MemGPT</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2310.08560">MemGPT: Towards LLMs as Operating Systems (Packer et al., 2023)</a></li>
+        <li><b>Category</b>: Context-as-a-Resource / arXiv preprint</li>
+        <li><b>Description</b>: Treats the context window as managed memory, paging information to and from external storage.</li>
+      </ul>
+
+      <h3>4. More Agents Is All You Need</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2402.05120">More Agents Is All You Need (Li et al., 2024)</a></li>
+        <li><b>Category</b>: Sampling-and-Voting / TMLR</li>
+        <li><b>Description</b>: Instantiating more agents and voting ("Agent Forest") improves performance; gains correlate with task difficulty. Code: <a href="https://github.com/MoreAgentsIsAllYouNeed/AgentForest">github.com/MoreAgentsIsAllYouNeed/AgentForest</a>.</li>
+      </ul>
+
+      <h3>5. Chain-of-Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2406.02818">Chain of Agents: Large Language Models Collaborating on Long-Context Tasks (Zhang et al., 2024)</a></li>
+        <li><b>Category</b>: Long-Context Collaboration / NeurIPS 2024</li>
+        <li><b>Description</b>: Worker agents each process a short chunk; a manager agent synthesizes. Up to 10% improvements on long-context QA, summarization, and code completion.</li>
+      </ul>
+
+      <h3>6. Mixture-of-Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2406.04692">Mixture-of-Agents Enhances Large Language Model Capabilities (Wang et al., 2024)</a></li>
+        <li><b>Category</b>: Agent Ensembling / ICLR 2025</li>
+        <li><b>Description</b>: Layered agents each read all previous-layer outputs; open-source MoA reached 65.1% on AlpacaEval 2.0 vs 57.5% for GPT-4 Omni.</li>
+      </ul>
+
+      <h3>7. RouteLLM</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2406.18665">RouteLLM: Learning to Route LLMs with Preference Data (Ong et al., 2024)</a></li>
+        <li><b>Category</b>: Model Routing / ICLR 2025</li>
+        <li><b>Description</b>: Trained routers send easy queries to cheap models and hard ones to strong models, preserving quality at lower cost.</li>
+      </ul>
+
+      <h3>8. Small Language Models — Survey</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://arxiv.org/abs/2409.15790">Small Language Models: Survey, Measurements, and Insights (Lu et al., 2024)</a></li>
+        <li><b>Category</b>: Small Models / survey</li>
+        <li><b>Description</b>: Documents the growing capability of sub-10B models on narrow tasks — the regime where agent sub-steps operate.</li>
+      </ul>
+
+      <h3>9. How We Built Our Multi-Agent Research System</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How we built our multi-agent research system (Anthropic, 2025)</a></li>
+        <li><b>Category</b>: Engineering Report</li>
+        <li><b>Description</b>: Orchestrator (Opus 4) plus parallel subagents (Sonnet 4), each with its own context window; 90.2% gain over a single agent on breadth-first research, with token usage explaining 80% of variance.</li>
+      </ul>
+
+      <h3>10. Effective Context Engineering for AI Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents (Anthropic, 2025)</a></li>
+        <li><b>Category</b>: Engineering Report</li>
+        <li><b>Description</b>: Practical guidance on compaction, structured memory, and sub-agent context isolation.</li>
+      </ul>
+
+      <h3>11. Don't Build Multi-Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://cognition.ai/blog/dont-build-multi-agents">Don't Build Multi-Agents (Walden Yan, Cognition, 2025)</a></li>
+        <li><b>Category</b>: Industry Essay / counterpoint</li>
+        <li><b>Description</b>: Argues for a single-threaded agent with shared context and a dedicated compression model; criticizes dispersed multi-agent decision-making.</li>
+      </ul>
+
+      <h3>12. Building Effective Agents</h3>
+      <ul>
+        <li><b>Link</b>: <a href="https://www.anthropic.com/engineering/building-effective-agents">Building Effective Agents (Anthropic, 2024)</a></li>
+        <li><b>Category</b>: Engineering Guidance</li>
+        <li><b>Description</b>: Recommends the simplest workable design and fixed workflows over fully autonomous agents unless the task demands open-endedness.</li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The lean-agent thesis is best stated precisely: <b>right-size the model and shrink the context, and you often get better results per dollar and sometimes better results outright.</b> The evidence runs from cascades and routing that cut cost by an order of magnitude, to long-context degradation that punishes giant prompts, to a production research system that reserves its frontier model for planning and dispatches fast models with their own clean windows.</p>
+      <p>The dissent is not a refutation but a boundary condition. Diversity of small agents helps independent, breadth-first work; shared context in one strong agent helps tightly coupled work. The winning engineering move is to know which regime you are in.</p>
+      <p>Three durable lessons:</p>
+      <ul>
+        <li><b>Model choice is a per-step decision, not a per-system one.</b> Route each subtask to the cheapest model that clears the bar.</li>
+        <li><b>Context is a budget to be spent, not filled.</b> Short, relevant windows beat long, comprehensive ones when reasoning quality is the goal.</li>
+        <li><b>Always compare at equal cost.</b> Much of the apparent advantage of large swarms is simply more compute — measure it honestly.</li>
+      </ul>
+      <p>If 2026's swarm story was "many agents," its sequel is "the right agents, with the right context, cheaply."</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>
