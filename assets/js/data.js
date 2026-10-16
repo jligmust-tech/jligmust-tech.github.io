@@ -1151,6 +1151,11 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-10-16", tag: "Research", title: "Using 500 agents in parallel: orchestration, synchronization, and cost",
+      desc: "A design brief on running 500 AI agents at once — what \"500\" counts, why parallel agents are now practical, a reference architecture, synchronization and lease discipline, compact-context fast workers, workload patterns, serial-vs-parallel cost arithmetic, failure modes, an adoption playbook, a readiness checklist, and a ten-template prompt pack.",
+      url: "/blog/posts/2026-10-16-use-500-agents-in-parallel.html"
+    },
+    {
       date: "2026-10-10", tag: "Research", title: "Small models, short contexts: why agentic AI is getting leaner",
       desc: "The evidence that right-sizing models and shortening agent contexts improves results — LLM cascades and routing, long-context degradation, Chain-of-Agents, Anthropic's orchestrator-worker system, ensemble methods, and the counterargument from Cognition's 'Don't Build Multi-Agents'.",
       url: "/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html"
