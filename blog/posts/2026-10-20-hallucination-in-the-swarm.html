@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hallucination in the Swarm: Testing Collective Confabulation in Multi-Agent Systems — scAI Index</title>
+  <meta name="description" content="A review of hallucination in multi-agent LLM systems and agent societies: why crowds sometimes cancel errors and sometimes amplify them, how to measure correlated error and contagion, a concrete eight-family test battery, and twenty open questions.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#summary">Executive summary</a>
+          <a href="#definitions">1. What counts as a hallucination</a>
+          <a href="#collective">2. Six ways the collective hallucinates</a>
+          <a href="#optimistic">3. The optimistic case</a>
+          <a href="#evidence">4. The evidence against</a>
+          <a href="#math">5. A little arithmetic</a>
+          <a href="#protocol">6. How to test: the CHTB battery</a>
+          <a href="#metrics">7. Metric definitions</a>
+          <a href="#stats">8. Statistics that survive review</a>
+          <a href="#archetypes">9. Failure archetypes</a>
+          <a href="#tooling">10. Benches and tooling</a>
+          <a href="#open">11. Twenty open questions</a>
+          <a href="#practice">12. Practical checklist</a>
+          <a href="#week">13. An experiment you can run this week</a>
+          <a href="#sources">14. Selected sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-20</span>
+      </div>
+      <h1>Hallucination in the Swarm</h1>
+      <p class="guide-lead">How collective confabulation works in multi-agent LLM systems and agent societies — and how, concretely, to test for it.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is an editorial review based on published literature, preprints, and public engineering reports. <strong>No experiment, benchmark, or agent run was executed for this post.</strong> Citations are labelled <em>peer-reviewed</em> or <em>preprint</em> where it matters. All numeric examples in §5 are hand-computed arithmetic illustrations, not measurements. Where a number comes from a paper, it is attributed.</div>
+
+      <p>Two companion posts cover the surrounding territory: <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html">Swarm Intelligence for AI</a> surveys multi-agent architectures, and <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html">Using 500 Agents in Parallel</a> covers orchestration and cost. This post asks a narrower and nastier question: <b>when many language models reason together, what happens to the truth?</b></p>
+
+      <h2 id="summary">Executive summary</h2>
+      <p>The intuition behind multi-agent systems is borrowed from the wisdom of crowds: independent judges with independent errors should, on average, cancel each other out. The intuition is correct — <i>if</i> the judges are independent. Language-model agents are not independent. They share pretraining corpora, RLHF preferences, tokenizers, and often the exact same weights. They also read each other's outputs, which creates a dependency structure that no voting scheme can undo after the fact.</p>
+      <p>The result is that the same architecture can either suppress or amplify fabrication, and which one you get is an empirical property of the system, not a design slogan. Reported findings point in both directions:</p>
+      <ul>
+        <li><b>Reduction is real but conditional.</b> Multi-agent debate improves factuality in some settings <a href="https://arxiv.org/abs/2305.14325">(Du et al., 2023, preprint)</a>; persuasive asymmetry between debaters improves truthfulness <a href="https://arxiv.org/abs/2402.06782">(Khan et al., ICML 2024)</a>; multiple verifiers scale test-time compute for factuality <a href="https://arxiv.org/abs/2506.07962">(Lifshitz et al., 2025, preprint)</a>.</li>
+        <li><b>Amplification is also real.</b> Multi-agent debate does not consistently beat simpler baselines, and degrades with weaker or homogeneous models <a href="https://arxiv.org/abs/2311.17371">("Should we be going MAD?", Smit et al., 2024)</a>. Compound systems show an <em>inverted-U</em> in the number of calls: quality rises, then falls <a href="https://arxiv.org/abs/2403.02419">(Chen, Zaharia &amp; Zou, 2024/25)</a>. Populations of LLM agents converge on shared conventions — including biased ones — through social influence alone <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">(Ashery, Aiello &amp; Baronchelli, <i>Science Advances</i> 2025, peer-reviewed)</a>.</li>
+        <li><b>Diagnosis is the bottleneck.</b> Automated failure attribution in multi-agent traces is barely better than chance at the step level <a href="https://arxiv.org/abs/2505.00212">("Which Agent Causes Task Failures and When?", 2025)</a>, so most teams cannot even tell <i>which</i> agent fabricated a claim.</li>
+      </ul>
+      <div class="guide-callout"><strong>Central thesis:</strong> multi-agent hallucination is a <em>correlated-error</em> problem wearing a coordination costume. Almost every practical question — does debate help, does voting help, does the critic help — collapses into two measurable quantities: the pairwise error correlation between agents, and the reproduction rate of a false claim inside the network. Both are testable today with a small harness. Neither is reported by any mainstream leaderboard.</div>
+
+      <div class="grid3">
+        <div class="stat"><div class="value">ρ</div><div class="note">pairwise error correlation; the single number that decides whether a crowd is wise</div></div>
+        <div class="stat"><div class="value">R₀</div><div class="note">expected secondary adoptions of a false claim; &gt;1 means the falsehood is endemic</div></div>
+        <div class="stat"><div class="value">Baseline</div><div class="note">a compute-matched single agent is the only fair comparison</div></div>
+        <div class="stat"><div class="value">Trace</div><div class="note">claim-level provenance, or attribution is impossible after the fact</div></div>
+      </div>
+
+      <hr>
+
+      <h2 id="definitions">1. What counts as a hallucination when there are many speakers</h2>
+      <p>Single-agent hallucination taxonomies are well established: <b>factual</b> errors (the claim is false about the world), <b>faithfulness</b> errors (the output contradicts its own sources or its own reasoning), and <b>execution</b> errors (the tool call, code, or query does not do what was claimed). The standard surveys are <a href="https://arxiv.org/abs/2202.03629">Ji et al. (ACM Computing Surveys, 2023)</a> and <a href="https://arxiv.org/abs/2311.05232">Huang et al. (2023/25)</a>; the operational benchmark lineage runs from <a href="https://arxiv.org/abs/2109.07958">TruthfulQA</a> through <a href="https://arxiv.org/abs/2305.14251">FActScore</a>, <a href="https://arxiv.org/abs/2305.11747">HaluEval</a> and <a href="https://arxiv.org/abs/2411.04368">SimpleQA</a>.</p>
+      <p>Multi-agent systems need these categories <i>plus</i> a level of analysis that single-agent work does not have. A useful working definition:</p>
+      <blockquote style="border-left:3px solid var(--border);margin:0 0 18px;padding:2px 0 2px 14px;color:#2d3748"><b>Collective hallucination</b> is a false or unsupported claim that is produced, transmitted, and then <i>certified</i> by a group of agents — such that the group's confidence, consensus, or aggregate output is higher than any individual agent's would have been. The signature is not the error; it is the <i>increase in confidence</i> attached to the error.</blockquote>
+      <p>That definition matters because it separates collective hallucination from mere error propagation. A wrong draft that a reviewer catches is an ordinary bug. A wrong draft that four reviewers endorse, that gets written to shared memory, and that is cited by later agents as established fact is a different phenomenon — one that gets <i>harder</i> to correct with every additional participant.</p>
+      <p>Three units of analysis should be kept distinct, and most papers blur them:</p>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Level</th><th>Unit</th><th>Typical question</th><th>Why it is hard</th></tr></thead>
+          <tbody>
+            <tr><td><b>Claim</b></td><td>One atomic, checkable assertion</td><td>Did agent <i>k</i> assert <i>X</i>, and is <i>X</i> true?</td><td>Requires claim decomposition and provenance linking.</td></tr>
+            <tr><td><b>System</b></td><td>A run of an orchestrated pipeline</td><td>Is the final answer grounded in evidence?</td><td>Correct output can hide a corrupt process; wrong output can hide good reasoning.</td></tr>
+            <tr><td><b>Population</b></td><td>A society of agents with memory and interaction</td><td>Does the population converge on a shared false belief?</td><td>Needs long horizons, many seeds, and a theory of social dynamics.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Most published evaluation stops at the system level. The interesting failures live at the claim and population levels.</p>
+
+      <h2 id="collective">2. Six ways a collective hallucinates</h2>
+      <p>These are the mechanisms I would want a test suite to isolate. They are not mutually exclusive, and a given failure usually involves two or three of them.</p>
+
+      <h3>(a) Correlated priors — the monoculture</h3>
+      <p>If every agent is a sample from the same base model, their errors are not independent draws. Ask ten clones the same obscure question and they produce the same confident wrong answer, then call it agreement. Ensemble diversity is the mechanism that makes crowds wise <a href="https://www.pnas.org/doi/10.1073/pnas.0403723101">(Hong &amp; Page, PNAS 2004, peer-reviewed)</a>, and clones contribute none. This is the single most under-reported failure mode: the "consensus" is one model repeated.</p>
+
+      <h3>(b) Conformity and sycophancy — the pressure to agree</h3>
+      <p>Agents that see peer answers shift toward them. Language models already show sycophancy toward stated user opinions <a href="https://arxiv.org/abs/2310.13548">(Sharma et al., 2023, preprint)</a>; in group settings they reproduce human conformity dynamics, including abandoning correct answers under majority pressure <a href="https://arxiv.org/abs/2310.02124">(Zhang et al., "Exploring Collaboration Mechanisms: A Social Psychology View", 2023)</a>. A critic that is rewarded for agreement is not a critic.</p>
+
+      <h3>(c) Cascades and information cascades</h3>
+      <p>Agent 1 states a claim; agents 2–5 cite agent 1 rather than the source. By round three the claim has five citations and zero evidence. This is <b>evidence laundering</b>: the number of supporters grows while the amount of evidence stays at one. Citation graphs in multi-agent transcripts are the natural instrument for detecting it, and almost no one logs them.</p>
+
+      <h3>(d) Verification collapse — self-correction without ground truth</h3>
+      <p>Critics and self-refiners help when they have external feedback and hurt when they do not. <a href="https://arxiv.org/abs/2310.01798">Huang et al. (ICLR 2024, peer-reviewed)</a> show LLMs cannot reliably self-correct reasoning without external signals, and that reported gains from self-refinement <a href="https://arxiv.org/abs/2303.17651">(Madaan et al., 2023)</a> are often prompt artifacts. A "verifier" agent that only reads other agents' text is a second opinion from the same uncalibrated prior.</p>
+
+      <h3>(e) Context fragmentation — the many-headed author</h3>
+      <p>Parallel agents make locally coherent but globally incompatible decisions. Cognition's engineering argument against multi-agent architectures <a href="https://cognition.ai/blog/dont-build-multi-agents">("Don't Build Multi-Agents", 2025, industry essay)</a> is precisely this: subagents that cannot see each other's full context make contradictory implicit choices — schemas, naming, units, assumptions — and the merger invents reconciliations that were never grounded. The final document is fluent and internally inconsistent.</p>
+
+      <h3>(f) Emergent shared belief — the society that writes its own history</h3>
+      <p>Once agents have persistent memory and influence each other, false claims can become institutional facts. Populations of LLM agents develop social conventions from scratch, and those conventions can encode bias that no individual agent would have endorsed at the start <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">(Ashery et al., <i>Science Advances</i> 2025, peer-reviewed)</a>. Cultural-evolution experiments in LLM populations show persistent drift and convergence <a href="https://arxiv.org/abs/2503.08979">(Ashery et al., 2025, preprint)</a>. This is the failure mode that only appears at scale and over time, and it is the one most relevant to "agent society" claims.</p>
+
+      <div class="banner"><strong>Important distinction:</strong> (a)–(d) are failures of <em>aggregation</em> — you could in principle fix them with better voting and better verification. (e)–(f) are failures of <em>organization</em> — the system has created new state (shared context, memory, norms) that is itself wrong, and that state now resists correction. Testing only the first four will make a system look robust right up until it isn't.</div>
+
+      <h2 id="optimistic">3. The optimistic case, stated fairly</h2>
+      <p>It would be dishonest to write this as a debunking post. The reduction results are genuine and worth stating precisely.</p>
+      <ul>
+        <li><b>Debate as error cancellation.</b> Du et al. <a href="https://arxiv.org/abs/2305.14325">(2023)</a> showed agents debating across rounds improve factuality and arithmetic reasoning over single-agent and self-consistency baselines. Liang et al. <a href="https://arxiv.org/abs/2305.19118">(2023)</a> added a "devil's advocate" to prevent premature convergence — an explicit acknowledgement that conformity is the main threat.</li>
+        <li><b>Asymmetric persuasion.</b> Khan et al. <a href="https://arxiv.org/abs/2402.06782">(ICML 2024, peer-reviewed)</a> found that debate helps when a more persuasive, better-informed model argues for the truth, and that judges can be non-experts — a scalable-oversight result in the lineage of <a href="https://arxiv.org/abs/1805.00899">Irving et al.'s AI safety via debate (2018)</a>. Note the condition: <i>asymmetry of persuasiveness aligned with truth</i>. Remove it and the mechanism reverses.</li>
+        <li><b>Verifier ensembles.</b> Multi-agent verification <a href="https://arxiv.org/abs/2506.07962">(Lifshitz et al., 2025)</a> treats aspect-specific verifiers as the scaling axis rather than more proposers, which is the more defensible axis: verification is cheaper and less correlated with generation than generation is with itself.</li>
+        <li><b>Sampling-and-voting.</b> "More Agents Is All You Need" <a href="https://arxiv.org/abs/2402.05120">(Li et al., 2024)</a> reports monotone gains from sampling plus majority vote. Read carefully: this is self-consistency <a href="https://arxiv.org/abs/2203.11171">(Wang et al., 2022)</a> with an extra label, and its gains saturate and depend on task decomposability.</li>
+        <li><b>Silicon crowds.</b> LLM ensembles can match or beat human crowds on forecasting-style aggregation tasks <a href="https://arxiv.org/abs/2402.19379">(Schoenegger et al., 2024, preprint)</a> — evidence that the diversity term is not vacuous.</li>
+      </ul>
+      <p>The honest summary: <b>multi-agent methods reduce hallucination when the agents are genuinely diverse, when at least one participant is anchored to external evidence, and when the aggregation rule rewards being right rather than being agreeable.</b> Every one of those is a testable precondition. None of them is guaranteed by architecture diagrams.</p>
+
+      <h2 id="evidence">4. The evidence against, and why it is not just contrarianism</h2>
+
+      <h3>4.1 Failure taxonomies are now empirical</h3>
+      <p>The MAST study <a href="https://arxiv.org/abs/2503.13657">("Why Do Multi-Agent LLM Systems Fail?", Cemri et al., 2025)</a> annotated a large corpus of multi-agent traces across several frameworks and distilled <b>fourteen failure modes in three categories</b>: system specification and design, inter-agent misalignment, and task verification and termination. The inter-agent category is the one single-agent evaluation cannot see — agents that ignore each other, contradict silently, or converge on a plan nobody validated. MAST also reports that an LLM-as-judge annotator can apply the taxonomy with high agreement, which is the encouraging part: the failure modes are <i>recognizable</i> once you know to look.</p>
+
+      <h3>4.2 More calls is not monotonically better</h3>
+      <p>The compound-system scaling analysis <a href="https://arxiv.org/abs/2403.02419">(Chen, Zaharia &amp; Zou)</a> formalizes why: in a system that combines many model calls, adding calls adds both averaging benefit and <em>variance amplification</em>. For tasks where a majority of calls are wrong, or where the aggregation is sensitive to outliers, quality follows an <b>inverted U</b>. This is the sharpest theoretical rebuttal to "just add agents." It also predicts the two knobs that matter: the task's base-rate difficulty and the correlation between calls.</p>
+
+      <h3>4.3 Debate is not a reliable improvement</h3>
+      <p>Smit et al. <a href="https://arxiv.org/abs/2311.17371">("Should we be going MAD?", 2024)</a> benchmarked multiple debate strategies against simpler alternatives and found the picture much murkier than the early papers suggested, with gains sensitive to model strength and round count. Related work on multi-agent collaboration has repeatedly found that <b>homogeneous teams underperform a strong single agent</b> at matched compute, and that heterogeneity — different base models, different prompts, different evidence — is the active ingredient.</p>
+
+      <h3>4.4 Attribution is near chance</h3>
+      <p>If you cannot tell which agent introduced a falsehood, you cannot fix the system. "Which Agent Causes Task Failures and When?" <a href="https://arxiv.org/abs/2505.00212">(Zhang et al., 2025)</a> built a dataset of hand-annotated multi-agent failure traces and evaluated automated attribution methods; the best agent-level accuracy was modest, and <b>step-level attribution was far worse</b>. The TRAIL line of work <a href="https://arxiv.org/abs/2505.08638">(2025)</a> reaches a similar conclusion with a span-level error taxonomy: a substantial fraction of traces contain errors that no automatic method localizes correctly. This is the quiet crisis of the field — most claims about multi-agent hallucination mitigation are made without the instrumentation to verify the mechanism.</p>
+
+      <h3>4.5 Security turns hallucination into an attack surface</h3>
+      <p>Fabrication that spreads is fabrication that can be <i>planted</i>. Two results should be required reading:</p>
+      <ul>
+        <li><b>Infectious jailbreak.</b> "Agent Smith" <a href="https://arxiv.org/abs/2402.14872">(Gu et al., 2024)</a> showed an adversarial message injected into one agent in a large population can spread <b>exponentially</b> through agent-to-agent interaction. If a jailbreak propagates that fast, so does a false claim.</li>
+        <li><b>Prompt infection.</b> <a href="https://arxiv.org/abs/2410.07283">(Lee &amp; Tiwari, 2024)</a> demonstrates self-replicating prompts that spread between LLM agents without any user action, and argues that standard guardrails do not compose across agent boundaries.</li>
+      </ul>
+      <p>Tool-side risks are complementary: agents with real tools can act on a hallucination. ToolEmu <a href="https://arxiv.org/abs/2309.15817">(Ruan et al., ICLR 2024, peer-reviewed)</a>, AgentDojo <a href="https://arxiv.org/abs/2406.13352">(2024)</a>, InjecAgent <a href="https://arxiv.org/abs/2403.02691">(2024)</a> and AgentHarm <a href="https://arxiv.org/abs/2410.09024">(2024)</a> map this space for single agents; the multi-agent versions are mostly open problems (§11, Q15–Q16). The Cooperative AI Foundation's multi-agent risk framing <a href="https://arxiv.org/abs/2502.14143">(Hammond et al., 2025)</a> is the best current taxonomy of what goes wrong when the failure is <i>between</i> agents rather than inside one.</p>
+
+      <h3>4.6 The evaluator is in the room</h3>
+      <p>Almost every multi-agent study uses an LLM judge. Judges have position bias, verbosity bias, and <b>self-preference</b> — models recognize and favor their own generations <a href="https://arxiv.org/abs/2404.13076">(Panickssery et al., 2024)</a>; see also <a href="https://arxiv.org/abs/2306.05685">Zheng et al. (2023)</a> and <a href="https://arxiv.org/abs/2410.02736">Ye et al. (2024)</a> on judge biases. If proposer and judge share a base model, a systematic hallucination is scored as fluency. Consensus among agents measured by a judge from the same family is close to circular.</p>
+
+      <h3>4.7 Aggregate benchmarks hide the mechanism</h3>
+      <p>Agent benchmarks — <a href="https://arxiv.org/abs/2308.03688">AgentBench</a>, <a href="https://arxiv.org/abs/2311.12983">GAIA</a>, <a href="https://arxiv.org/abs/2404.07972">OSWorld</a>, <a href="https://arxiv.org/abs/2406.12045">τ-bench</a>, <a href="https://arxiv.org/abs/2412.14161">TheAgentCompany</a>, <a href="https://arxiv.org/abs/2503.01935">MultiAgentBench</a> — report pass rates. A pass rate tells you nothing about whether the system got there by reasoning, by memorized contamination, or by three agents agreeing on a lucky guess. Kapoor et al. <a href="https://arxiv.org/abs/2407.01502">("AI Agents That Matter", 2024)</a> argue for cost-controlled, holdout-based, variance-reporting evaluation; that critique applies with double force to multi-agent systems, where run-to-run variance is much larger and cost is much higher.</p>
+
+      <h2 id="math">5. A little arithmetic, because the intuitions are misleading</h2>
+      <p>Four quantities do most of the explanatory work. All examples below are <b>illustrative calculations</b>, not measured values.</p>
+
+      <h3>5.1 Serial reliability degrades fast</h3>
+      <p>If a pipeline has <i>N</i> stages and each stage is correct with probability <i>p</i> independently, end-to-end success is <i>p<sup>N</sup></i>. With <i>p</i> = 0.95:</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N =  1  →  0.950
+N = 10  →  0.599
+N = 20  →  0.358
+N = 50  →  0.077</pre>
+      <p>Ten stages at 95% each is a 60% system. This is the argument for short pipelines and for the "small models, short contexts" thesis in the companion post. It is also why "add a reviewer agent" can lower end-to-end quality even when the reviewer is individually decent.</p>
+
+      <h3>5.2 Fan-out increases the surface area for a false claim to enter</h3>
+      <p>Suppose each agent has a 3% chance of fabricating a particular claim slot, and the orchestrator pools all outputs. The probability that <i>at least one</i> fabrication enters the shared context is 1 − (1 − 0.03)<sup>N</sup>:</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N =  1  →  3.0%
+N = 10  →  26.3%
+N = 50  →  78.2%
+N = 500 →  ≈ 100%</pre>
+      <p>Parallelism does not reduce per-agent hallucination; it multiplies opportunities. This is the counterweight to every "more agents is all you need" result, and it is why the reducer — dedupe, ground, contradict, discard — is where the engineering lives.</p>
+
+      <h3>5.3 Correlated errors collapse the effective crowd size</h3>
+      <p>For equal pairwise error correlation ρ, the effective number of independent voters is approximately</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N_eff  ≈  N / (1 + (N − 1)·ρ)</pre>
+      <p>With ρ = 0.5 and N = 100, N_eff ≈ 2.0. <b>A hundred agents behave like two.</b> With ρ = 0.1 (genuinely different model families), N_eff ≈ 9.2. This single formula converts "we have 500 agents" into an honest statement about how much independent evidence the system actually contains — and it is cheap to estimate empirically by correlating per-item error indicators across agents.</p>
+
+      <h3>5.4 Diversity prediction theorem</h3>
+      <p>Page's decomposition says collective squared error equals average individual squared error <em>minus</em> predictive diversity:</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">(crowd error)²  =  mean (individual error)²  −  diversity</pre>
+      <p>The crowd is always at least as good as the average member — and can never be better than the best member unless diversity is high. Clones reduce the diversity term to zero, so the crowd equals the average clone. This is the cleanest available statement of why model heterogeneity is not optional.</p>
+
+      <h3>5.5 A reproduction number for false claims</h3>
+      <p>Borrow the epidemic framing. Let each agent read outputs from <i>k</i> peers, adopt a false claim with probability β when exposed, and let corrections or forgetting arrive at rate γ. Then</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">R₀  =  β · k / γ
+
+R₀ &gt; 1  →  the falsehood is endemic: it survives past the agents that introduced it
+R₀ &lt; 1  →  it dies out after a finite number of hops</pre>
+      <p>With β = 0.3, k = 4, γ = 1 → R₀ = 1.2, above threshold. The value of this framing is that <b>every term is measurable</b>: β by seeded-claim adoption tests, k from the message graph, γ from correction latency. And it predicts a percolation threshold as a function of topology — a testable claim about agent societies that no current benchmark checks.</p>
+
+      <h2 id="protocol">6. How to test: the Collective Hallucination Test Battery (CHTB)</h2>
+      <p>What follows is a proposed protocol, not a validated standard. It is organized so that each family isolates one mechanism from §2, and so that a negative result is informative. Run families in order; each is a prerequisite for interpreting the next.</p>
+
+      <div class="guide-callout"><strong>Design principle:</strong> every test must be run at <b>matched compute</b> against a single-agent baseline, and every test must be reported with <b>seed variance</b>. A multi-agent result without a compute-matched baseline is uninterpretable; a single-run result is noise.</div>
+
+      <h3>T1 — Claim-level baseline and the compute-matched control</h3>
+      <p>Decompose outputs into atomic claims and label each as supported, unsupported, or contradicted, with a source pointer. Then run three arms on the same task set:</p>
+      <ul>
+        <li><b>A1:</b> the full multi-agent system.</li>
+        <li><b>A2:</b> one agent with the same total token budget (e.g. more retrieval, longer reasoning, more samples with self-consistency).</li>
+        <li><b>A3:</b> one agent with the same <i>wall-clock</i> latency budget.</li>
+      </ul>
+      <p>A2 is the arm that kills most claims. If the multi-agent system does not beat A2, its benefit is compute, not collaboration.</p>
+
+      <h3>T2 — Independence assay</h3>
+      <p>For each item <i>i</i> and agent <i>j</i>, record a binary error indicator <i>e<sub>ij</sub></i>. Estimate pairwise error correlation ρ from the residual matrix (φ coefficients or latent-trait models both work). Report N<sub>eff</sub> from §5.3.</p>
+      <p>Then <b>perturb the diversity axis one at a time</b> and re-estimate ρ after each change: same model + different temperature (near-zero effect on ρ), same model + different persona prompts (small effect), different model families (large effect), different <i>evidence partitions</i> (largest effect). This ablation is the most informative experiment in the whole battery, because it tells you which knob actually buys independence.</p>
+
+      <h3>T3 — Canary and trap injection</h3>
+      <p>Plant synthetic falsehoods with known ground truth into the evidence stream and measure the system's response. Three trap types:</p>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Trap</th><th>Construction</th><th>What it measures</th></tr></thead>
+          <tbody>
+            <tr><td><b>Distractor canary</b></td><td>A true-looking but false claim in a retrieved document, clearly outside the question's scope</td><td>Resistance to irrelevant-but-fluent evidence</td></tr>
+            <tr><td><b>Plausible fabrication</b></td><td>A fabricated citation, dataset, or API parameter that is stylistically perfect</td><td>Whether agents verify or merely accept</td></tr>
+            <tr><td><b>Consensus trap</b></td><td>A false claim pre-installed in <i>m</i> of <i>N</i> agents' memory before the run</td><td>The minority that breaks consensus; estimate the tipping fraction</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The consensus trap is the multi-agent-specific one. Sweep <i>m</i>/<i>N</i> and you get an empirical curve: <b>at what fraction of seeded believers does the collective stop correcting the falsehood?</b> That curve is the closest practical analogue of a Byzantine-tolerance threshold for LLM juries <a href="https://dl.acm.org/doi/10.1145/357172.357176">(Lamport, Shostak &amp; Pease, 1982, peer-reviewed)</a>, and to my knowledge it has not been systematically measured.</p>
+
+      <h3>T4 — Contagion assay</h3>
+      <p>Seed one false claim in one agent. Measure:</p>
+      <ul>
+        <li><b>β</b> — adoption probability per exposure, by round.</li>
+        <li><b>k</b> — realized fan-out of exposure from the message/pass graph.</li>
+        <li><b>γ</b> — correction rate: how often a non-seeded agent contradicts the claim, and how many rounds that takes.</li>
+        <li><b>Generations to extinction</b>, and its distribution over seeds.</li>
+      </ul>
+      <p>Report R₀ = βk/γ per topology (star, chain, complete graph, debate-with-judge). A topology that raises β and k while lowering γ is a hallucination amplifier regardless of how good its benchmark scores look.</p>
+
+      <h3>T5 — Metamorphic and invariance testing</h3>
+      <p>Ground truth is expensive; invariance is cheap. For each task, generate meaning-preserving (or meaning-neutral) perturbations and check that the <i>claim set</i> is stable:</p>
+      <ul>
+        <li>paraphrase the question; reorder the retrieved documents; rename entities consistently;</li>
+        <li>inject 10 irrelevant but on-topic documents;</li>
+        <li>change units, dates, or locale formatting;</li>
+        <li>swap a cited source for an equivalent one;</li>
+        <li>reverse the order in which agents speak.</li>
+      </ul>
+      <p>A system whose factual claims flip under document reordering is not grounding; it is pattern-matching on position. Report <b>claim-set Jaccard</b> across perturbations and <b>flip rate</b> on the subset of claims that should be invariant. This family is the best value per unit of annotation effort, and it is the one most likely to find embarrassing bugs.</p>
+
+      <h3>T6 — Trace forensics and attribution</h3>
+      <p>Annotate a sample of failed traces with the MAST taxonomy <a href="https://arxiv.org/abs/2503.13657">(2025)</a> and localize the error span <a href="https://arxiv.org/abs/2505.08638">(TRAIL, 2025)</a>. Then test your own attribution tooling against those labels <a href="https://arxiv.org/abs/2505.00212">(Who&amp;When, 2025)</a>. Include two controls that are almost never run:</p>
+      <ul>
+        <li><b>Oracle substitution.</b> Replace one agent's output with ground truth, replay, and see whether the final answer changes. If it does not, that agent contributed no independent signal — it was decoration. This is a direct, cheap measure of marginal value per agent.</li>
+        <li><b>Counterfactual replay.</b> Roll back to round <i>r</i>, inject the correct claim, and measure whether the system keeps it. This distinguishes "could not find the truth" from "found it and lost it".</li>
+      </ul>
+
+      <h3>T7 — Population-scale and long-horizon tests</h3>
+      <p>For systems that claim to model societies, single-episode tests are insufficient. Needed:</p>
+      <ul>
+        <li>runs of hundreds to thousands of agents over many simulated days, with persistent memory;</li>
+        <li>measurement of <b>belief drift</b>: the distribution of claims about a fixed fact at t = 0, 10, 100;</li>
+        <li><b>polarization and echo-chamber indices</b> over the interaction graph;</li>
+        <li><b>convention audits</b>: do norms emerge that are false about the world (e.g. a shared but incorrect rule of thumb)?</li>
+        <li><b>reversal cost</b>: after convergence on a false belief, how much ground-truth pressure is needed to undo it?</li>
+      </ul>
+      <p>The infrastructure exists — generative-agent sandboxes <a href="https://arxiv.org/abs/2304.03442">(Park et al., 2023)</a>, large-scale society simulators <a href="https://arxiv.org/abs/2502.08691">(AgentSociety, 2025)</a>, and Minecraft-scale civilizations <a href="https://arxiv.org/abs/2411.00114">(Project Sid, 2024)</a> — but these papers evaluate <i>emergence</i>, not <i>truth</i>. Adding a factuality axis to society simulation is a mostly open research problem.</p>
+
+      <h3>T8 — Adversarial and social-pressure tests</h3>
+      <p>Three cheap, high-yield probes:</p>
+      <ul>
+        <li><b>Sycophancy ladder.</b> Insert a confident user assertion of a falsehood at position 1, 2, or 3 in the conversation; measure flip rate as a function of social pressure.</li>
+        <li><b>Majority pressure.</b> Have <i>m</i> agents assert a false claim and one agent assert the truth; measure whether the truth survives (this is the Asch setup, and LLM agents reproduce it).</li>
+        <li><b>Injection propagation.</b> Plant a prompt-injection payload in one agent's tool output and measure spread rate across the population <a href="https://arxiv.org/abs/2402.14872">(Gu et al., 2024)</a>, <a href="https://arxiv.org/abs/2410.07283">(Lee &amp; Tiwari, 2024)</a>. Report as a graph: nodes infected per round.</li>
+      </ul>
+
+      <h3>T9 — Report card</h3>
+      <p>Every run should emit a machine-readable record: system topology, model IDs and versions, seeds, token and tool spend, per-claim labels with source pointers, the message graph, and the failure taxonomy for failed items. This is unglamorous and it is the difference between a result and an anecdote. Without it, T6 is impossible and T2 cannot be re-estimated by anyone else.</p>
+
+      <h2 id="metrics">7. Metric definitions that will not be gamed</h2>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Metric</th><th>Definition</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><b>Claim hallucination rate</b></td><td>Unsupported or contradicted atomic claims ÷ total atomic claims</td><td>Needs claim decomposition + a source pointer per claim. Report precision/recall against human labels, not just rate.</td></tr>
+            <tr><td><b>Faithfulness gap</b></td><td>Claims contradicted by the system's own retrieved evidence</td><td>Separates world-false from self-inconsistent. The second is often larger and easier to fix.</td></tr>
+            <tr><td><b>ρ and N<sub>eff</sub></b></td><td>Pairwise error correlation; effective independent voters</td><td>The honesty metric. Report alongside any "N agents" headline.</td></tr>
+            <tr><td><b>Contagion R₀</b></td><td>β·k / γ from T4</td><td>Topology-dependent. One R₀ per architecture, not per model.</td></tr>
+            <tr><td><b>False-consensus rate</b></td><td>Fraction of items where all agents agree <i>and</i> are wrong</td><td>The signature failure of monoculture. Should be reported next to accuracy.</td></tr>
+            <tr><td><b>Consensus calibration</b></td><td>P(correct | agreement level)</td><td>If P(correct) does not rise with agreement, the confidence signal is worthless.</td></tr>
+            <tr><td><b>Correction latency</b></td><td>Rounds from first false assertion to first contradiction</td><td>∞ for claims never contradicted. Report the full distribution.</td></tr>
+            <tr><td><b>Flip rate</b></td><td>Fraction of correct claims abandoned under social pressure</td><td>Sycophancy cost. Directly measures whether debate is deliberation or capitulation.</td></tr>
+            <tr><td><b>Claim-set stability</b></td><td>Jaccard of claim sets under T5 perturbations</td><td>Grounding proxy; needs no gold labels.</td></tr>
+            <tr><td><b>Attribution accuracy</b></td><td>Agent- and step-level accuracy of failure localization</td><td>Capability metric for your own tooling. Currently low across the field.</td></tr>
+            <tr><td><b>Cost per correct claim</b></td><td>Total tokens and tool calls ÷ supported claims</td><td>The number that decides whether any of this ships.</td></tr>
+            <tr><td><b>Human-judge agreement</b></td><td>Cohen's κ between judge and human on 200 sampled claims</td><td>Calibrate the judge or the result is uninterpretable.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="stats">8. Statistics that survive review</h2>
+      <p>Multi-agent evaluation fails statistically more often than it fails scientifically. Specific requirements:</p>
+      <ul>
+        <li><b>Paired designs.</b> Compare systems on the same items, use paired tests (McNemar for binary claim correctness, bootstrap CIs for rates), and report effect sizes with intervals. Between-system variance will otherwise swallow the effect.</li>
+        <li><b>Seeds, not runs.</b> Report median and IQR over ≥ 5 seeds per configuration, plus the worst seed. Agent systems are heavy-tailed; a leaderboard entry from one run is a sample of one.</li>
+        <li><b>Pre-registration.</b> Write the hypothesis, the primary metric, and the stopping rule before running. The space of plausible multi-agent ablations is large enough to guarantee a false positive otherwise.</li>
+        <li><b>Multiple-comparison control.</b> You will test many topologies and prompts. Correct for it, or report it as exploratory.</li>
+        <li><b>Contamination checks.</b> Public agent benchmarks leak into training data. Hold out private items, or generate fresh ones — the "AI Agents That Matter" argument <a href="https://arxiv.org/abs/2407.01502">(Kapoor et al., 2024)</a>.</li>
+        <li><b>Judge audit.</b> Swap the judge's model family and re-score a subset. If scores move materially, your metric is measuring family affinity.</li>
+        <li><b>Power analysis.</b> Claim-level metrics on 50 items will not detect a 3-point difference. Compute the required N before you run.</li>
+      </ul>
+
+      <h2 id="archetypes">9. Failure archetypes worth naming</h2>
+      <p>Names help teams recognize failures in their own logs. Each maps to a mechanism in §2 and a test in §6.</p>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Archetype</th><th>What it looks like</th><th>Mechanism</th><th>Test</th></tr></thead>
+          <tbody>
+            <tr><td><b>The Confident Echo</b></td><td>Five agents state the same wrong fact; the judge reads agreement as evidence</td><td>Correlated priors (a) + majority vote</td><td>T2, false-consensus rate</td></tr>
+            <tr><td><b>The Poisoned Wiki</b></td><td>A false claim enters one retrieved document and ends up cited by four agents</td><td>Evidence laundering (c)</td><td>T3 distractor canary</td></tr>
+            <tr><td><b>The Committee That Never Disagrees</b></td><td>Critic approves everything; disagreement rate near zero</td><td>Conformity/sycophancy (b)</td><td>T8 majority pressure, flip rate</td></tr>
+            <tr><td><b>The Helpful Fabricator</b></td><td>Invents an API parameter, a DOI, or a database column to satisfy a schema</td><td>Verification collapse (d)</td><td>T3 plausible fabrication</td></tr>
+            <tr><td><b>The Broken Seam</b></td><td>Each section is fine; the merged document contradicts itself on units and names</td><td>Context fragmentation (e)</td><td>T5 invariance, T6 oracle substitution</td></tr>
+            <tr><td><b>The Drifting Village</b></td><td>A simulated society develops a shared but false norm over many days</td><td>Emergent shared belief (f)</td><td>T7 belief drift</td></tr>
+            <tr><td><b>The Paper Tiger</b></td><td>Best benchmark score, worst trace: success came from contamination or a lucky aggregator</td><td>Evaluator/benchmark failure (§4.6–4.7)</td><td>T1 A2 arm, contamination checks</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="tooling">10. Benches, judges, and infrastructure</h2>
+      <p>A practical stack, mapped to what it can and cannot tell you:</p>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Layer</th><th>Representative work</th><th>Gives you</th><th>Does not give you</th></tr></thead>
+          <tbody>
+            <tr><td>Factuality items</td><td>TruthfulQA, SimpleQA, FActScore, HaluEval, RAGAS-style grounding</td><td>Claim-level labels and graders</td><td>Any notion of coordination or contagion</td></tr>
+            <tr><td>Agent tasks</td><td>GAIA, AgentBench, OSWorld, τ-bench, TheAgentCompany, MultiAgentBench</td><td>End-to-end success and cost</td><td>Mechanism, attribution, correlation structure</td></tr>
+            <tr><td>Failure taxonomies</td><td>MAST (2025), TRAIL (2025), Who&amp;When (2025)</td><td>Labels for inter-agent failures; span localization</td><td>Reliable automatic attribution</td></tr>
+            <tr><td>Uncertainty</td><td>SelfCheckGPT, semantic entropy <a href="https://www.nature.com/articles/s41586-024-07421-0">(Farquhar et al., <i>Nature</i> 2024, peer-reviewed)</a>, verbalized confidence <a href="https://arxiv.org/abs/2205.14334">(Lin et al., 2022)</a></td><td>Per-claim uncertainty signals</td><td>Calibration under social pressure</td></tr>
+            <tr><td>Risk control</td><td>Conformal prediction <a href="https://arxiv.org/abs/2107.07511">(Angelopoulos &amp; Bates, 2021)</a>, conformal LM <a href="https://arxiv.org/abs/2306.10193">(2023)</a></td><td>Distribution-free coverage guarantees for checkable outputs</td><td>Guarantees for open-ended generation</td></tr>
+            <tr><td>Security</td><td>AgentDojo, InjecAgent, AgentHarm, ToolEmu, prompt-infection work</td><td>Attack suites and risk surface</td><td>Multi-agent propagation thresholds</td></tr>
+            <tr><td>Society simulation</td><td>Generative Agents, AgentSociety, Project Sid</td><td>Long-horizon population dynamics</td><td>Factuality measurement</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="banner"><strong>Gap:</strong> there is no widely adopted benchmark whose primary metric is <em>collective</em> hallucination. The pieces exist — claim-level graders, failure taxonomies, agent sandboxes, propagation models — but nobody has assembled them into a battery with published baselines. That is a concrete, tractable contribution for 2026–27, and §6 is a sketch of what it would contain.</div>
+
+      <h2 id="open">11. Twenty open questions</h2>
+      <p>Grouped by the kind of answer they demand. I have tried to phrase each so that a specific experiment could falsify it.</p>
+
+      <h3>Theory</h3>
+      <ol>
+        <li><b>Is there a scaling law for collective hallucination?</b> Chen et al. found an inverted U in number of calls. Is there a general form in (agents, tokens, independent evidence), and can the turning point be predicted before running?</li>
+        <li><b>Can ρ be predicted a priori?</b> Is pairwise error correlation estimable from model lineage, training-data overlap, tokenizer, or benchmark co-failure — so that an ensemble can be designed rather than measured?</li>
+        <li><b>What is the LLM analogue of the Condorcet jury theorem with correlated votes?</b> Classical results <a href="https://www.jstor.org/stable/2111573">(Ladha, 1992, peer-reviewed)</a> show correlated votes can break the theorem. What is the correct aggregation rule when ρ is known and nonzero?</li>
+        <li><b>Is there a percolation threshold for beliefs?</b> The R₀ framing predicts a critical connectivity above which false claims go endemic. Does such a threshold exist empirically, and does it depend on model strength?</li>
+        <li><b>Does debate converge to truth or to consensus?</b> Under what formal conditions — persuasiveness aligned with accuracy, verifier availability, heterogeneous priors — does the fixed point of multi-agent debate equal the truth? Can those conditions be checked at runtime?</li>
+      </ol>
+
+      <h3>Measurement</h3>
+      <ol start="6">
+        <li><b>What is the right unit?</b> Claim, decision, or action? Current benchmarks are output-level; safety-relevant failures are action-level. Is there a unit that supports both?</li>
+        <li><b>How do you build gold standards for open-ended tasks?</b> Most valuable agent work has no reference answer. Can invariance, oracle substitution, and process-level evidence substitute for gold labels — and with what validity?</li>
+        <li><b>Can trace attribution be made reliable?</b> Current step-level accuracy is poor. Is the bottleneck the model, the trace representation, or the taxonomy? Would mechanistic (activation-level) evidence help, or is it intractable at population scale?</li>
+        <li><b>How do you separate collaboration from compute?</b> Compute-matched baselines are expensive and rare. Is there a cheap proxy — e.g. equal-token single-agent with self-consistency — that is empirically adequate, and for which task classes does it fail?</li>
+        <li><b>How should variance be reported?</b> What is the minimum reporting standard (seeds, IQR, worst case, cost) that would make multi-agent leaderboards meaningful?</li>
+      </ol>
+
+      <h3>Dynamics and emergence</h3>
+      <ol start="11">
+        <li><b>Is cultural drift distinguishable from adaptation?</b> LLM populations change beliefs over time. Without ground truth, how do we tell learning from degeneration?</li>
+        <li><b>Can an entrenched false belief be reversed?</b> What is the cost, in evidence and in agents, of correcting a claim that a society has already institutionalized?</li>
+        <li><b>What does persistent memory do to error dynamics?</b> Memory is written history. Does it lower the extinction rate of false claims (raising R₀) in a way that compounds over time?</li>
+        <li><b>Do institutions work?</b> Review boards, replication agents, adversarial roles, and credit assignment are proposed as fixes. Which of them measurably reduce collective hallucination, and at what cost — tested as interventions, not asserted as designs?</li>
+      </ol>
+
+      <h3>Robustness and security</h3>
+      <ol start="15">
+        <li><b>What fraction of Byzantine agents breaks an LLM jury?</b> Classical BFT thresholds assume known bounds on faulty nodes and reliable communication. Neither holds here. What is the empirical tipping fraction, and does it depend on topology?</li>
+        <li><b>Can agents collude?</b> Two agents can coordinate on a false answer that a third cannot detect <a href="https://arxiv.org/abs/2502.14143">(Hammond et al., 2025)</a>. Can collusion be detected without a trusted monitor — and what happens when the monitor is also an LLM from the same family?</li>
+        <li><b>Does sycophancy scale with group size?</b> Human conformity rises with unanimous majority size, then saturates. Do agents behave the same, and where is the saturation point?</li>
+        <li><b>Do defenses compose?</b> Per-agent guardrails are evaluated in isolation. What happens to their effectiveness when the output of one guardrailed agent becomes the input of another <a href="https://arxiv.org/abs/2410.07283">(Lee &amp; Tiwari, 2024)</a>?</li>
+      </ol>
+
+      <h3>Epistemics and governance</h3>
+      <ol start="19">
+        <li><b>Is an agent society an epistemic community, or one model with many mouths?</b> If most of the diversity is stylistic rather than evidential, the wisdom-of-crowds framing is a category error. What measurement would settle this?</li>
+        <li><b>Who is accountable for a collective falsehood?</b> If fifty agents and an aggregator produced a wrong decision that caused harm, existing liability frameworks have no unit to assign. Does claim-level provenance solve the legal problem, the engineering problem, or neither?</li>
+      </ol>
+      <p>And a twenty-first, which is really the question underneath all of them: <b>does the homogenization feedback loop close?</b> Agent outputs enter training corpora; populations converge on shared conventions; the next generation of models is trained on the consensus of the last. If diversity is the active ingredient in collective truth-seeking, and the ecology systematically destroys diversity, then multi-agent systems may become <i>more</i> confident and <i>less</i> correct as they scale — a failure that would be invisible to every benchmark we currently run.</p>
+
+      <h2 id="practice">12. Practical checklist</h2>
+      <ul>
+        <li><b>Always run the compute-matched single agent.</b> If you cannot afford it, you cannot afford the claim.</li>
+        <li><b>Estimate ρ and report N<sub>eff</sub>.</b> "We use 12 agents" means nothing without it; at ρ = 0.5 it means "we use two".</li>
+        <li><b>Buy diversity on the evidence axis first, the model axis second, the prompt axis last.</b> Personas are the cheapest and least effective diversification.</li>
+        <li><b>Make disagreement structurally rewarded.</b> A critic that never disagrees is a pass-through; log its disagreement rate and treat near-zero as a bug.</li>
+        <li><b>Put verification downstream of evidence, not of opinion.</b> A verifier reading only other agents' prose is a second draw from the same distribution.</li>
+        <li><b>Cap fan-out by expected false-claim injection, not by ambition.</b> §5.2 is the arithmetic.</li>
+        <li><b>Log the message graph and claim provenance.</b> Without it, attribution is impossible and R₀ is unmeasurable.</li>
+        <li><b>Run one canary and one invariance suite in CI.</b> Both are cheap and both catch regressions that benchmark scores miss.</li>
+        <li><b>Audit the judge.</b> Swap families, measure κ against humans, report both.</li>
+        <li><b>Keep a human at irreversible actions.</b> Collective confidence is not collective evidence.</li>
+      </ul>
+
+      <h2 id="week">13. One experiment you can run this week</h2>
+      <p>If the battery is too large, run this. It takes a day and it produces the two numbers that matter.</p>
+      <ol>
+        <li>Take 100 questions from a factuality set with verifiable answers, plus 20 items you write yourself and hold out.</li>
+        <li>Build four arms: (A) one strong agent; (B) the same agent with a token budget equal to the multi-agent total; (C) a debate of 5 clones of the same model; (D) a debate of 5 agents from at least 3 different model families.</li>
+        <li>Run each arm with 5 seeds. Label claims, not answers.</li>
+        <li>Compute ρ across agents within C and within D. Compute N<sub>eff</sub>. Compare claim hallucination rates at matched cost.</li>
+        <li>Add one seed condition: before the run, insert a plausible false fact into the retrieved context for 20 items. Measure adoption and correction rates.</li>
+      </ol>
+      <p>The prediction from the literature is that D beats C, that C is approximately a no-op relative to B at equal cost, and that the seeded-fact condition separates them far more sharply than the clean condition does. <b>If that prediction holds, most of the field's "multi-agent reduces hallucination" results are measuring model heterogeneity, not collaboration</b> — which would be a useful thing to know, and a cheap thing to check.</p>
+
+      <h2 id="sources">14. Selected sources</h2>
+      <p>Ordered by the role they play above. Labels: <em>PR</em> = peer-reviewed venue, <em>PP</em> = preprint, <em>IND</em> = industry report/essay.</p>
+      <ul>
+        <li>Du et al., <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a> (2023) — <em>PP</em></li>
+        <li>Liang et al., <a href="https://arxiv.org/abs/2305.19118">Encouraging Divergent Thinking in LLMs through Multi-Agent Debate</a> (2023) — <em>PP</em></li>
+        <li>Smit et al., <a href="https://arxiv.org/abs/2311.17371">Should We Be Going MAD? A Look at Multi-Agent Debate Strategies for LLMs</a> (2024) — <em>PP</em></li>
+        <li>Khan et al., <a href="https://arxiv.org/abs/2402.06782">Debating with More Persuasive LLMs Leads to More Truthful Answers</a> (ICML 2024) — <em>PR</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Zhang et al., <a href="https://arxiv.org/abs/2505.00212">Which Agent Causes Task Failures and When?</a> (2025) — <em>PP</em></li>
+        <li><a href="https://arxiv.org/abs/2505.08638">TRAIL: Trace Reasoning and Agentic Issue Localization</a> (2025) — <em>PP</em></li>
+        <li>Chen, Zaharia &amp; Zou, <a href="https://arxiv.org/abs/2403.02419">Are More LLM Calls All You Need? Towards Scaling Laws of Compound Inference Systems</a> (2024/25) — <em>PP</em></li>
+        <li>Ashery, Aiello &amp; Baronchelli, <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">Emergent Social Conventions and Collective Bias in LLM Populations</a> (<i>Science Advances</i> 2025) — <em>PR</em></li>
+        <li>Ashery et al., <a href="https://arxiv.org/abs/2503.08979">Cultural Evolution in Populations of Large Language Models</a> (2025) — <em>PP</em></li>
+        <li>Hong &amp; Page, <a href="https://www.pnas.org/doi/10.1073/pnas.0403723101">Groups of Diverse Problem Solvers Can Outperform Groups of High-Ability Problem Solvers</a> (PNAS 2004) — <em>PR</em></li>
+        <li>Ladha, <a href="https://www.jstor.org/stable/2111573">The Condorcet Jury Theorem, Free Speech, and Correlated Votes</a> (AJPS 1992) — <em>PR</em></li>
+        <li>Lamport, Shostak &amp; Pease, <a href="https://dl.acm.org/doi/10.1145/357172.357176">The Byzantine Generals Problem</a> (TOPLAS 1982) — <em>PR</em></li>
+        <li>Huang et al., <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a> (ICLR 2024) — <em>PR</em></li>
+        <li>Gu et al., <a href="https://arxiv.org/abs/2402.14872">Agent Smith: A Single Image Can Jailbreak One Million Multimodal LLM Agents Exponentially Fast</a> (2024) — <em>PP</em></li>
+        <li>Lee &amp; Tiwari, <a href="https://arxiv.org/abs/2410.07283">Prompt Infection: LLM-to-LLM Prompt Injection within Multi-Agent Systems</a> (2024) — <em>PP</em></li>
+        <li>Hammond et al., <a href="https://arxiv.org/abs/2502.14143">Multi-Agent Risks from Advanced AI</a> (2025) — <em>PP</em></li>
+        <li>Lifshitz et al., <a href="https://arxiv.org/abs/2506.07962">Multi-Agent Verification: Scaling Test-Time Compute with Multiple Verifiers</a> (2025) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Panickssery et al., <a href="https://arxiv.org/abs/2404.13076">LLM Evaluators Recognize and Favor Their Own Generations</a> (2024) — <em>PP</em></li>
+        <li>Wang et al., <a href="https://arxiv.org/abs/2203.11171">Self-Consistency Improves Chain of Thought Reasoning</a> (2022) — <em>PR</em></li>
+        <li>Farquhar et al., <a href="https://www.nature.com/articles/s41586-024-07421-0">Detecting Hallucinations in Large Language Models Using Semantic Entropy</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Huang et al., <a href="https://arxiv.org/abs/2311.05232">A Survey on Hallucination in Large Language Models</a> (2023/25) — <em>PP/PR</em></li>
+        <li>Cognition, <a href="https://cognition.ai/blog/dont-build-multi-agents">Don't Build Multi-Agents</a> (2025) — <em>IND</em></li>
+        <li>Anthropic, <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How We Built Our Multi-Agent Research System</a> (2025) — <em>IND</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The field's default story is that many agents correct each other. The literature supports a narrower claim: <b>many agents correct each other when their errors are independent and at least one of them is anchored to evidence.</b> Neither condition is delivered by architecture alone, and both are cheap to measure — yet almost no reported result reports them.</p>
+      <p>That gap is the opportunity. The tooling for claim-level grading, failure taxonomy, and trace attribution already exists and is not exotic. What is missing is a battery that assembles it, baselines that are published, and a norm that no multi-agent claim ships without a compute-matched control and an N<sub>eff</sub>. Until then, "the swarm is more accurate" is a hypothesis dressed as a result — and, given how confidently agent societies can agree on things that are not true, one worth testing before believing.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1151,6 +1151,11 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-10-20", tag: "Research", title: "Hallucination in the swarm: testing collective confabulation in multi-agent systems",
+      desc: "A review of hallucination in multi-agent LLM systems and agent societies — correlated priors, conformity, evidence laundering, verification collapse, context fragmentation, and emergent shared belief; a measurable arithmetic of rho and contagion R0; an eight-family test battery (compute-matched control, independence assay, canary traps, contagion, metamorphic tests, trace forensics, population scale, adversarial pressure) with metric definitions and statistics; and twenty open questions.",
+      url: "/blog/posts/2026-10-20-hallucination-in-the-swarm.html"
+    },
+    {
       date: "2026-10-16", tag: "Research", title: "Using 500 agents in parallel: orchestration, synchronization, and cost",
       desc: "A design brief on running 500 AI agents at once — what \"500\" counts, why parallel agents are now practical, a reference architecture, synchronization and lease discipline, compact-context fast workers, workload patterns, serial-vs-parallel cost arithmetic, failure modes, an adoption playbook, a readiness checklist, and a ten-template prompt pack.",
       url: "/blog/posts/2026-10-16-use-500-agents-in-parallel.html"
