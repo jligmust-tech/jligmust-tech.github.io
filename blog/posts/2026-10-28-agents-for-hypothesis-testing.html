@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agents for hypothesis testing: a substep-by-substep survey — scAI Index</title>
+  <meta name="description" content="A source-linked review of where AI agents can help the hypothesis-testing loop — literature priors, hypothesis generation, operationalization, experimental design, execution, statistics, adversarial critique, decision, and reporting — with the evidence, the failure modes, and the arithmetic of agent-amplified inference.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#framing">1. The loop, not the step</a>
+          <a href="#map">2. A map of the loop</a>
+          <a href="#prior">3. Priors &amp; literature</a>
+          <a href="#generate">4. Hypothesis generation</a>
+          <a href="#operationalize">5. Operationalization</a>
+          <a href="#design">6. Experimental design</a>
+          <a href="#execute">7. Execution &amp; QC</a>
+          <a href="#analyze">8. Statistical analysis</a>
+          <a href="#interpret">9. Adversarial critique</a>
+          <a href="#decide">10. Decision &amp; next step</a>
+          <a href="#report">11. Reporting &amp; replication</a>
+          <a href="#arithmetic">12. The arithmetic</a>
+          <a href="#failure">13. Seven failure modes</a>
+          <a href="#evidence">14. What the evidence supports</a>
+          <a href="#protocol">15. A protocol</a>
+          <a href="#evaluate">16. How to evaluate</a>
+          <a href="#open">17. Open questions</a>
+          <a href="#pilot">18. A one-week pilot</a>
+          <a href="#checklist">19. Checklist</a>
+          <a href="#sources">20. Sources</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-28</span>
+      </div>
+      <h1>Agents for hypothesis testing: a substep-by-substep survey</h1>
+
+      <p>Most writing about AI in science picks one of two registers. The first is the demo: an agent system discovers a drug, solves a math problem, or writes a paper, and the lesson is that the loop is closing. The second is the debunk: the demo was cherry-picked, the benchmark was contaminated, and the agents cannot tell a confound from a covariate. Both registers are unsatisfying, because <b>hypothesis testing is not one act</b>. It is a chain of nine or so decisions, and agents are wildly uneven across them.</p>
+
+      <p>This note takes the second view seriously and does the bookkeeping. For every substep of a hypothesis test — from forming the question to writing the replication — it asks four questions: <i>what would the agent actually do here?</i> <i>What is the evidence that it helps?</i> <i>How does it fail?</i> and <i>what is the cheapest guardrail?</i> The conclusion is not "agents will automate science" or "agents are hype." It is narrower and more useful: <b>agents are already good at the parts of hypothesis testing that are search, translation, and bookkeeping, and they are still unreliable at the parts that require valid measurement, causal identification, and knowing when to stop.</b> The boundary is not where the marketing says it is.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is an editorial survey, not a systematic review. It draws on peer-reviewed papers, preprints, benchmarks, and a few engineering reports, labeled <em>PR</em>, <em>PP</em>, <em>IND</em>, and <em>BM</em> (benchmark) throughout. No agent was run for this post, no dataset was analyzed, and every number in §12 is an illustrative calculation, not a measurement.</div>
+
+      <h2 id="framing">1. The loop is not the step</h2>
+      <p>In practice, a hypothesis test is a sequence of commitments. Each one narrows the space of possible answers, and each one can be wrong in a way that later steps cannot repair:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>#</th><th>Commitment</th><th>The question being answered</th><th>If it is wrong</th></tr></thead>
+          <tbody>
+            <tr><td>S0</td><td><b>Prior</b></td><td>What is already known, and how much should I believe it?</td><td>You test something already settled, or treat a contested claim as ground truth.</td></tr>
+            <tr><td>S1</td><td><b>Hypothesis</b></td><td>Which specific, falsifiable statement is worth testing?</td><td>The test is rigorous and the question is trivial, or untestable with any available assay.</td></tr>
+            <tr><td>S2</td><td><b>Operationalization</b></td><td>Which measurement, in which system, counts as evidence for or against it?</td><td>You test a proxy, and the proxy is not the construct. Everything downstream is valid but irrelevant.</td></tr>
+            <tr><td>S3</td><td><b>Design</b></td><td>Which units, conditions, controls, and sample sizes make the comparison identifiable?</td><td>The effect is confounded, underpowered, or confounded with batch.</td></tr>
+            <tr><td>S4</td><td><b>Execution</b></td><td>How is the experiment run and the data captured without corruption?</td><td>Silent deviations, swaps, or pipeline drift produce data that answers a different question.</td></tr>
+            <tr><td>S5</td><td><b>QC</b></td><td>Which observations are admissible, and on what rule?</td><td>Exclusion is outcome-dependent; the analysis inherits the bias.</td></tr>
+            <tr><td>S6</td><td><b>Analysis</b></td><td>Which estimand, model, and error-control procedure?</td><td>Flexible analysis manufactures significance, or over-correction hides a real effect.</td></tr>
+            <tr><td>S7</td><td><b>Interpretation</b></td><td>What does the result license, and what would falsify it?</td><td>Post-hoc story outruns the data; the result is unfalsifiable in retrospect.</td></tr>
+            <tr><td>S8</td><td><b>Decision</b></td><td>What do we do next, and is another experiment worth its cost?</td><td>Sunk-cost continuation, or abandonment of a live hypothesis.</td></tr>
+            <tr><td>S9</td><td><b>Reporting</b></td><td>What must be recorded so someone else can reproduce or refute it?</td><td>Result is real but unverifiable; the field pays for the replication.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The reason to decompose this way is that the popular claims about "AI scientists" almost all live at S1 and S9 — generating hypotheses and writing papers — which are the two steps with the weakest validity constraints and the strongest narrative payoff. The steps that determine whether a hypothesis is actually <i>tested</i> are S2, S3, and S6, and those are where the evidence for agents is thinnest.</p>
+
+      <div class="guide-callout"><strong>Central thesis:</strong> an agent can accelerate any step that is a search problem with a checkable output — retrieve, translate, draft, enumerate, compute, compare. It cannot manufacture the two things hypothesis testing actually rests on: <b>measurement validity</b> (S2) and <b>identification</b> (S3). Agents can help humans get those right, and they can very efficiently help humans get them wrong.</div>
+
+      <h2 id="map">2. A map of the loop</h2>
+      <p>The rest of the post walks the loop in order. Here is the one-screen summary, including the evidence grade assigned in §14:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Substep</th><th>Best-supported agent role</th><th>Not supported</th><th>Grade</th></tr></thead>
+          <tbody>
+            <tr><td><b>S0 Prior</b></td><td>Retrieval, claim extraction, contradiction mapping, citation-chasing</td><td>Deciding which literature is trustworthy</td><td>B</td></tr>
+            <tr><td><b>S1 Generate</b></td><td>Combinatorial recombination, ranking, novelty checks, "what would explain this?" enumeration</td><td>Guaranteeing novelty or truth; knowing what is worth caring about</td><td>B−</td></tr>
+            <tr><td><b>S2 Operationalize</b></td><td>Drafting measurable definitions, enumerating candidate assays, surfacing proxy assumptions</td><td>Certifying construct validity</td><td>C</td></tr>
+            <tr><td><b>S3 Design</b></td><td>Computing power/MDE, enumerating confounds, proposing controls, Bayesian/adaptive design</td><td>Guaranteeing identifiability without a causal model</td><td>B−</td></tr>
+            <tr><td><b>S4 Execute</b></td><td>Pipeline orchestration, instrument control, protocol tracking, exception triage</td><td>Physical reliability without hardware interlocks</td><td>B−</td></tr>
+            <tr><td><b>S5 QC</b></td><td>Negative-control audits, batch diagnostics, anomaly flags, sample-swap checks</td><td>Deciding exclusions without a pre-specified rule</td><td>C+</td></tr>
+            <tr><td><b>S6 Analyze</b></td><td>Code generation, assumption checks, sensitivity/multiverse enumeration, multiplicity accounting</td><td>Choosing the estimand, or causal inference from text</td><td>B−</td></tr>
+            <tr><td><b>S7 Interpret</b></td><td>Adversarial critique, alternative-explanation enumeration, falsification probes</td><td>Reliable self-correction without external evidence</td><td>C</td></tr>
+            <tr><td><b>S8 Decide</b></td><td>Value-of-information arithmetic, stopping rules, next-experiment ranking</td><td>Supplying the utility function and the cost model</td><td>C+</td></tr>
+            <tr><td><b>S9 Report</b></td><td>Provenance capture, artifact packaging, replication runs</td><td>Guaranteeing the claim is true</td><td>B+</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Read the grades as an editorial judgment about <i>current public evidence</i>, not a measured quantity: <b>A</b> would mean replicated, compute-matched comparisons; <b>B</b> means multiple independent demonstrations with credible baselines; <b>C</b> means plausible mechanism plus case studies; <b>D</b> means marketing. Almost nothing here is A. That is the honest state of the field.</p>
+
+      <h2 id="prior">3. S0 — Priors, literature, and the question</h2>
+      <p>Before a hypothesis exists, there is a belief state. Bayesian language is useful here because it makes explicit what frequentist workflows hide: a test's value depends on the <b>pre-test odds</b> that the hypothesis is true, and the credibility of a "significant" result depends on it far more than on the p-value.</p>
+
+      <p>What agents do well at this step is mechanical but genuinely valuable:</p>
+      <ul>
+        <li><b>Claim-level extraction.</b> Turn 400 papers into a table of (claim, system, assay, effect size, n, caveat). This is the step that most literature reviews do badly and that agents do at near-human quality with citations attached. PaperQA2 reports superhuman performance on several scientific-literature synthesis tasks against human experts <a href="https://arxiv.org/abs/2409.13740">(Skarlinski et al., 2024, <em>PP</em>)</a>, and the result is plausible precisely because the task is retrieval-plus-attribution, not judgment.</li>
+        <li><b>Contradiction mapping.</b> Find pairs of papers that assert incompatible things about the same entity, and extract the experimental difference that could explain the conflict — species, dose, cell line, batch, definition. This is the highest-value thing an agent can do before a hypothesis is formed, and it is almost never automated.</li>
+        <li><b>Prior elicitation, with a caveat.</b> Agents can draft a prior distribution over effect sizes by pooling reported effects. But an LLM's prior is a prior over <i>text about effects</i>, not over effects: it inherits publication bias, winner's-curse inflation, and the field's habit of reporting only the significant subgroup. Treat an agent-elicited prior as a <b>starting point for a sensitivity analysis</b>, not as evidence.</li>
+      </ul>
+
+      <p>The characteristic failure is <b>citation laundering</b>: the agent cites a review, the review cites a primary paper, the primary paper's effect was in mice at a dose nobody uses, and the extracted "known fact" has lost every qualifier. Provenance must be carried at the claim level, not the paper level. A citation to a paper is not evidence for a sentence in that paper.</p>
+
+      <div class="banner"><strong>Guardrail:</strong> require every extracted claim to carry a span-level quote, the assay and system, and the effect size with its uncertainty. If the agent cannot produce all four, the claim is not a prior — it is a rumour. See the companion post on <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html">collective hallucination</a> for why multi-agent extraction makes this worse, not better, unless provenance is enforced.</div>
+
+      <h2 id="generate">4. S1 — Hypothesis generation</h2>
+      <p>This is the step with the most demonstrations and the least agreement about what counts as success. The demonstrations fall into three families.</p>
+
+      <h3>(a) Recombination and ranking over a curated space</h3>
+      <p>Google's Co-Scientist is the clearest current example: a multi-agent system that generates, debates, ranks, and evolves hypotheses, evaluated with expert judges and with in-vitro validation on a few problems <a href="https://arxiv.org/abs/2502.18864">(Google Research, 2025, <em>PP/IND</em>)</a>. BioDiscoveryAgent does the narrower and more informative version: it designs genetic perturbation experiments, using tools over literature and databases to pick gene targets for a CRISPR screen <a href="https://arxiv.org/abs/2405.17631">(Roohani et al., 2024/25, <em>PP/BM</em>)</a>. The task is constrained, the output is checkable against a held-out set of known-relevant genes, and success is not "the agent had a good idea" but "the agent's ranked list beat the baselines."</p>
+
+      <h3>(b) Search over programs and structures</h3>
+      <p>FunSearch showed that an LLM coupled to an evaluator can discover genuinely new constructions in combinatorics and algorithm design <a href="https://www.nature.com/articles/s41586-023-06924-6">(Romera-Paredes et al., <em>Nature</em> 2024, <em>PR</em>)</a>. The reason it works is structural and worth generalizing: <b>the generator is unconstrained, but the evaluator is a program that cannot be fooled.</b> AlphaFold is the biological analogue at the level of prediction rather than hypothesis: it did not generate hypotheses, it made a class of structural questions cheap enough that hypotheses could be tested downstream <a href="https://www.nature.com/articles/s41586-021-03819-2">(Jumper et al., <em>Nature</em> 2021, <em>PR</em>)</a>.</p>
+
+      <h3>(c) Closed-loop chemistry and biology</h3>
+      <p>Coscientist <a href="https://www.nature.com/articles/s41586-023-06792-0">(Boiko et al., <em>Nature</em> 2023, <em>PR</em>)</a> and ChemCrow <a href="https://arxiv.org/abs/2304.05376">(Bran et al., <em>Nature Machine Intelligence</em> 2024, <em>PR</em>)</a> connect LLM planning to real instruments and validated toolchains. Self-driving laboratories make the loop physical: MacLeod et al.'s thin-film platform <a href="https://www.nature.com/articles/s41586-020-2442-2">(<em>Nature</em> 2020, <em>PR</em>)</a> and A-Lab's autonomous synthesis <a href="https://www.nature.com/articles/s41586-023-06734-w">(Szymanski et al., <em>Nature</em> 2023, <em>PR</em>)</a> are the canonical cases. These are the strongest evidence in the whole area, because the metric is not "did experts like the hypothesis" but "did the material get made and characterized."</p>
+
+      <h3>What generation actually buys you</h3>
+      <p>Three honest gains, and one large caveat:</p>
+      <ul>
+        <li><b>Coverage.</b> Agents enumerate far more candidate mechanisms than a lab meeting will, including cross-field recombinations a specialist would not think of. This raises the chance that a good hypothesis is in the candidate set.</li>
+        <li><b>Explicit mechanisms.</b> Asking an agent to state the causal chain, the predicted direction, and the observation that would refute it produces hypotheses that are easier to design experiments for. This is a real improvement over the usual vague "X regulates Y."</li>
+        <li><b>Cheap ranking.</b> Agents can screen candidates against known biology, prior screens, and druggability before a human spends a week on one.</li>
+        <li><b>The caveat:</b> the objective being optimized is usually <i>plausibility</i>, and plausibility is cheap to generate. A system trained or prompted to produce compelling mechanisms will produce them whether or not they are true. Novelty and truth are different axes, and most evaluations only measure one.</li>
+      </ul>
+
+      <p>The empirical result to keep in view is the AI Scientist line of work: it can run the full loop and produce papers, but the papers contain fabricated citations, invalid comparisons, and experiments that do not test what they claim <a href="https://arxiv.org/abs/2408.06292">(Lu et al., 2024, <em>PP</em>)</a>. That is not a reason to dismiss generation. It is a demonstration that generation without S2–S7 is a text-production exercise.</p>
+
+      <div class="guide-policy"><strong>Practical rule:</strong> a generated hypothesis is admissible for testing only when it is accompanied by (i) the predicted observation, (ii) the observation that would refute it, (iii) the assay that can produce either, and (iv) at least one alternative mechanism that makes a different prediction. Agents are good at drafting all four. Humans should sign the fourth.</div>
+
+      <h2 id="operationalize">5. S2 — Operationalization and measurement validity</h2>
+      <p>This is the step the agent literature mostly skips, and it is the step that decides whether the rest of the loop means anything. "Inflammation is higher in condition A" is not testable until you say which measurement, in which tissue, at which time, relative to which control, with which threshold.</p>
+
+      <p>Where agents can help:</p>
+      <ul>
+        <li><b>Enumerating operationalizations.</b> Given a construct, list the available assays, their failure modes, their dynamic range, and their known confounds. For a single-cell study, that means naming the marker panel, the normalization choice, the ambient-RNA correction, and the composition confound — and stating which of these is load-bearing for the claim.</li>
+        <li><b>Proxy audits.</b> Ask the agent to argue that the chosen proxy could move for a reason unrelated to the hypothesis. A good agent will produce batch, viability, cell-cycle, dissociation stress, and library-size explanations. This is exactly the kind of enumeration LLMs are strong at, and it is cheap.</li>
+        <li><b>Unit and scale checks.</b> Silently mixing log and linear scales, per-cell and per-sample units, or normalized and raw counts is a common and catastrophic error. A checklist agent catches a meaningful fraction of these before analysis, not after.</li>
+      </ul>
+
+      <p>Where it fails is exactly where validity lives. Construct validity is a <b>causal argument about the measurement process</b>: does the assay change only when the construct changes? No amount of text generation establishes that. An agent can tell you that a proxy is imperfect; it cannot tell you whether the imperfection is fatal in your system. That judgment requires knowing the biology, the instrument, and the failure history of the lab.</p>
+
+      <p>There is a subtle multi-agent failure here too. If the hypothesis-generation agent and the operationalization agent are the same model, the operationalization will be <i>selected to fit the hypothesis</i> — a text-level analogue of outcome-dependent measure selection. The fix is procedural: generate the hypothesis <b>without</b> access to the candidate assays, then operationalize, then compare. Otherwise you have built a machine for producing definable-but-unfalsifiable claims.</p>
+
+      <h2 id="design">6. S3 — Experimental design</h2>
+      <p>Design is where formal methods already exist, so it is where agents have the clearest legitimate role: not inventing the method, but <b>applying the method correctly and refusing to skip it</b>.</p>
+
+      <h3>What is genuinely automatable</h3>
+      <ul>
+        <li><b>Power and minimum detectable effect.</b> Given a variance estimate and a design, compute the MDE, or invert it for n. Agents can write and check this code in seconds, and can flag when the variance estimate is borrowed from a different system.</li>
+        <li><b>Confound enumeration and control proposal.</b> For a perturbation screen: plate, batch, library, cell-cycle, guide efficiency, doublets, and selection. The agent proposes a randomization and blocking scheme, then a reviewer agent attacks it.</li>
+        <li><b>Design of experiments and Bayesian optimal design.</b> Expected-information-gain and Bayesian-optimization machinery is mature <a href="https://arxiv.org/abs/2302.14545">(Rainforth et al., 2023/24, <em>PP</em>)</a>, and BALD-style active learning is standard <a href="https://arxiv.org/abs/1112.5745">(Houlsby et al., 2011, <em>PP</em>)</a>. The agent's contribution is to specify the model, run the acquisition function, and explain the chosen points. That is real leverage for expensive assays.</li>
+        <li><b>Sequential and adaptive designs.</b> Agents can implement group-sequential boundaries and alpha-spending schedules correctly, which human analysts frequently get wrong. But the stopping rule must be fixed <i>before</i> seeing data; an agent allowed to choose when to stop will choose well for the wrong reason (§12).</li>
+        <li><b>Experiment selection under a budget.</b> BioDiscoveryAgent's core move is to rank experiments by expected informativeness rather than by novelty <a href="https://arxiv.org/abs/2405.17631">(2024/25)</a>. This is the most defensible use of an agent in the whole loop: the output is a ranked list, the baseline is a random or heuristic list, and the comparison is computable.</li>
+      </ul>
+
+      <h3>What is not</h3>
+      <p>Identifiability. Whether a design can separate the hypothesis from its rivals is a property of the causal graph and the available interventions, not of the prose. An agent can help you draw the graph and can spot an obvious collider; it cannot certify that you have measured every common cause. And there is a specific, common failure: <b>the agent designs the experiment the hypothesis wants.</b> If the hypothesis is "gene X drives state Y," the proposed design will perturb X and measure Y, and will omit the intervention that distinguishes X-driven from Y-driven. A second agent asked to design the <i>rival's</i> experiment catches this; a second agent asked to "review" the first does not.</p>
+
+      <div class="banner"><strong>Design protocol that survives:</strong> one agent proposes the design from the hypothesis; a <i>different</i> agent, given the same hypothesis and no access to the first design, proposes the design that would most efficiently refute it; a third reconciles the two by naming the measurement that both designs need. The disagreements are the informative part — they localize the assumptions.</div>
+
+      <h2 id="execute">7. S4–S5 — Execution and QC</h2>
+      <p>Execution is the step where agents have the most mature engineering story and the least scientific one. Orchestration frameworks, tool APIs, retries, and sandboxes are now commodity; the benchmarks reflect that.</p>
+      <ul>
+        <li><b>Pipeline reproduction.</b> CORE-Bench measures whether agents can reproduce published computational results from code and data <a href="https://arxiv.org/abs/2409.11363">(Siegel et al., 2024, <em>BM</em>)</a>; SUPER tests setting up and executing tasks from research repositories <a href="https://arxiv.org/abs/2409.07440">(Bogin et al., 2024, <em>BM</em>)</a>; ScienceAgentBench evaluates data-driven discovery tasks with expert-built rubrics <a href="https://arxiv.org/abs/2410.05080">(Chen et al., 2024/25, <em>BM</em>)</a>. The consistent finding is that agents do well on the mechanics and fail on the <i>scientific</i> choices: which subset, which normalization, which comparison.</li>
+        <li><b>Physical execution.</b> Self-driving labs work when the action space is narrow and the instrument has interlocks. They fail, sometimes literally, when the agent can issue commands that the hardware cannot safely refuse. The engineering literature on these systems is decades old; the LLM adds flexible planning on top, not new safety properties.</li>
+        <li><b>QC as a first-class agent job.</b> Negative controls, spike-ins, sample swaps, batch drift, contamination, and library complexity are all checkable. An agent that runs a fixed QC panel and <i>reports</i> — without deciding exclusions — is one of the highest-value, lowest-risk deployments available.</li>
+      </ul>
+
+      <p>The failure that matters is <b>silent divergence</b>: the pipeline runs, produces a table, and the table answers a slightly different question than the one pre-registered. An LLM agent is exceptionally good at repairing errors in ways that preserve the appearance of success — retrying with a different filter, dropping a failing batch, switching a normalization because the first one errored. Each repair is locally reasonable and globally a protocol deviation. Logging the diffs, and treating any deviation as a result to report rather than a bug to hide, is the entire control.</p>
+
+      <h2 id="analyze">8. S6 — Statistical analysis</h2>
+      <p>This is the most over-claimed and most under-controlled step. Agents write analysis code well. They choose analyses badly, for a structural reason: <b>the space of defensible analyses is large, and an agent asked to find a significant result will find one.</b></p>
+
+      <h3>The multiplicity bomb</h3>
+      <p>Classical researcher degrees of freedom — outlier rule, covariate set, transformation, subgroup, test — are already the main driver of irreproducibility <a href="https://journals.sagepub.com/doi/10.1177/0956797611417632">(Simmons et al., 2011, <em>PR</em>)</a>, <a href="http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf">(Gelman &amp; Loken, 2013)</a>. An agent does not add a new bias; it <b>increases the speed and breadth of search over that space by orders of magnitude</b>. Twenty variants is a Tuesday for an agent; the same twenty for a human is a career's worth of post-hoc rationalization. The arithmetic in §12 makes the consequence explicit.</p>
+
+      <p>What agents can do well, if constrained:</p>
+      <ul>
+        <li><b>Implement a pre-specified analysis exactly</b>, including the boring parts: the pre-registered exclusion rule, the specified contrasts, the correct family-wise correction, the effect size with a confidence interval.</li>
+        <li><b>Run a multiverse or specification curve</b> <a href="https://journals.sagepub.com/doi/10.1177/1745691616658637">(Steegen et al., 2016, <em>PR</em>)</a>, <a href="https://www.nature.com/articles/s41562-020-0912-z">(Simonsohn et al., 2020, <em>PR</em>)</a> — and this is the one place where the agent's breadth is an asset rather than a liability. Enumerating all reasonable analyses and reporting the distribution of estimates is honest precisely because <i>all</i> of them are reported.</li>
+        <li><b>Check assumptions and flag violations</b> — normality, heteroscedasticity, independence, separation, zero-inflation — with a human deciding the response.</li>
+        <li><b>Audit someone else's analysis</b> against a pre-registration, which is a diffing problem and therefore a good agent task.</li>
+      </ul>
+
+      <p>What agents cannot do is <b>causal identification from text</b>. The evidence here is fairly clear. LLMs can answer causal questions that resemble textbook cases, and they improve with explicit causal structures in context, but they do not reliably distinguish correlation from causation when the surface statistics point the other way; "Causal Parrots" argues they reproduce causal talk from training data without a causal model <a href="https://arxiv.org/abs/2308.13067">(Zečević et al., 2023, <em>PP</em>)</a>, and CLadder shows systematic sensitivity to question form and graph structure <a href="https://arxiv.org/abs/2312.04350">(Jin et al., 2023, <em>PR</em>)</a>. Kiciman et al. show useful assistive performance on causal tasks when the agent is grounded with a stated graph and domain assumptions <a href="https://arxiv.org/abs/2305.00050">(2023, <em>PP</em>)</a> — the operative phrase being <i>stated graph</i>. The agent is a translator between a causal model and an estimator, not a substitute for the model.</p>
+
+      <div class="banner"><strong>Rule:</strong> the agent may not choose the estimand, the exclusion rule, or the stopping point after seeing the outcome. It may implement any of them, audit any of them, and enumerate the consequences of alternatives — with all alternatives reported.</div>
+
+      <h2 id="interpret">9. S7 — Interpretation and adversarial critique</h2>
+      <p>The seductive idea is the <b>red-team agent</b>: a critic that attacks the result before the world does. There is real value here, but the evidence is more constrained than the enthusiasm suggests.</p>
+
+      <p>What works: critique that is <i>grounded in something the generator did not see</i>. Give the critic the pre-registration and the data dictionary, not just the draft. Ask it to name the specific observation that would change the conclusion and whether that observation exists. Ask it for the strongest alternative explanation and the measurement that separates the two. These are well-defined tasks with checkable outputs, and LLMs are good at them.</p>
+
+      <p>What does not work: self-correction by re-reading. Huang et al. show that LLMs cannot reliably self-correct reasoning without external feedback, and that apparent gains from self-refinement are often prompt artifacts <a href="https://arxiv.org/abs/2310.01798">(ICLR 2024, <em>PR</em>)</a>. A critic drawn from the same model family shares the generator's blind spots; debate helps mainly when participants are genuinely diverse or when one side is anchored to evidence <a href="https://arxiv.org/abs/2305.14325">(Du et al., 2023, <em>PP</em>)</a>, <a href="https://arxiv.org/abs/2402.06782">(Khan et al., ICML 2024, <em>PR</em>)</a>. The MAST failure taxonomy documents the practical version: agents that silently disagree, converge on an unvalidated plan, or never verify against the environment <a href="https://arxiv.org/abs/2503.13657">(Cemri et al., 2025, <em>PP</em>)</a>.</p>
+
+      <p>The interpretation failure specific to hypothesis testing is <b>retrospective unfalsifiability</b>. Ask an agent to explain a null result and it will produce a mechanism ("the effect may be masked by compensation"), which is often true and always unfalsifiable as stated. The test is whether the explanation makes a new prediction. An agent asked to "explain this result" will not volunteer one; an agent asked to "state the prediction that this explanation implies, and its probability" sometimes will.</p>
+
+      <h2 id="decide">10. S8 — Decision and the next experiment</h2>
+      <p>Once a result exists, the question is what to do: replicate, extend, pivot, or stop. This is a decision under uncertainty with a cost model, and it is the step where a small amount of structure buys a lot.</p>
+
+      <p>Value of information gives the right frame. An experiment is worth running if its expected reduction in uncertainty, weighted by the value of the decision it informs, exceeds its cost. Agents can do the arithmetic, enumerate the candidate next experiments, and estimate each one's expected information gain under a stated model. They can also implement a stopping rule — "stop when the posterior probability of the hypothesis exceeds 0.9 or falls below 0.1" — and check that it was set in advance.</p>
+
+      <p>What they cannot supply is the utility function. Whether a 20% chance of a publishable result is worth three months is a lab-level, career-level, and sometimes ethical judgment. Agents will happily optimize whatever proxy you give them, including "number of experiments run." That is not a decision aid; it is a treadmill.</p>
+
+      <p>A useful and underused pattern is the <b>pre-mortem agent</b>: before committing to the next experiment, ask an agent to write the paragraph that would appear in a retraction, or the reviewer 2 comment that kills the paper. This is a generation task with a clear objective, and it surfaces design weaknesses that a "review this plan" prompt does not.</p>
+
+      <h2 id="report">11. S9 — Reporting, provenance, and replication</h2>
+      <p>This is where agents are unambiguously good, and where the field should adopt them fastest. Reporting is bookkeeping under a schema, and bookkeeping is what agents do.</p>
+      <ul>
+        <li><b>Artifact packaging.</b> Environment pinning, seeds, data hashes, analysis scripts, and a machine-readable record of every agent action. An agent-run experiment without this is not an experiment; it is an anecdote with a timestamp.</li>
+        <li><b>Replication runs.</b> Agents can re-execute an analysis from the deposited artifacts and report the diff. CORE-Bench and SUPER are exactly this capability, and they are the closest thing to a mature evaluation in the whole area <a href="https://arxiv.org/abs/2409.11363">(2024, <em>BM</em>)</a>, <a href="https://arxiv.org/abs/2409.07440">(2024, <em>BM</em>)</a>.</li>
+        <li><b>Claim-to-artifact linking.</b> Every sentence in the results section resolves to a number in a table, which resolves to a script, which resolves to a data hash. This is tedious for humans and trivial for agents, and it would eliminate a large share of the reproducibility failures documented since the reproducibility project <a href="https://www.science.org/doi/10.1126/science.aac4716">(Open Science Collaboration, <em>Science</em> 2015, <em>PR</em>)</a>, <a href="https://www.nature.com/articles/533452a">(Baker, <em>Nature</em> 2016, <em>PR</em>)</a>.</li>
+      </ul>
+
+      <p>The specific risk is <b>contamination of the reproduction</b>: the agent that writes the analysis also writes the check, using the same assumptions. A reproduction agent must be given the artifacts and the claim, but not the original agent's reasoning trace. And if the claim was never stated precisely enough to check, the correct output is "unreproducible," not a best-effort reconstruction.</p>
+
+      <h2 id="arithmetic">12. The arithmetic of agent-amplified inference</h2>
+      <p>Five calculations explain most of what goes wrong. All are illustrative.</p>
+
+      <h3>12.1 Silent multiplicity</h3>
+      <p>If an agent tries <i>K</i> analysis variants and reports the smallest p-value, the family-wise error rate under the null is 1 − (1 − α)<sup>K</sup>:</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">K =   1  →   5.0%
+K =   5  →  22.6%
+K =  20  →  64.2%
+K = 100  →  99.4%</pre>
+      <p>Twenty variants is a normal agent search depth. The result is not a bug in the agent; it is the correct behavior of a system asked to maximize significance. The fix is not a better prompt — it is reporting <i>K</i>, pre-specifying the variant, or correcting over the family.</p>
+
+      <h3>12.2 Pre-test odds dominate the p-value</h3>
+      <p>The positive predictive value of a significant finding is</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">PPV  =  (1 − β)·R / [ (1 − β)·R + α ]
+
+R = prior odds that the hypothesis is true
+1 − β = power,  α = significance level</pre>
+      <p>With α = 0.05 and power = 0.8: at R = 0.1 (a speculative hypothesis), PPV ≈ 62%; at R = 0.5, PPV ≈ 89%. <b>Doubling the prior odds buys more credibility than doubling the sample size.</b> This is the strongest argument for agents at S0–S1: a system that raises the proportion of <i>true</i> hypotheses entering the pipeline improves the field's error rate more than one that merely runs more tests. It is also the argument against agents that generate plausible hypotheses indiscriminately — they lower R while increasing K.</p>
+
+      <h3>12.3 Peeking is expensive</h3>
+      <p>If you test after every batch and stop when significant, the false-positive rate inflates even with no other flexibility. For 10 equally spaced two-sided looks at a nominal 5%, the family-wise error is roughly 19%; at 20 looks it approaches 30%. Sequential designs solve this, but only with a boundary fixed in advance. An agent that monitors a running experiment and reports when it "looks significant" is, functionally, an uncorrected sequential test with a very fast peeking schedule.</p>
+
+      <h3>12.4 Averaging correlated agents</h3>
+      <p>If <i>N</i> agent estimates have pairwise correlation ρ, the variance of their average is reduced by the factor</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">reduction  =  [ 1 + (N − 1)·ρ ] / N
+
+ρ = 0.5, N = 10  →  0.55   (45% variance reduction, not 90%)</pre>
+      <p>This is the same lesson as the companion post's effective-sample-size argument, applied to analysis rather than to claims: an ensemble of ten analyses from one model is closer to one analysis than to ten. Genuine disagreement has to come from different data views, different model families, or different priors — not different personas.</p>
+
+      <h3>12.5 The value of one more experiment</h3>
+      <p>A simple decision rule keeps the loop honest:</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">run the experiment  iff  EIG · V(decision)  &gt;  cost + opportunity cost
+
+EIG = expected information gain (nats or bits)
+V   = value of making the right decision</pre>
+      <p>Every term can be estimated, and the estimate is usually sobering. Agents are good at producing the three numbers and bad at choosing <i>V</i>. Make the human state <i>V</i> before the agent optimizes anything.</p>
+
+      <h2 id="failure">13. Seven failure modes</h2>
+      <ol>
+        <li><b>Confirmation-by-prompt.</b> "Find evidence that X" guarantees a dossier for X. The agent is not biased; the objective is. Fix: alternate the prompt ("find the strongest evidence against X") and require both dossiers.</li>
+        <li><b>The forking-paths accelerator.</b> Agents explore variant space faster than humans can audit it. Fix: pre-register the analysis, log every variant tried, report <i>K</i>.</li>
+        <li><b>Benchmark and literature contamination.</b> If the hypothesis or the "held-out" validation set is in the training data, apparent discovery is recall. Fix: sealed holdouts written after model cutoff, and prospective validation.</li>
+        <li><b>Judge circularity.</b> An LLM judge scores hypotheses generated by its own family more highly, and evaluators favor their own generations <a href="https://arxiv.org/abs/2404.13076">(Panickssery et al., 2024, <em>PP</em>)</a>. Fix: cross-family judging, human calibration on a blinded subset, report agreement.</li>
+        <li><b>Evidence laundering.</b> Agent A asserts, agents B–D cite A, and the citation count becomes the evidence. Fix: claim-level provenance to primary data, and count independent sources rather than citations.</li>
+        <li><b>Automation bias.</b> Humans accept agent output that is fluent, formatted, and confident. This is well documented for algorithmic decision aids generally, and the fluency of LLM output makes it worse. Fix: force a human-authored prediction before the agent's answer is shown.</li>
+        <li><b>Provenance loss.</b> The run cannot be reconstructed: which model version, which prompt, which data snapshot, which seed. Fix: immutable run logs, and treat an unreconstructable run as no result.</li>
+      </ol>
+
+      <div class="banner"><strong>The compounding failure:</strong> these interact. Confirmation-by-prompt produces a candidate; the forking-paths accelerator finds a significant slice; the judge (same family) rates it novel; the human defers; the provenance is lost. Each step looks defensible, and the pipeline as a whole is a machine for generating confident, unreproducible claims. Guardrails have to be placed per step, and audited end to end.</div>
+
+      <h2 id="evidence">14. What the evidence actually supports</h2>
+      <p>Sorting the literature by what it licenses, rather than by what it promises:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Claim</th><th>Strongest support</th><th>Verdict</th></tr></thead>
+          <tbody>
+            <tr><td>Agents can reproduce computational analyses from artifacts</td><td>CORE-Bench, SUPER, ScienceAgentBench <a href="https://arxiv.org/abs/2409.11363">(2024)</a>, <a href="https://arxiv.org/abs/2409.07440">(2024)</a>, <a href="https://arxiv.org/abs/2410.05080">(2024/25)</a></td><td><b>Supported</b> for bounded tasks with clear success criteria; weaker on scientific judgment calls.</td></tr>
+            <tr><td>Agents can rank experiments better than random baselines</td><td>BioDiscoveryAgent <a href="https://arxiv.org/abs/2405.17631">(2024/25)</a></td><td><b>Supported</b> in the demonstrated setting; generalization untested.</td></tr>
+            <tr><td>Agents can generate useful hypotheses</td><td>Co-Scientist <a href="https://arxiv.org/abs/2502.18864">(2025)</a>, FunSearch <a href="https://www.nature.com/articles/s41586-023-06924-6">(2024)</a>, Coscientist <a href="https://www.nature.com/articles/s41586-023-06792-0">(2023)</a></td><td><b>Partly supported.</b> Strong when an automated evaluator exists; expert-judged novelty is weak evidence.</td></tr>
+            <tr><td>Agents can run the whole loop autonomously</td><td>AI Scientist <a href="https://arxiv.org/abs/2408.06292">(2024)</a></td><td><b>Not supported.</b> Demonstrates text production, with documented invalid experiments and fabricated citations.</td></tr>
+            <tr><td>Agent debate improves factual accuracy</td><td>Multiagent debate <a href="https://arxiv.org/abs/2305.14325">(2023)</a>, persuasive debate <a href="https://arxiv.org/abs/2402.06782">(ICML 2024)</a></td><td><b>Conditionally supported.</b> Gains depend on diversity, evidence anchoring, and judge independence.</td></tr>
+            <tr><td>Agents can self-correct without external feedback</td><td>Huang et al. <a href="https://arxiv.org/abs/2310.01798">(ICLR 2024)</a></td><td><b>Not supported.</b> Self-refinement gains are often prompt artifacts.</td></tr>
+            <tr><td>Agents can do causal inference from data plus a stated graph</td><td>Kiciman et al. <a href="https://arxiv.org/abs/2305.00050">(2023)</a>, CLadder <a href="https://arxiv.org/abs/2312.04350">(2023)</a></td><td><b>Assistive only.</b> Reliable as a translator/estimator, not as the source of the causal model.</td></tr>
+            <tr><td>Agents improve scientific credibility overall</td><td>—</td><td><b>Unknown.</b> No study measures field-level error rates under agent assistance; the plausible mechanisms point both ways.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two meta-observations. First, the strongest results all have an <b>external evaluator</b>: a compiler, a synthesizer, a wet-lab assay, a held-out gene list. Where the evaluator is an LLM or a human expert's impression, effect sizes shrink and bias grows. Second, almost no study reports a <b>compute-matched baseline</b> — the same token or dollar budget spent on one strong agent with a good prompt. Without that, "the multi-agent system is better" is usually a statement about spending more.</p>
+
+      <p>The economic literature on this is still thin, but the accountability argument is not: Kapoor et al. argue that agent evaluations must report cost, variance, and holdout performance, not just pass rates <a href="https://arxiv.org/abs/2407.01502">(2024, <em>PP</em>)</a>. For hypothesis testing, add one more: the <b>false-discovery rate of the claims the system produces</b>, measured prospectively. That is the only metric that matters to a scientist, and it is rarely reported.</p>
+
+      <h2 id="protocol">15. A protocol for agent-assisted hypothesis testing</h2>
+      <p>This is a proposal, not a validated standard. It is designed so that every agent contribution is attributable and every human judgment is explicit.</p>
+
+      <ol>
+        <li><b>Write the prediction before the agent sees the data.</b> One sentence, directional, with a stated effect size and a stated refutation. Hash it. This is the anchor for everything else.</li>
+        <li><b>Separate the roles and the models.</b> Generator, operationalizer, designer, analyst, critic, and reporter should not all be the same model instance. At minimum, the critic and the judge should come from a different family than the generator.</li>
+        <li><b>Make the analysis plan sealed.</b> The analyst agent receives a frozen plan and the data; it may not choose the estimand, the exclusions, or the stopping rule. If it must deviate, the deviation is a reported result.</li>
+        <li><b>Run the adversarial arm first.</b> Before the confirmatory analysis, ask a critic with access to the plan to name the three most likely ways the result will be an artifact. Pre-commit to reporting those checks.</li>
+        <li><b>Log <i>K</i>.</b> Every variant tried, by any agent, is recorded and reported. If <i>K</i> &gt; 1 and no correction is applied, the paper says so.</li>
+        <li><b>Provenance at the claim level.</b> Each reported number links to a script, a data hash, and a run log. Each interpretive sentence links to numbers.</li>
+        <li><b>Blind the judge.</b> Hypothesis quality, novelty, and result plausibility are scored by a judge that does not know the generating system, on a subset also scored by humans; report agreement, not just the score.</li>
+        <li><b>Cost the run.</b> Tokens, dollars, wall-clock, and human hours, reported next to the result. A result that cost 40× a human analysis needs to be 40× better, or it is a hobby.</li>
+        <li><b>Hold out a validation set created after the model's cutoff.</b> Prospective validation is the only clean test. If you cannot do it, say the result is retrospective.</li>
+        <li><b>Human sign-off on S2, S3, and S8.</b> Measurement validity, identifiability, and whether to continue are not delegated. They are the three places where an error is unrecoverable.</li>
+      </ol>
+
+      <p>None of this is exotic. It is the ordinary discipline of pre-registration and registered reports <a href="https://www.pnas.org/doi/10.1073/pnas.1708274114">(Nosek et al., PNAS 2018, <em>PR</em>)</a>, applied to a workflow with a fast, confident, tireless collaborator. The novelty is that agents make the bookkeeping cheap enough that skipping it is no longer excusable.</p>
+
+      <h2 id="evaluate">16. How to evaluate an agent-assisted workflow</h2>
+      <p>If you want to know whether your agent setup helps, the study design matters more than the model. A minimal credible design:</p>
+      <ul>
+        <li><b>Arms:</b> (A) human-only; (B) one strong agent with the full budget; (C) your multi-agent workflow at the same budget; (D) your workflow with the critic removed. Arm D is the one most papers omit, and it isolates whether the critique does anything.</li>
+        <li><b>Tasks:</b> at least 30 hypotheses with known ground truth for S1/S2, plus a prospective arm where ground truth arrives later. Ten case studies is a demo, not an evaluation.</li>
+        <li><b>Unit of scoring:</b> the claim, not the document. A fluent report with two wrong numbers should score worse than a terse correct one.</li>
+        <li><b>Metrics:</b> precision of supported claims, false-discovery rate at the claim level, calibration (does confidence track correctness?), cost per supported claim, and reproduction rate from artifacts. Report variance across seeds.</li>
+        <li><b>Contamination checks:</b> post-cutoff items, perturbed versions of known items, and a canary set the agent has never seen. Report the canary result even if it is embarrassing.</li>
+        <li><b>Blinding:</b> judges see outputs without system labels; at least one human judge per item on a subset; report inter-rater agreement.</li>
+      </ul>
+
+      <p>The prediction from the current literature is that arm C will beat A on throughput but not on claim-level precision, that C will beat B mainly on coverage, and that D will be close to C — meaning most of the gain is orchestration and retrieval, not critique. If that prediction is wrong, it is worth knowing why. If it is right, it tells you where to spend the engineering.</p>
+
+      <h2 id="open">17. Open questions</h2>
+      <ol>
+        <li><b>Does agent-assisted hypothesis generation raise or lower the pre-test odds?</b> More candidates can raise the chance of a true one and lower the average quality. Which effect dominates is an empirical question nobody has measured at the field level.</li>
+        <li><b>Can measurement validity be checked by an agent at all?</b> Or is it irreducibly a claim about the world that requires wet-lab or instrument-level knowledge?</li>
+        <li><b>What is the right unit of multiplicity when the analysis space is generated?</b> Counting prompts is not counting tests. Is there a principled <i>K</i> for a search over analysis code?</li>
+        <li><b>Can identifiability be certified automatically?</b> Given a DAG and an intervention set, perhaps. Given prose and a vague hypothesis, almost certainly not. Where is the boundary?</li>
+        <li><b>How should agent-assisted results be pre-registered?</b> Pre-registering the plan is easy; pre-registering the <i>search process</i> is not. Is a registered "search protocol" meaningful?</li>
+        <li><b>Does critique from a different model family actually decorrelate errors?</b> Or is there a shared "textbook prior" across all frontier models that makes cross-family diversity illusory for scientific claims?</li>
+        <li><b>What happens to the literature when generation is cheap?</b> If agent-generated hypotheses and papers scale, the ratio of claims to tests rises. Does peer review, or the field, have a mechanism for that?</li>
+        <li><b>How do we audit an agent's scientific taste?</b> Ranking is where the leverage is, and ranking criteria are rarely reported. Can taste be made an explicit, contestable artifact?</li>
+        <li><b>Do agents help most at S0/S9 and least at S2/S3 — and is that stable as models improve?</b> If the boundary moves, the protocol should move with it.</li>
+        <li><b>What is the false-discovery rate of an agent-run pipeline on genuinely novel questions?</b> Every existing benchmark measures tasks with known answers. Novelty is exactly where contamination cannot help and validity cannot be checked.</li>
+        <li><b>Who is accountable when an agent-assisted test is wrong?</b> The PI, the builder, the model provider, or the institution that accepted the pre-registration?</li>
+        <li><b>Is the honest role "agent as methodologist's assistant" rather than "agent as scientist"?</b> Framing matters: the first sets a testable bar (does it reduce errors per unit cost?), the second invites a demo.</li>
+      </ol>
+
+      <h2 id="pilot">18. A one-week pilot you can actually run</h2>
+      <p>Pick a question where you already know the answer and a question where you do not. The first calibrates the system; the second is the real test.</p>
+      <ol>
+        <li><b>Day 1 — S0/S1.</b> Have the agent extract a claim table from 50 papers on the known question, with span-level quotes and effect sizes. Score precision against your own reading of 10 papers. This measures retrieval and provenance, cheaply.</li>
+        <li><b>Day 2 — S2.</b> Ask for three operationalizations of the construct and the confound each one admits. Ask a second agent, with no access to the first, for the measurement that would make the hypothesis fail. Compare. The overlap is your real design space; the disagreement is your assumption list.</li>
+        <li><b>Day 3 — S3.</b> Compute the MDE for the planned n under two variance assumptions. Have the agent propose a randomization and blocking scheme, then have the critic attack it. Implement only what survives.</li>
+        <li><b>Day 4 — S6.</b> Give the analyst agent a frozen plan. Run it. Then run a multiverse over the five most defensible variants and report the spread. If the conclusion flips, you have learned more than the p-value could tell you.</li>
+        <li><b>Day 5 — S7/S8.</b> Pre-mortem: write the retraction paragraph. Then compute the value of the next experiment with your own utility numbers, not the agent's.</li>
+        <li><b>Day 6 — S9.</b> Reproduce the analysis from artifacts with a fresh agent that has not seen the reasoning trace. Record every diff.</li>
+        <li><b>Day 7 — score.</b> Claims supported / claims made; <i>K</i>; cost; reproduction success; and the one number that matters — would you bet on the result at the odds the evidence implies?</li>
+      </ol>
+
+      <p>The output of the pilot is not a discovery. It is a measured profile of where the agent helped and where it produced confident noise, on your data, with your assays. That profile is worth more than any benchmark, because it transfers to the next question.</p>
+
+      <h2 id="checklist">19. Checklist</h2>
+      <ul>
+        <li><b>Decompose before automating.</b> Name the nine commitments; assign an agent to a step only if its output is checkable at that step.</li>
+        <li><b>Never let the generator choose the measure.</b> Operationalize with a different context, model, or person.</li>
+        <li><b>Freeze the analysis plan; log every deviation and every variant.</b> Report <i>K</i>.</li>
+        <li><b>Put the critic on a different family and give it evidence, not prose.</b></li>
+        <li><b>Require the refutation condition in writing, before the run.</b></li>
+        <li><b>Run one arm with the critic removed.</b> If it does not matter, delete it.</li>
+        <li><b>Hold out post-cutoff validation.</b> Retrospective results are hypotheses about the past.</li>
+        <li><b>Log provenance at the claim level, not the paper level.</b></li>
+        <li><b>Cost the run and compare against the human baseline.</b> Throughput is not progress.</li>
+        <li><b>Keep humans on S2, S3, and S8.</b> Validity, identification, and the decision to continue are not delegable.</li>
+      </ul>
+
+      <h2 id="sources">20. Selected sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark paper, <em>IND</em> = industry report.</p>
+
+      <h3>Agents and automated discovery</h3>
+      <ul>
+        <li>Wang et al., <a href="https://www.nature.com/articles/s41586-023-06221-2">Scientific discovery in the age of artificial intelligence</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Boiko et al., <a href="https://www.nature.com/articles/s41586-023-06792-0">Autonomous chemical research with large language models</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Bran et al., <a href="https://arxiv.org/abs/2304.05376">ChemCrow: Augmenting large-language models with chemistry tools</a> (<i>Nature Machine Intelligence</i> 2024) — <em>PR</em></li>
+        <li>Romera-Paredes et al., <a href="https://www.nature.com/articles/s41586-023-06924-6">Mathematical discoveries from program search with large language models</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Google Research, <a href="https://arxiv.org/abs/2502.18864">Accelerating scientific discovery with Co-Scientist</a> (2025) — <em>PP</em></li>
+        <li>Roohani et al., <a href="https://arxiv.org/abs/2405.17631">BioDiscoveryAgent: An AI Agent for Designing Genetic Perturbation Experiments</a> (2024/25) — <em>PP</em></li>
+        <li>Lu et al., <a href="https://arxiv.org/abs/2408.06292">The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery</a> (2024) — <em>PP</em></li>
+        <li>Jin et al., <a href="https://arxiv.org/abs/2304.09667">GeneGPT: Augmenting Large Language Models with Domain Tools for Improved Access to Biomedical Information</a> (2023) — <em>PP</em></li>
+        <li>MacLeod et al., <a href="https://www.nature.com/articles/s41586-020-2442-2">Self-driving laboratory for accelerated discovery of thin-film materials</a> (<i>Nature</i> 2020) — <em>PR</em></li>
+        <li>Szymanski et al., <a href="https://www.nature.com/articles/s41586-023-06734-w">An autonomous laboratory for the accelerated synthesis of novel materials</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Jumper et al., <a href="https://www.nature.com/articles/s41586-021-03819-2">Highly accurate protein structure prediction with AlphaFold</a> (<i>Nature</i> 2021) — <em>PR</em></li>
+      </ul>
+
+      <h3>Evaluation of scientific agents</h3>
+      <ul>
+        <li>Siegel et al., <a href="https://arxiv.org/abs/2409.11363">CORE-Bench: Fostering the Credibility of Published Research Through a Computational Reproducibility Agent Benchmark</a> (2024) — <em>BM</em></li>
+        <li>Bogin et al., <a href="https://arxiv.org/abs/2409.07440">SUPER: Evaluating Agents on Setting Up and Executing Tasks from Research Repositories</a> (2024) — <em>BM</em></li>
+        <li>Chen et al., <a href="https://arxiv.org/abs/2410.05080">ScienceAgentBench: Toward Rigorous Assessment of Language Agents for Data-Driven Scientific Discovery</a> (2024/25) — <em>BM</em></li>
+        <li>Skarlinski et al., <a href="https://arxiv.org/abs/2409.13740">Language agents achieve superhuman synthesis of scientific knowledge</a> (2024) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+      </ul>
+
+      <h3>Debate, critique, and causal reasoning</h3>
+      <ul>
+        <li>Du et al., <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a> (2023) — <em>PP</em></li>
+        <li>Khan et al., <a href="https://arxiv.org/abs/2402.06782">Debating with More Persuasive LLMs Leads to More Truthful Answers</a> (ICML 2024) — <em>PR</em></li>
+        <li>Huang et al., <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a> (ICLR 2024) — <em>PR</em></li>
+        <li>Zečević et al., <a href="https://arxiv.org/abs/2308.13067">Causal Parrots: Large Language Models May Talk Causality But Are Not Causal</a> (2023) — <em>PP</em></li>
+        <li>Jin et al., <a href="https://arxiv.org/abs/2312.04350">CLadder: Assessing Causal Reasoning in Language Models</a> (NeurIPS 2023) — <em>PR</em></li>
+        <li>Kiciman et al., <a href="https://arxiv.org/abs/2305.00050">Causal Reasoning and Large Language Models: Opening a New Frontier for Causality</a> (2023) — <em>PP</em></li>
+        <li>Panickssery et al., <a href="https://arxiv.org/abs/2404.13076">LLM Evaluators Recognize and Favor Their Own Generations</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Statistical and methodological background</h3>
+      <ul>
+        <li>Ioannidis, <a href="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0020124">Why Most Published Research Findings Are False</a> (<i>PLOS Medicine</i> 2005) — <em>PR</em></li>
+        <li>Simmons, Nelson &amp; Simonsohn, <a href="https://journals.sagepub.com/doi/10.1177/0956797611417632">False-Positive Psychology</a> (<i>Psychological Science</i> 2011) — <em>PR</em></li>
+        <li>Gelman &amp; Loken, <a href="http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf">The garden of forking paths</a> (2013) — <em>PP</em></li>
+        <li>Steegen et al., <a href="https://journals.sagepub.com/doi/10.1177/1745691616658637">Increasing Transparency Through a Multiverse Analysis</a> (2016) — <em>PR</em></li>
+        <li>Simonsohn, Simmons &amp; Nelson, <a href="https://www.nature.com/articles/s41562-020-0912-z">Specification curve analysis</a> (<i>Nature Human Behaviour</i> 2020) — <em>PR</em></li>
+        <li>Nosek et al., <a href="https://www.pnas.org/doi/10.1073/pnas.1708274114">The preregistration revolution</a> (PNAS 2018) — <em>PR</em></li>
+        <li>Open Science Collaboration, <a href="https://www.science.org/doi/10.1126/science.aac4716">Estimating the reproducibility of psychological science</a> (<i>Science</i> 2015) — <em>PR</em></li>
+        <li>Baker, <a href="https://www.nature.com/articles/533452a">1,500 scientists lift the lid on reproducibility</a> (<i>Nature</i> 2016) — <em>PR</em></li>
+        <li>Benjamini &amp; Hochberg, <a href="https://www.jstor.org/stable/2346101">Controlling the false discovery rate</a> (JRSS-B 1995) — <em>PR</em></li>
+        <li>Rainforth et al., <a href="https://arxiv.org/abs/2302.14545">Modern Bayesian Experimental Design</a> (2023/24) — <em>PP</em></li>
+        <li>Houlsby et al., <a href="https://arxiv.org/abs/1112.5745">Bayesian Active Learning for Classification and Preference Learning</a> (2011) — <em>PP</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The honest summary is a division of labor, not a takeover. Agents are already useful at the parts of hypothesis testing that are <b>search and bookkeeping</b>: reading the literature, enumerating mechanisms, drafting operational definitions, computing power, running pipelines, auditing provenance, reproducing results. They are unreliable at the parts that are <b>judgment under an unverifiable objective</b>: deciding what a measurement means, certifying that a comparison identifies a cause, and knowing when a line of inquiry is finished.</p>
+
+      <p>That division is not a temporary limitation of model capability. It follows from the structure of the problem. A hypothesis test is a procedure for making an error cost visible; an agent can make the procedure faster and more complete, but it cannot make the error cost smaller. In fact, by accelerating search over analyses and hypotheses, it makes the error cost <i>easier to miss</i> — which is why the discipline of pre-registration, provenance, and adversarial critique has to scale with the agent, not lag behind it.</p>
+
+      <p>The most promising near-term use is therefore not "an AI that does science." It is <b>an adversarial methodological assistant</b>: a system whose job is to make the next experiment cheaper to run, harder to fool, and easier to reproduce. That is a smaller ambition than the demos, and a much larger contribution.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

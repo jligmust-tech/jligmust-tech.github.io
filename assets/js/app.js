@@ -423,7 +423,7 @@
   /* ---------- Updates feed (index.html) ---------- */
   function renderUpdates(feed) {
     var h = "";
-    SCAI_DATA.posts.slice(0, 5).forEach(function (p) {
+    SCAI_DATA.posts.filter(function (p) { return p.home !== false; }).slice(0, 5).forEach(function (p) {
       h += "<li><span class='date'>" + esc(p.date) + "</span><span class='tag'>" + esc(p.tag) + "</span> ";
       h += p.url && p.url !== "#" ? "<a href='" + esc(p.url) + "'>" + esc(p.title) + "</a>" : "<span>" + esc(p.title) + "</span>";
       h += "</li>";

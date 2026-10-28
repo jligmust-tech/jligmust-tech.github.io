@@ -1151,6 +1151,12 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-10-28", tag: "Research", title: "Agents for hypothesis testing: a substep-by-substep survey",
+      desc: "Where AI agents help the hypothesis-testing loop — literature priors, hypothesis generation, operationalization, experimental design, execution and QC, statistics, adversarial critique, decisions, and reporting — with the evidence grades, seven failure modes, the arithmetic of agent-amplified inference, a pre-registration protocol, and a one-week pilot.",
+      url: "/blog/posts/2026-10-28-agents-for-hypothesis-testing.html",
+      home: false
+    },
+    {
       date: "2026-10-20", tag: "Research", title: "Hallucination in the swarm: testing collective confabulation in multi-agent systems",
       desc: "A review of hallucination in multi-agent LLM systems and agent societies — correlated priors, conformity, evidence laundering, verification collapse, context fragmentation, and emergent shared belief; a measurable arithmetic of rho and contagion R0; an eight-family test battery (compute-matched control, independence assay, canary traps, contagion, metamorphic tests, trace forensics, population scale, adversarial pressure) with metric definitions and statistics; and twenty open questions.",
       url: "/blog/posts/2026-10-20-hallucination-in-the-swarm.html"
