@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: swarm intelligence, 1959–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the swarm-intelligence survey: two waves of metaphor-driven coordination, what survived the first wave's backlash, and which swarm concepts transfer to LLM agent societies with evidence and which are decoration.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 640px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.crit::before { border-color: #718096; }
+    .tm-item.agent::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. Two waves</a>
+          <a href="#record">3. The record</a>
+          <a href="#wave1">4. What the first wave learned</a>
+          <a href="#transfer">5. What transfers</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-10</span>
+      </div>
+      <h1>Timeline review: swarm intelligence, 1959–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html">survey</a> traced swarm ideas from boids and ant colonies to LLM agent societies. A timeline makes an uncomfortable comparison available: <b>this is the second time the field has run this programme</b>, and the first run ended with a methodological backlash that the second run is currently repeating.</p>
+
+      <p>The parallel is not rhetorical. Wave one (1992–2015) produced a family of algorithms named after animals, applied to benchmark functions, evaluated against weak baselines, and published in volume. Wave two (2023–) produces systems named after organizations — societies, teams, parliaments, civilizations — applied to tasks, evaluated against single-agent baselines that are often under-resourced. The failure mode is the same: <b>the metaphor arrives before the mechanism, and the mechanism arrives before the metric.</b></p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curve in §2 is a schematic of attention and activity, drawn by hand, not a bibliometric series; it is there to make the shape of two waves legible, not to measure them. Dates mark first publication. No benchmark was run and no agent system was built for this post.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> swarm intelligence's durable contribution was never the algorithms. It was three mechanisms — <b>indirect coordination through shared state, diversity maintenance, and evaluation against a strong baseline</b> — and all three are measurable. The parts that did not survive were the animal names and the claim that emergence is automatically good. LLM agent societies inherit the mechanisms and, so far, the names.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>Swarm intelligence is unusual in that its first wave is recent enough to be audited and old enough to have failed in public. That makes it a rare thing in AI: a controlled precedent. We can ask what the first wave got right, what it got wrong, how long the correction took, and whether the second wave has adopted the correction before or after the hype.</p>
+
+      <p>The comparison also disciplines a vocabulary problem. "Emergent," "decentralized," "self-organized," and "collective" are descriptions, not claims. A timeline helps separate the papers that used the words from the papers that measured something.</p>
+
+      <h2 id="figure">2. Two waves</h2>
+
+      <div class="tm-fig">
+        <div class="tm-legend">
+          <span class="tm-key"><span class="tm-sw" style="background:#2f855a"></span>heuristic optimization (ACO, PSO, metaphor metaheuristics)</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#b7791f"></span>LLM agent societies</span>
+        </div>
+        <div class="tm-scroll">
+        <svg class="tm-plot" viewBox="0 0 720 300" role="img" aria-labelledby="tm-t tm-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="tm-t">Schematic: two waves of swarm-intelligence activity, 1985–2026</title>
+          <desc id="tm-d">A first hump rises from 1992, peaks around 2005 with the boom in metaphor-named metaheuristics, declines through a methodological trough around 2012, and flattens. A second, steeper hump begins in 2022 with LLM agent societies and is still rising at 2026.</desc>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="231.2" y1="48" x2="231.2" y2="260" />
+            <line x1="382.4" y1="48" x2="382.4" y2="260" />
+            <line x1="533.6" y1="48" x2="533.6" y2="260" />
+            <line x1="684.8" y1="48" x2="684.8" y2="260" />
+          </g>
+
+          <path d="M80,260 L185.8,230 L231.2,190 L306.8,120 L382.4,90 L458,104 L518.5,150 L609.2,190 L700,210 L700,260 Z" fill="#2f855a" opacity="0.12" />
+          <path d="M458,260 L578.9,256 L639.4,220 L654.6,170 L669.7,130 L684.8,90 L700,70 L700,260 Z" fill="#b7791f" opacity="0.14" />
+
+          <path d="M80,260 L185.8,230 L231.2,190 L306.8,120 L382.4,90 L458,104 L518.5,150 L609.2,190 L700,210" fill="none" stroke="#2f855a" stroke-width="2.4" stroke-linejoin="round" />
+          <path d="M458,260 L578.9,256 L639.4,220 L654.6,170 L669.7,130 L684.8,90 L700,70" fill="none" stroke="#b7791f" stroke-width="2.4" stroke-linejoin="round" />
+
+          <line x1="80" y1="260" x2="700" y2="260" stroke="#cbd5e0" />
+
+          <text x="186" y="248" font-size="9.5" fill="#64748b">ACO 1992 · PSO 1995</text>
+          <text x="300" y="76" font-size="9.5" fill="#2f855a">metaphor boom, 2003–2014</text>
+          <text x="500" y="168" font-size="9.5" fill="#64748b" text-anchor="middle">trough ≈ 2012</text>
+          <text x="700" y="56" font-size="9.5" fill="#b7791f" text-anchor="end">LLM swarms, 2023–</text>
+          <text x="80" y="34" font-size="10.5" fill="#64748b">relative attention — schematic, drawn by hand</text>
+
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="80" y="278">1985</text>
+            <text x="231.2" y="278">1995</text>
+            <text x="382.4" y="278">2005</text>
+            <text x="533.6" y="278">2015</text>
+          </g>
+          <text x="700" y="278" font-size="10.5" fill="#64748b" text-anchor="end">2026</text>
+        </svg>
+        </div>
+        <p class="tm-cap"><b>Figure 1. The same shape, twice.</b> The first hump is the metaheuristic boom: rapid growth of nature-named optimizers, a plateau, then a methodological correction around 2012–15 that reduced publication volume without reducing the underlying ideas' usefulness. The second hump begins in 2022 and is steeper because the tooling is cheaper. The claim the figure is making is not about magnitude, which is unmeasured, but about <i>phase</i>: wave two is roughly at 2005's position in wave one, which is the point where the boom outran the benchmarks.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">1959–1991 · <span>nature as mechanism</span> · contribution: coordination without a controller</li>
+        <li class="tm-item"><span class="tm-y">1959</span><b>Stigmergy</b> — termite construction explained by traces left in the environment; coordination without communication, and the most durable idea in the whole list.</li>
+        <li class="tm-item"><span class="tm-y">1986–87</span><b>Boids</b> — three local rules (separation, alignment, cohesion) produce flocking; the demonstration that global order needs no global rule.</li>
+        <li class="tm-item"><span class="tm-y">1991</span><b>Ant colony optimization</b> — pheromone trails as a distributed memory that solves shortest-path problems; the first swarm algorithm with a real optimization target.</li>
+
+        <li class="tm-era">1992–2005 · <span>swarms as optimizers</span> · contribution: cheap, derivative-free search</li>
+        <li class="tm-item"><span class="tm-y">1995</span><b>Particle swarm optimization</b> — a population of candidate solutions moved by personal and social bests; two update rules, twenty lines of code, and a decade of applications.</li>
+        <li class="tm-item"><span class="tm-y">1999–2004</span><b>Swarm intelligence formalized</b> — the field gets a name, a textbook, and a canon; convergence analysis begins, mostly for simplified variants.</li>
+        <li class="tm-item"><span class="tm-y">2005</span><b>Artificial bee colony</b> — the metaphor-first design pattern is now established: pick an animal behaviour, map it to an update rule, name the algorithm.</li>
+
+        <li class="tm-era">2006–2015 · <span>the boom and the correction</span> · contribution: a lesson about baselines</li>
+        <li class="tm-item"><span class="tm-y">2006–14</span><b>Metaphor proliferation</b> — firefly, cuckoo, bat, wolf, krill, and dozens more; each published with comparisons to older metaphors rather than to strong general-purpose baselines.</li>
+        <li class="tm-item crit"><span class="tm-y">2015</span><b>“The metaphor exposed”</b> — a direct critique that many nature-inspired methods are repackaged local search with extra parameters, and that the naming obscures rather than describes the mechanism.</li>
+        <li class="tm-item crit"><span class="tm-y">2015–18</span><b>Benchmark hygiene</b> — the field converges on tuning budgets, statistical tests across many runs, and comparisons to well-tuned classical baselines; publication volume falls, usefulness does not.</li>
+
+        <li class="tm-era">2016–2022 · <span>multi-agent reinforcement learning</span> · contribution: emergent behaviour that can be measured</li>
+        <li class="tm-item"><span class="tm-y">2017–19</span><b>Emergence in MARL</b> — competition and environment shaping produce tool use and niche construction in simple simulated worlds; the interesting result is that the behaviour is <i>fragile</i> and hard to transfer.</li>
+        <li class="tm-item"><span class="tm-y">2020–22</span><b>Population-based training and collective search</b> — swarms become an engineering pattern for hyperparameter and policy search rather than a biological metaphor.</li>
+
+        <li class="tm-era">2023–2026 · <span>societies of language agents</span> · contribution: coordination in natural language</li>
+        <li class="tm-item agent"><span class="tm-y">2023</span><b>Generative agents</b> — memory, reflection, and planning produce plausible social behaviour in a small town of agents; emergence is demonstrated qualitatively, not measured against a task baseline.</li>
+        <li class="tm-item agent"><span class="tm-y">2023</span><b>CAMEL, AutoGen, MetaGPT, ChatDev</b> — role assignment and message passing become frameworks; "society" is implemented as a conversation with a scheduler.</li>
+        <li class="tm-item agent"><span class="tm-y">2023</span><b>Multi-agent debate</b> — the first swarm-adjacent method with a clear metric (factual accuracy) and a clear baseline (the same model alone).</li>
+        <li class="tm-item agent"><span class="tm-y">2024</span><b>Optimizable agent graphs</b> — GPTSwarm and AFlow treat the topology as the thing to search; the swarm becomes an object of optimization rather than a metaphor.</li>
+        <li class="tm-item agent"><span class="tm-y">2025</span><b>Agent populations and civilizations</b> — hundreds of agents with persistent memory and social structure; scaling becomes the headline, and the cost accounting arrives late.</li>
+        <li class="tm-item crit"><span class="tm-y">2025</span><b>Failure taxonomies and collective bias</b> — agents that never verify, converge on unvalidated plans, and harden arbitrary conventions into norms.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — wave two is at the point where wave one's benchmarks stopped being informative, and the correction is available for the taking.</li>
+      </ul>
+
+      <h2 id="wave1">4. What the first wave learned, and what it cost to learn</h2>
+      <p>The standard telling is that nature-inspired optimization failed. That is too harsh and too vague. What failed was a <b>publication pattern</b>, and the pattern is worth naming precisely because it is currently being reproduced.</p>
+
+      <ul>
+        <li><b>Novelty was located in the metaphor.</b> A new animal implied a new algorithm. The actual novelty was usually a parameterization of local search, and the animal name made it hard to compare with what it parameterized.</li>
+        <li><b>Baselines were chosen to lose.</b> Comparisons were made to older metaphor methods, rarely to a well-tuned covariance-matrix-adaptation or a simple restart strategy. When the latter comparison was finally made, many advantages disappeared.</li>
+        <li><b>Evaluation was single-run.</b> Stochastic optimizers were compared on one seed, one problem instance, and one budget. The correction — many runs, statistical tests, equal tuning budgets — was straightforward and took roughly five years to become normal.</li>
+        <li><b>The good ideas survived the correction.</b> Stigmergic shared memory, diversity maintenance, and decentralized local rules are all still used, inside methods that no longer have animal names. The mechanism outlived the branding.</li>
+      </ul>
+
+      <div class="banner"><strong>The transferable lesson:</strong> in wave one, the tell was <i>a name that described the inspiration rather than the mechanism</i>. In wave two, the tell is <i>a name that describes the org chart</i> — society, team, parliament, civilization. Neither name predicts performance, and both make it harder to say what was actually varied.</div>
+
+      <h2 id="transfer">5. What transfers, and what does not</h2>
+      <p>Sorting the swarm vocabulary by whether it survives contact with measurement:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Swarm concept</th><th>Wave-one version</th><th>Wave-two version</th><th>Evidence status</th></tr></thead>
+          <tbody>
+            <tr><td><b>Indirect coordination</b> (stigmergy)</td><td>Pheromone trails</td><td>Shared memory, blackboards, artifact stores, rule bases</td><td><b>Supported in principle</b>, weakly measured for agents</td></tr>
+            <tr><td><b>Local rules, global order</b></td><td>Boids</td><td>Role prompts plus a scheduler</td><td><b>Demonstrated</b> as a phenomenon, not as a benefit</td></tr>
+            <tr><td><b>Population diversity</b></td><td>Random initialization, mutation</td><td>Temperature and persona diversity</td><td><b>Contradicted</b> — samples from one model are highly correlated; diversity must come from data or model family</td></tr>
+            <tr><td><b>Emergence</b></td><td>Flocking, trail formation</td><td>Conventions, norms, division of labour</td><td><b>Real</b>, and not automatically good: conventions can encode arbitrary bias</td></tr>
+            <tr><td><b>Consensus by iteration</b></td><td>Trail reinforcement</td><td>Debate and voting</td><td><b>Conditionally supported</b> — depends on evidence anchoring and judge independence</td></tr>
+            <tr><td><b>Optimization target</b></td><td>A benchmark function</td><td>A task score, often absent</td><td><b>The gap</b> — without a target, "swarm" describes a topology and nothing else</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The row that matters most is the third. Wave one's diversity came from genuinely independent random draws, which is why population methods worked at all. Wave two's diversity comes from sampling one model with different prompts, and those samples share a prior, a training corpus, and a set of failure modes. The effective-sample-size argument applies directly: if pairwise error correlation is high, adding agents adds cost without adding information. Personas are not independence.</p>
+
+      <p>The row that matters second is the last. Swarm methods are optimization procedures, and an optimization procedure without an objective is a process description. Much of the current literature describes a topology — who talks to whom — and reports that it worked, without a compute-matched single-agent baseline. That is exactly the wave-one pattern of comparing a new method to a weaker version of itself.</p>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <ul>
+        <li><b>Topology optimization is the most promising direction</b>, because it turns the swarm into an object with a measurable objective and a search procedure over it.</li>
+        <li><b>Shared-state coordination is the most under-used mechanism</b>, and the closest analogue to stigmergy: a rule base or artifact store that agents write to and read from is cheaper and more auditable than a transcript.</li>
+        <li><b>Persona diversity should be retired as a diversity mechanism</b> until someone shows that it decorrelates errors.</li>
+        <li><b>Emergence is a phenomenon to be measured, not a benefit to be claimed.</b> The measurable version is convergence rate, claim-level accuracy, and variance across seeds.</li>
+        <li><b>Cost accounting is now mandatory</b>, because the only robust finding about multi-agent systems is that they use more tokens than the single-agent baseline they are compared against.</li>
+        <li><b>The correction will arrive.</b> The open question is whether it arrives before or after a field-scale deployment, and the wave-one precedent suggests it takes about five years from the first strong critique.</li>
+      </ul>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>IND</em> = industry report.</p>
+
+      <h3>First wave</h3>
+      <ul>
+        <li>Grassé, La reconstruction du nid et les coordinations interindividuelles (stigmergy; 1959) — <em>PR</em></li>
+        <li>Reynolds, Flocks, herds and schools: a distributed behavioral model (SIGGRAPH 1987) — <em>PR</em></li>
+        <li>Dorigo, Optimization by ant colonies (1992) — <em>PR</em></li>
+        <li>Kennedy &amp; Eberhart, Particle swarm optimization (1995) — <em>PR</em></li>
+        <li>Bonabeau, Dorigo &amp; Theraulaz, <i>Swarm Intelligence: From Natural to Artificial Systems</i> (1999) — <em>PR</em></li>
+        <li>Karaboga, An idea based on honey bee swarm for numerical optimization (2005) — <em>PP</em></li>
+        <li>Sörensen, Metaheuristics — the metaphor exposed (<i>International Transactions in Operational Research</i> 2015) — <em>PR</em></li>
+      </ul>
+
+      <h3>Second wave</h3>
+      <ul>
+        <li>Park et al., <a href="https://arxiv.org/abs/2304.03442">Generative Agents: Interactive Simulacra of Human Behavior</a> (UIST 2023) — <em>PR</em></li>
+        <li>Li et al., <a href="https://arxiv.org/abs/2303.17760">CAMEL: Communicative Agents for “Mind” Exploration</a> (2023) — <em>PP</em></li>
+        <li>Wu et al., <a href="https://arxiv.org/abs/2308.08155">AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation</a> (2023) — <em>PP</em></li>
+        <li>Hong et al., <a href="https://arxiv.org/abs/2308.00352">MetaGPT: Meta Programming for Multi-Agent Collaborative Framework</a> (2023) — <em>PP</em></li>
+        <li>Du et al., <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a> (2023) — <em>PP</em></li>
+        <li>Zhuge et al., <a href="https://arxiv.org/abs/2402.16823">GPTSwarm: Language Agents as Optimizable Graphs</a> (ICML 2024) — <em>PR</em></li>
+        <li>Zhang et al., <a href="https://arxiv.org/abs/2410.10762">AFlow: Automating Agentic Workflow Generation</a> (2024) — <em>PP</em></li>
+        <li>Ashery et al., <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">Emergent social conventions and collective bias in populations of LLM agents</a> (<i>Science Advances</i> 2025) — <em>PR</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Diversity and correlated error</h3>
+      <ul>
+        <li>Meinshausen &amp; Bühlmann, <a href="https://doi.org/10.1111/j.1467-9868.2010.00740.x">Stability selection</a> (JRSS-B 2010) — <em>PR</em></li>
+        <li>Panickssery et al., <a href="https://arxiv.org/abs/2404.13076">LLM Evaluators Recognize and Favor Their Own Generations</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The most useful thing in swarm intelligence is not the swarm. It is the discipline the first wave was forced to adopt: a mechanism you can state without a metaphor, a baseline that is allowed to win, and a metric that survives many runs. Wave two has the tooling to adopt that discipline in a year instead of five, and mostly has not.</p>
+
+      <p>If the parallel holds, the correction will come from outside the subfield — from benchmarks that include compute-matched single-agent arms, and from cost accounting that makes a ten-agent system answer a question about budgets before it answers one about accuracy. Until then, the honest description of most "agent societies" is a conversation with a scheduler and a bill, and the interesting research is wherever someone has made the topology the object of optimization rather than the branding.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

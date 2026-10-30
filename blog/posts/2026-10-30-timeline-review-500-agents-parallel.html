@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: many agents in parallel, 2004–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the 500-agents design brief: the distributed-systems patterns that predate agents, the point where synchronization and merge cost eat the parallel gain, and why '500 agents' needs a definition before it needs a benchmark.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 640px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.sys::before { border-color: #718096; }
+    .tm-item.agent::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. Speedup versus cost</a>
+          <a href="#record">3. The record</a>
+          <a href="#patterns">4. Patterns that only work in parallel</a>
+          <a href="#merge">5. The merge is the system</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-16</span>
+      </div>
+      <h1>Timeline review: many agents in parallel, 2004–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html">design brief</a> treated 500 agents as an orchestration problem: leases, synchronization, compact contexts, serial versus parallel cost. A timeline reveals that most of that brief was written twenty years earlier, in a different vocabulary, for a different substrate. <b>Orchestrating many workers is a solved problem in distributed systems, and an unsolved one in agent systems only because the workers are non-deterministic.</b></p>
+
+      <p>That single difference — non-determinism plus natural-language interfaces — is what makes the old patterns hard to reuse, and it is also the reason "500 agents" is an ambiguous claim. Before it can be evaluated, it needs to be defined, and the definitions differ by three orders of magnitude in cost.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curves in §2 are schematic illustrations of standard speedup and efficiency behaviour; the efficiency numbers are invented for legibility and are not measurements from any system. No agent run was executed for this post.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> parallel agents are useful in exactly one regime — <b>many independent subtasks with a cheap, correct merge</b>. Outside that regime, adding agents adds tokens, coordination risk, and variance while adding little accuracy, and the cost grows linearly while the speedup saturates. The engineering work that matters is therefore not spawning, it is <em>reducing</em>: reduce the merge cost, reduce the context per worker, and reduce the number of workers you actually need.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>"500 agents" is a claim about scale, and scale claims are only meaningful against a baseline: 500 agents compared to what, at what budget, over what wall-clock, with what acceptance criterion? The timeline is useful because the distributed-systems lineage already established the shape of the answer — speedup saturates, efficiency declines, and the merge becomes the bottleneck — and because that shape is now visible in agent-run reports.</p>
+
+      <p>It also disciplines a marketing number. Concurrency, total agents, and distinct roles are three different quantities, and the interesting one is usually the smallest.</p>
+
+      <h2 id="figure">2. Speedup versus cost</h2>
+
+      <div class="tm-fig">
+        <div class="tm-legend">
+          <span class="tm-key"><span class="tm-sw" style="background:#718096"></span>ideal linear speedup</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#3182ce"></span>realistic, with synchronization and merge</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#b7791f"></span>fraction of linear efficiency</span>
+        </div>
+        <div class="tm-scroll">
+        <svg class="tm-plot" viewBox="0 0 720 360" role="img" aria-labelledby="tm-t tm-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="tm-t">Schematic: speedup versus number of agents, log-log, with efficiency falling</title>
+          <desc id="tm-d">On log axes, the ideal curve is a straight diagonal from one to five hundred. The realistic curve leaves it at about ten agents and flattens: 6x at 10, 25x at 100, 60x at 500. A strip below shows the fraction of linear efficiency falling from 100 percent to 12 percent.</desc>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="90" y1="60" x2="90" y2="250" />
+            <line x1="312.2" y1="60" x2="312.2" y2="250" />
+            <line x1="534.4" y1="60" x2="534.4" y2="250" />
+            <line x1="690" y1="60" x2="690" y2="250" />
+            <line x1="90" y1="179.6" x2="690" y2="179.6" stroke-dasharray="3 4" />
+            <line x1="90" y1="109.3" x2="690" y2="109.3" stroke-dasharray="3 4" />
+          </g>
+
+          <polyline fill="none" stroke="#718096" stroke-width="2" stroke-dasharray="5 4" points="90,250 312.2,179.6 534.4,109.3 690,60" />
+          <polyline fill="none" stroke="#3182ce" stroke-width="2.6" stroke-linejoin="round" points="90,250 312.2,195.3 534.4,151.6 690,124.9" />
+
+          <text x="352" y="172" font-size="9.5" fill="#718096">ideal</text>
+          <text x="560" y="140" font-size="9.5" fill="#3182ce">realistic</text>
+
+          <text x="690" y="52" font-size="9.5" fill="#64748b" text-anchor="end">500 agents</text>
+          <text x="90" y="52" font-size="9.5" fill="#64748b">1 agent</text>
+          <text x="72" y="253" font-size="9.5" fill="#94a3b8" text-anchor="end">1×</text>
+          <text x="76" y="182.6" font-size="9.5" fill="#94a3b8" text-anchor="end">10×</text>
+          <text x="76" y="112.3" font-size="9.5" fill="#94a3b8" text-anchor="end">100×</text>
+
+          <rect x="77" y="296" width="26" height="34" rx="3" fill="#b7791f" opacity="0.85" />
+          <rect x="299.2" y="309.6" width="26" height="20.4" rx="3" fill="#b7791f" opacity="0.85" />
+          <rect x="521.4" y="321.5" width="26" height="8.5" rx="3" fill="#b7791f" opacity="0.85" />
+          <rect x="677" y="325.9" width="26" height="4.1" rx="3" fill="#b7791f" opacity="0.85" />
+          <line x1="60" y1="330" x2="710" y2="330" stroke="#cbd5e0" />
+
+          <g font-size="9.5" fill="#64748b" text-anchor="middle">
+            <text x="90" y="346">100%</text>
+            <text x="312.2" y="346">60%</text>
+            <text x="534.4" y="346">25%</text>
+          </g>
+          <text x="700" y="346" font-size="9.5" fill="#64748b" text-anchor="end">12%</text>
+        </svg>
+        </div>
+        <p class="tm-cap"><b>Figure 1. The shape every parallel system has.</b> Log axes, so the ideal line is straight and equal spacing means equal ratios. The realistic curve departs from ideal early — around ten workers — and flattens: the marginal worker buys less than the last one, because coordination, synchronization, and merge work grow faster than the work being parallelized. The strip underneath is the efficiency ratio, and it is the number that determines whether the parallel run was worth its bill. The coordinates are invented; the shape is not.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">2004–2014 · <span>parallel workers as an engineering pattern</span> · problem: coordination</li>
+        <li class="tm-item sys"><span class="tm-y">1967</span><b>Amdahl's law</b> — the serial fraction bounds the speedup; the argument that has been re-derived for every parallel system since, including this one.</li>
+        <li class="tm-item sys"><span class="tm-y">1993</span><b>Universal Scalability Law</b> — adds contention and coherency cost; predicts the <i>decline</i> after a peak, not just a plateau.</li>
+        <li class="tm-item sys"><span class="tm-y">2004</span><b>MapReduce</b> — fan-out, shuffle, fan-in; the canonical many-worker pattern and the reason "map then reduce" is the default shape of parallel agent work.</li>
+        <li class="tm-item sys"><span class="tm-y">2014</span><b>Container orchestration</b> — scheduling, leases, retries, and idempotency become commodity infrastructure; the vocabulary the agent brief inherits wholesale.</li>
+        <li class="tm-item sys"><span class="tm-y">2020</span><b>Workflow engines and queues</b> — durable execution, at-least-once delivery, dead-letter queues; the components that make 500 workers survivable when some of them fail.</li>
+
+        <li class="tm-era">2023–2024 · <span>agents get frameworks</span> · problem: state</li>
+        <li class="tm-item"><span class="tm-y">2023</span><b>AutoGen, CrewAI, LangGraph</b> — multi-agent conversation and graph orchestration; fan-out becomes a configuration rather than a program.</li>
+        <li class="tm-item"><span class="tm-y">2024</span><b>Batch inference APIs</b> — large asynchronous jobs at roughly half the per-token price; the first time "run a thousand of them" was economically boring.</li>
+        <li class="tm-item"><span class="tm-y">2024</span><b>Prompt caching and cheap subagents</b> — repeated preambles stop dominating the bill, and small models handle the fan-out work.</li>
+
+        <li class="tm-era">2025 · <span>scale reports</span> · problem: reconciliation</li>
+        <li class="tm-item agent"><span class="tm-y">2025</span><b>Orchestrator–worker at production scale</b> — research systems report large gains on breadth-first tasks and a large token multiplier, published together; the pairing is the useful part.</li>
+        <li class="tm-item agent"><span class="tm-y">2025</span><b>Hundreds-of-agents engineering reports</b> — concurrency, leases, and budget caps described in the same documents as accuracy, which is how a field matures.</li>
+        <li class="tm-item"><span class="tm-y">2025</span><b>Evaluation pushback</b> — cost, variance, and holdout performance demanded alongside pass rates; a multi-agent result without a compute-matched baseline starts being rejected in review.</li>
+
+        <li class="tm-era">2026 · <span>reduction rather than scale</span> · problem: the merge</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>Merge-first design</b> — the reducer, the deduplication rule, and the acceptance criterion are specified before the fan-out; the brief's "synchronization discipline" generalized.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — the scale question is reformulated as an efficiency question, and the definitional ambiguity of "500" is made explicit.</li>
+      </ul>
+
+      <h2 id="patterns">4. Patterns that only work in parallel</h2>
+      <p>Parallelism is worth its overhead in a narrower set of cases than the discourse implies. Four patterns recur, and only three of them are genuinely parallel.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Pattern</th><th>Why parallel helps</th><th>What it costs</th><th>When it wins</th></tr></thead>
+          <tbody>
+            <tr><td><b>Independent enumeration</b> (search 500 candidates, keep the best)</td><td>No cross-worker dependency; the merge is a max or a filter</td><td>Linear tokens; a cheap reducer</td><td>When the scoring function is cheap and the space is wide</td></tr>
+            <tr><td><b>Breadth-first research</b> (many sources, then synthesize)</td><td>Latency and coverage both improve; the merge is a summarization</td><td>Token multiplier; lossy summaries; duplicated findings</td><td>When coverage is the objective and the synthesis is cheap to check</td></tr>
+            <tr><td><b>Adversarial review</b> (generate, then attack from several angles)</td><td>Independent contexts see different failures</td><td>Only helps if the critics are genuinely decorrelated</td><td>When critics have different evidence, not different personas</td></tr>
+            <tr><td><b>Sequential refinement</b> (pipeline of specialists)</td><td>Not parallel at all — it is a pipeline</td><td>Error compounding at each stage</td><td>Rarely; it is usually a single agent with a longer context</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The fourth row is included because it is routinely described as "multi-agent" and is not parallel. A pipeline of five specialists has the failure profile of a five-stage relay, where each handoff loses information and each stage's errors are inherited. It also has the worst cost profile, because every stage pays for the full context it receives.</p>
+
+      <div class="banner"><strong>The definitional test:</strong> before claiming "500 agents," answer three questions — 500 <i>concurrent</i> or 500 <i>total</i>? 500 <i>roles</i> or 500 <i>instances of one role</i>? and what does the merge cost? If the answers are "total," "instances," and "a human reads all of it," the parallel gain is real but the system is a batch job with an expensive reducer, and should be described that way.</div>
+
+      <h2 id="merge">5. The merge is the system</h2>
+      <p>In a deterministic parallel system, the merge is a fold and its cost is predictable. In an agent system, the merge is usually a language model reading N outputs, which means <b>the merge itself has the failure modes of an agent</b>: it can be distracted by the middle of its input, it can accept a confident wrong answer, and it can silently drop a finding that only one worker reported.</p>
+
+      <p>This is where the agent version of the problem diverges from the distributed-systems version, and where the useful engineering has gone. Reducers that accept structured output rather than prose, merges that deduplicate by claim rather than by text, and acceptance criteria that are checked per item rather than in aggregate — these are what turn a fan-out into a system. Without them, 500 workers produce 500 plausible paragraphs and one exhausted human.</p>
+
+      <p>The efficiency arithmetic reinforces it. If the merge is O(N) in human attention, the effective speedup is bounded by human reading speed, not by concurrency. The only way out is a merge that is mechanical — a sort, a count, a filter, a vote with a stated rule — which is exactly the pattern the distributed-systems literature has been recommending for twenty years.</p>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <ul>
+        <li><b>Concurrency is cheap; coherence is not.</b> Batch APIs and small models removed the cost barrier, not the merge barrier.</li>
+        <li><b>Breadth-first and enumeration workloads are the clear wins.</b> Everything else should default to one agent with a good context.</li>
+        <li><b>Compute-matched baselines are now mandatory</b> in serious evaluation, and a multi-agent claim without one is uninterpretable.</li>
+        <li><b>The reducer deserves more engineering than the fan-out.</b> Structured outputs, claim-level deduplication, per-item acceptance checks.</li>
+        <li><b>Efficiency, not speedup, is the metric.</b> Speedup at 12% efficiency is a statement about the bill.</li>
+        <li><b>Definitions are the deliverable.</b> Publishing concurrency, total workers, role count, token multiplier, and merge cost makes the claim checkable.</li>
+      </ul>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>IND</em> = industry report.</p>
+
+      <h3>Parallel systems</h3>
+      <ul>
+        <li>Amdahl, Validity of the single processor approach to achieving large scale computing capabilities (1967) — <em>PR</em></li>
+        <li>Gunther, <i>A Simple Theory of Universal Scalability</i> (1993) — <em>PR</em></li>
+        <li>Dean &amp; Ghemawat, MapReduce: simplified data processing on large clusters (OSDI 2004) — <em>PR</em></li>
+      </ul>
+
+      <h3>Agent orchestration</h3>
+      <ul>
+        <li>Wu et al., <a href="https://arxiv.org/abs/2308.08155">AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation</a> (2023) — <em>PP</em></li>
+        <li>Hong et al., <a href="https://arxiv.org/abs/2308.00352">MetaGPT: Meta Programming for Multi-Agent Collaborative Framework</a> (2023) — <em>PP</em></li>
+        <li>Zhuge et al., <a href="https://arxiv.org/abs/2402.16823">GPTSwarm: Language Agents as Optimizable Graphs</a> (ICML 2024) — <em>PR</em></li>
+        <li>Anthropic, <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How we built our multi-agent research system</a> (2025) — <em>IND</em></li>
+        <li>Cognition, <a href="https://cognition.ai/blog/dont-build-multi-agents">Don't Build Multi-Agents</a> (2025) — <em>IND</em></li>
+      </ul>
+
+      <h3>Evaluation and cost</h3>
+      <ul>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Liu et al., <a href="https://arxiv.org/abs/2307.03172">Lost in the Middle</a> (2023/24) — <em>PR</em></li>
+        <li>Chen, Zaharia &amp; Zou, <a href="https://arxiv.org/abs/2305.05176">FrugalGPT</a> (2023) — <em>PP</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>Five hundred agents is not a milestone; it is a parameter. The interesting engineering is all in the parts that do not scale: the reducer that has to be correct, the acceptance check that has to be per item, and the decision about which work is genuinely independent. Those are the same problems a 2004 cluster had, with worse workers and a much stranger failure mode — a worker that fails confidently, in fluent prose, and passes every syntactic check.</p>
+
+      <p>Which is why the most valuable number to publish is not 500. It is the efficiency ratio: how much of the ideal speedup survived contact with the merge, and what the run cost per accepted result. Everything else is a headcount.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rules, mined: rule-based ML, agents as rule miners, and the maintenance problem — scAI Index</title>
+  <meta name="description" content="How rule-based machine learning relates to AI agents: a taxonomy of rules, the two rule traditions, the arithmetic of rule mining, agents as vocabulary engineers, proposers, compilers, critics and librarians, solver-backed rule use, rules from agent traces, guardrails as rules, the biology case, nine failure modes, and eight concrete potentials.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    /* Scoped to this post: rule timeline */
+    .rt-fig { margin: 14px 0 24px; padding: 14px 16px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .rt-legend { display: flex; flex-wrap: wrap; gap: 5px 16px; margin: 0 0 10px; font-size: 11.5px; color: var(--muted); }
+    .rt-key { display: inline-flex; align-items: center; gap: 6px; }
+    .rt-sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+    .rt-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .rt-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .rt-plot { display: block; width: 100%; min-width: 620px; height: auto; }
+    .rt-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .rt-tl { position: relative; margin: 20px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .rt-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4 0%, #b7e4c7 52%, #f6d9a8 100%); }
+    .rt-era { margin: 22px 0 10px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .rt-era:first-child { margin-top: 2px; }
+    .rt-era span { color: var(--text); }
+    .rt-item { position: relative; margin: 0 0 9px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .rt-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .rt-item.mine::before { border-color: var(--green); }
+    .rt-item.gov::before { border-color: #718096; }
+    .rt-item.agent::before { border-color: var(--amber); }
+    .rt-y { display: inline-block; min-width: 64px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .rt-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#framing">1. The missing middle</a>
+          <a href="#map">2. A four-way map</a>
+          <a href="#what">3. What counts as a rule</a>
+          <a href="#traditions">4. Two traditions</a>
+          <a href="#timeline" style="padding-left:22px;border-left:2px solid var(--border);margin-left:8px;border-radius:0 6px 6px 0">↳ Timeline, 1971–2026</a>
+          <a href="#why">5. Why rules survive</a>
+          <a href="#problem">6. Mining, formalized</a>
+          <a href="#arithmetic">7. The arithmetic</a>
+          <a href="#agentminer">8. The agent as rule miner</a>
+          <a href="#loop">9. A closed loop</a>
+          <a href="#prompts">10. Prompts and a rule card</a>
+          <a href="#use">11. Rules the agent uses</a>
+          <a href="#experience">12. Rules from experience</a>
+          <a href="#foragents">13. Rules for the agent</a>
+          <a href="#text">14. Rules from text</a>
+          <a href="#biology">15. The biology case</a>
+          <a href="#failure">16. Nine failure modes</a>
+          <a href="#evidence">17. What the evidence supports</a>
+          <a href="#potential">18. Where the potential is</a>
+          <a href="#open">19. Open questions</a>
+          <a href="#pilot">20. A four-week pilot</a>
+          <a href="#checklist">21. Checklist</a>
+          <a href="#sources">22. Selected sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-30</span>
+      </div>
+      <h1>Rules, mined: rule-based ML, agents as rule miners, and the maintenance problem</h1>
+
+      <p>Rule-based machine learning is the oldest idea in the field that nobody has finished implementing. Write down what you know as conditionals, apply them in order, and let the data tell you which ones are true. It powered the expert systems of the 1980s, it survives inside every decision tree, credit scorecard, clinical alert, and firewall policy you have ever met, and it keeps failing for the same two reasons: <b>somebody has to invent the vocabulary</b>, and <b>somebody has to maintain the rule base</b> once the world moves.</p>
+
+      <p>AI agents change the economics of exactly those two jobs. An agent can read the schema, read the papers, read the ticket history, propose predicates nobody thought to encode, write the query, run it, look at the failures, and rewrite it. That is a real capability change, and it is easy to overstate. The point of this note is to state it precisely: <b>agents are good at producing, compiling, documenting and auditing rules; they are not good at deciding which rules are true, and they make the multiplicity problem worse by making rule production nearly free.</b> The bottleneck moves from authorship to validation and governance — which is a better problem to have, but only if you build for it.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is an editorial survey, not a systematic review. It draws on peer-reviewed papers, preprints, benchmark papers, and a few engineering reports, labelled <em>PR</em>, <em>PP</em>, <em>BM</em>, and <em>IND</em>. <strong>No rule miner was run and no dataset was analyzed for this post.</strong> Every number in §7 is a hand-computed illustration, not a measurement. Where a number comes from a paper, it is attributed and hedged.</div>
+
+      <h2 id="framing">1. The missing middle</h2>
+      <p>Two cultures have been arguing for sixty years about how intelligence should be represented. The symbolic camp says: write the rules. The connectionist camp says: learn the weights. The argument is usually framed as a contest, with a winner declared roughly every fifteen years.</p>
+
+      <p>The framing is wrong in a way that agents make obvious. Rules and weights are not competing theories of mind; they are <b>different points on a spectrum of how much you commit to in advance</b>. A rule commits to a hypothesis class that a human can read, test, and argue with. A weight matrix commits to almost nothing and lets the data decide. Rules buy auditability at the cost of coverage. Weights buy coverage at the cost of being unable to say why.</p>
+
+      <p>What was missing between them was never a better algorithm. It was a <b>translator</b>: something that could look at a messy domain — a schema, a corpus, a log, a regulation — and propose the predicates that a rule could be built from, then check the rule against the data, then explain the result to a person who has to sign it. That translator was always a human, which is why rule-based ML was expensive, why it stalled in the 1990s, and why the "knowledge acquisition bottleneck" was the phrase everyone used and nobody solved.</p>
+
+      <p>An LLM agent is a plausible translator. It reads natural language and code; it can write SQL, Python, Datalog, Rego, and Prolog; it can propose a predicate from a paper abstract and test it against a table. Its weakness is exactly the thing rules are supposed to provide: it cannot tell whether a fluent rule is a true one. So the architecture writes itself. <b>The agent proposes; the engine measures; the statistics filter; the human signs; the monitor enforces.</b> The rule is the interface between all five.</p>
+
+      <div class="guide-callout"><strong>Central thesis:</strong> the useful relationship between agents and rule-based ML is not "agents replace rules" or "rules constrain agents." It is a division of labour inside one loop, with <em>four</em> distinct directions of flow — rules the agent <b>mines</b>, rules the agent <b>uses</b>, rules that <b>govern</b> the agent, and rules the agent <b>compiles from text</b>. Each direction has a different failure mode and a different cheapest guardrail, and conflating them is the main source of both hype and disappointment.</div>
+
+      <h2 id="map">2. A four-way map</h2>
+      <p>Before the details, the shape of the space. Most writing about "AI and rules" collapses these four into one, which is why the claims do not line up.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Direction</th><th>The question</th><th>Who produces the rule</th><th>What "correct" means</th><th>Characteristic failure</th></tr></thead>
+          <tbody>
+            <tr><td><b>Rules <i>from</i> the agent</b><br>(mining)</td><td>Which regularities in this data are real, useful, and admissible?</td><td>Agent proposes; data and statistics decide</td><td>Held-out support, precision, stability, and a counterexample search that failed</td><td>Mining thousands of plausible rules and reporting the prettiest</td></tr>
+            <tr><td><b>Rules the agent <i>uses</i></b><br>(solver-in-the-loop)</td><td>Given these premises and this policy, what follows?</td><td>Human or document; agent formalizes</td><td>Entailment checked by a symbolic engine, not by the model</td><td>Faithful reasoning about the wrong formalization</td></tr>
+            <tr><td><b>Rules <i>for</i> the agent</b><br>(governance)</td><td>What may this agent do, when, and with what evidence?</td><td>Operator, regulator, or incident review</td><td>Runtime enforcement with an auditable trace and a measured false-positive cost</td><td>Guardrails that are bypassed, or that block so much work they are switched off</td></tr>
+            <tr><td><b>Rules <i>by</i> the agent</b><br>(compilation)</td><td>What does this paragraph of prose prohibit or require?</td><td>Text; agent compiles to an executable predicate</td><td>Semantic equivalence to the source, checked on labelled examples and by a human</td><td>A rule that is executable, defensible, and not what the paragraph said</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two of these are old problems with new tooling (mining, governance). Two are genuinely new (solver-in-the-loop at scale, text-to-rule compilation). The interesting research is where they touch: an agent that compiles a regulation into a rule, mines data to check whether the rule is even measurable, and then runs under a guardrail built from the same rule base. That is a closed loop with one representation, and it is not far off.</p>
+
+      <h2 id="what">3. What counts as a rule</h2>
+      <p>"Rule" covers at least nine formal objects, and different literatures use the word for different ones. The distinctions matter because the arithmetic, the search algorithm, and the failure mode all change with the representation.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Form</th><th>Syntax</th><th>Classic example</th><th>Learned by</th></tr></thead>
+          <tbody>
+            <tr><td><b>Production rule</b></td><td><code>IF p₁ ∧ … ∧ pₖ THEN assert q / do a</code>, forward-chained to fixpoint</td><td>MYCIN's "if the organism is gram-negative and the patient is febrile, then consider…"</td><td>Expert authoring; Rete matching <a href="https://doi.org/10.1016/0004-3702(82)90020-0">(Forgy, 1982, <em>PR</em>)</a></td></tr>
+            <tr><td><b>Decision list</b></td><td>ordered <code>(p₁→c₁; p₂→c₂; …; default)</code>, first match wins</td><td>RIPPER rule sets, clinical triage flows</td><td>Sequential covering <a href="https://doi.org/10.1016/B978-1-55860-377-6.50023-2">(Cohen, ICML 1995, <em>PR</em>)</a></td></tr>
+            <tr><td><b>Decision set</b></td><td>unordered rules with a conflict-resolution scheme</td><td>Interpretable classifiers that trade order for readability</td><td>Joint optimization <a href="https://dl.acm.org/doi/10.1145/2939672.2939874">(Lakkaraju et al., KDD 2016, <em>PR</em>)</a></td></tr>
+            <tr><td><b>Optimal rule list</b></td><td>decision list found by branch-and-bound under a length bound</td><td>Two-rule recidivism lists competitive with commercial scores</td><td>CORELS <a href="https://arxiv.org/abs/1704.01701">(Angelino et al., JMLR 2018, <em>PR</em>)</a>, Bayesian rule lists <a href="https://arxiv.org/abs/1511.01644">(Letham et al., 2015, <em>PP</em>)</a></td></tr>
+            <tr><td><b>Association rule</b></td><td><code>X → Y</code> with support, confidence, lift</td><td>"customers who buy diapers also buy beer" (the canonical, possibly apocryphal, example)</td><td>Apriori <a href="https://www.vldb.org/conf/1994/P487.PDF">(Agrawal &amp; Srikant, VLDB 1994, <em>PR</em>)</a>, FP-growth <a href="https://doi.org/10.1145/335191.335372">(Han et al., SIGMOD 2000, <em>PR</em>)</a></td></tr>
+            <tr><td><b>Sequential rule</b></td><td><code>X ≺ Y</code> within a window</td><td>Event-order patterns in logs and clickstreams</td><td>PrefixSpan / SPADE-style mining</td></tr>
+            <tr><td><b>First-order clause</b></td><td><code>head(X) :- body₁(X,Y), body₂(Y)</code> with variables</td><td>Family-tree rules, knowledge-graph completion, Datalog policies</td><td>Inductive logic programming <a href="https://doi.org/10.1007/BF03037089">(Muggleton, 1991, <em>PR</em>)</a>; AMIE, AnyBURL on KGs</td></tr>
+            <tr><td><b>Invariant / constraint</b></td><td><code>∀x. φ(x)</code> over program or data states</td><td>"this field is never null after checkout"; "balance ≥ 0"</td><td>Dynamic detection from traces <a href="https://doi.org/10.1016/j.scico.2007.01.015">(Daikon; Ernst et al., 2007, <em>PR</em>)</a>; SMT/model checking</td></tr>
+            <tr><td><b>Heuristic / policy</b></td><td>a scoring or dispatch rule used to make decisions fast</td><td>Scheduling priority rules, pruning rules in search, bin-packing heuristics</td><td>Hand design; increasingly, program search <a href="https://www.nature.com/articles/s41586-023-06924-6">(FunSearch, <em>Nature</em> 2024, <em>PR</em>)</a></td></tr>
+            <tr><td><b>Natural-language policy</b></td><td>prose that <i>ought</i> to be enforced</td><td>"refunds above $500 require human approval"; "do not send PHI to third parties"</td><td>Humans; compiled to a DSL by an agent (§14)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two things follow. First, "rule-based" is not one method with one weakness — an association rule and an invariant have almost nothing in common except readability. Second, most of the interesting agent work sits at the <b>translation boundaries</b>: prose → clause, clause → query, trace → invariant, data → rule. Those boundaries are where language models are strong and where classical rule learning had no tooling at all.</p>
+
+      <h2 id="traditions">4. Two traditions, and what each learned</h2>
+      <p>The history is worth thirty seconds because both traditions already discovered the failure modes that the agent version will reproduce. Figure 1 is the compressed version — three curves, one crossing — and the list beneath it is the same story with dates.</p>
+
+      <h3 id="timeline">(a) Sixty years in one figure</h3>
+
+      <div class="rt-fig">
+        <div class="rt-legend">
+          <span class="rt-key"><span class="rt-sw" style="background:#3182ce"></span>cost of writing / compiling one rule</span>
+          <span class="rt-key"><span class="rt-sw" style="background:#2f855a"></span>number of candidate rules a team can consider</span>
+          <span class="rt-key"><span class="rt-sw" style="background:#718096"></span>cost of validating one rule</span>
+        </div>
+        <div class="rt-scroll">
+        <svg class="rt-plot" viewBox="0 0 720 266" role="img" aria-labelledby="rt-plot-t rt-plot-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="rt-plot-t">Schematic timeline, 1970–2026: the cost of authoring a rule falls, the breadth of candidate rules rises, and the cost of validating a rule barely moves</title>
+          <desc id="rt-plot-d">Three ordinal curves. Authorship cost starts high in 1970 and falls steeply after 2015. Candidate breadth starts low and rises, crossing the authorship curve around 2012. Validation cost per rule stays roughly flat. A shaded band marks 2023–2026, the agentic era.</desc>
+
+          <rect x="665" y="40" width="35" height="190" fill="#ebf4fc" />
+          <text x="682" y="227" font-size="10.5" fill="#64748b" text-anchor="middle">agents</text>
+
+          <g stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 4">
+            <line x1="64" y1="40" x2="700" y2="40" />
+            <line x1="64" y1="135" x2="700" y2="135" />
+          </g>
+          <text x="64" y="22" font-size="11.5" fill="#64748b">relative effort and breadth — ordinal, schematic</text>
+
+          <line x1="64" y1="230" x2="700" y2="230" stroke="#cbd5e0" />
+          <g stroke="#cbd5e0">
+            <line x1="120.8" y1="230" x2="120.8" y2="235" />
+            <line x1="234.4" y1="230" x2="234.4" y2="235" />
+            <line x1="347.9" y1="230" x2="347.9" y2="235" />
+            <line x1="461.4" y1="230" x2="461.4" y2="235" />
+            <line x1="574.9" y1="230" x2="574.9" y2="235" />
+            <line x1="700" y1="230" x2="700" y2="235" />
+          </g>
+          <g font-size="10" fill="#64748b" text-anchor="middle">
+            <text x="120.8" y="248">1975</text>
+            <text x="234.4" y="248">1985</text>
+            <text x="347.9" y="248">1995</text>
+            <text x="461.4" y="248">2005</text>
+            <text x="574.9" y="248">2015</text>
+          </g>
+          <text x="700" y="248" font-size="10" fill="#64748b" text-anchor="end">2026</text>
+
+          <line x1="541" y1="40" x2="541" y2="230" stroke="#b7791f" stroke-width="1" stroke-dasharray="4 4" opacity="0.55" />
+          <text x="541" y="34" font-size="10.5" fill="#b7791f" text-anchor="middle">crossover ≈ 2012</text>
+
+          <polyline fill="none" stroke="#3182ce" stroke-width="2.2" stroke-linejoin="round" points="64,48 234,59 348,86 461,112 575,154 632,184 700,215" />
+          <text x="698" y="208" font-size="11" fill="#3182ce" text-anchor="end">writing a rule</text>
+
+          <polyline fill="none" stroke="#2f855a" stroke-width="2.2" stroke-linejoin="round" points="64,222 234,217 348,202 461,175 575,135 632,97 700,55" />
+          <text x="698" y="48" font-size="11" fill="#2f855a" text-anchor="end">candidates considered</text>
+
+          <polyline fill="none" stroke="#718096" stroke-width="2.2" stroke-linejoin="round" points="64,169 234,169 348,164 461,158 575,150 632,143 700,135" />
+          <text x="698" y="128" font-size="11" fill="#718096" text-anchor="end">validating one rule</text>
+        </svg>
+        </div>
+        <p class="rt-cap"><b>Figure 1. The crossing, schematic.</b> Not a bibliometric measurement: both axes are ordinal and the curves are drawn to make an argument, not to fit data. The argument is that the cost of <i>producing</i> a rule falls steadily — hand elicitation, then rule-induction algorithms, then DSLs and libraries, then agents — while the number of candidates a team can consider rises, and the cost of <i>establishing</i> that a rule is true does not fall at all. The crossing in the early 2010s is where the field's binding constraint stopped being authorship and became selection. Agents finish the job on the left curve and make the right-hand problem worse.</p>
+      </div>
+
+      <ul class="rt-tl">
+        <li class="rt-era">1971–1985 · <span>rules written by hand</span> · bottleneck: elicitation</li>
+        <li class="rt-item"><span class="rt-y">1972–76</span><b>MYCIN</b> — a few hundred rules with certainty factors match infectious-disease specialists on a narrow task.</li>
+        <li class="rt-item"><span class="rt-y">1976</span><b>Meta-DENDRAL</b> — cleavage rules induced from mass spectra; rule mining predates the phrase by two decades.</li>
+        <li class="rt-item"><span class="rt-y">1980</span><b>R1 / XCON</b> — thousands of production rules configure VAX orders; the expert system becomes a product category.</li>
+        <li class="rt-item"><span class="rt-y">1982</span><b>Rete</b> — fast many-pattern matching; thousand-rule systems become an engineering substrate rather than a research demo.</li>
+        <li class="rt-item"><span class="rt-y">1983–85</span><b>The wall</b> — “knowledge acquisition bottleneck” enters the vocabulary; rule bases accrete exceptions faster than anyone can audit them.</li>
+
+        <li class="rt-era">1984–1995 · <span>rules mined from data</span> · bottleneck: search</li>
+        <li class="rt-item mine"><span class="rt-y">1984–93</span><b>CART, ID3, C4.5</b> — trees that export to rules become the default tabular method for a decade.</li>
+        <li class="rt-item mine"><span class="rt-y">1989</span><b>CN2</b> — beam search over an explicitly noisy rule space; induction stops assuming clean data.</li>
+        <li class="rt-item mine"><span class="rt-y">1991</span><b>Inductive logic programming</b> — clauses with variables; rules that relate things, not just classify rows.</li>
+        <li class="rt-item mine"><span class="rt-y">1994</span><b>Apriori</b> — support, confidence, lift; the vocabulary still used for “rule mining” in practice.</li>
+        <li class="rt-item mine"><span class="rt-y">1995</span><b>RIPPER</b> — fast ordered rule sets, and the quiet handover from authored to learned rules.</li>
+        <li class="rt-item"><span class="rt-y">1993–95</span><b>The correction</b> — the expert-system market collapses; maintenance, not inference, turns out to have been the failure.</li>
+
+        <li class="rt-era">1996–2010 · <span>statistical filters</span> · bottleneck: multiplicity</li>
+        <li class="rt-item mine"><span class="rt-y">2000</span><b>FP-growth</b> — pattern enumeration without candidate generation; rules get cheap to enumerate.</li>
+        <li class="rt-item gov"><span class="rt-y">2001–07</span><b>Daikon and specification mining</b> — invariants and temporal rules inferred from execution traces.</li>
+        <li class="rt-item mine"><span class="rt-y">2007</span><b>Significant pattern mining</b> — multiplicity control enters rule mining; “significant” starts to need a family size.</li>
+        <li class="rt-item mine"><span class="rt-y">2008</span><b>RuleFit</b> — thousands of ensemble-derived rules, sparsified into a model a person can read.</li>
+        <li class="rt-item mine"><span class="rt-y">2010</span><b>Stability selection</b> — “does this rule survive resampling?” becomes a measured quantity rather than a hope.</li>
+
+        <li class="rt-era">2011–2019 · <span>optimal rules and the interpretability turn</span> · bottleneck: validation</li>
+        <li class="rt-item mine"><span class="rt-y">2011</span><b>Subgroup search (SIDES, PRIM lineage)</b> — rules that answer “for whom?”, not just “for what?”.</li>
+        <li class="rt-item mine"><span class="rt-y">2013</span><b>AMIE and Tarone-style corrections</b> — Horn rules at knowledge-graph scale, with family-wise error control.</li>
+        <li class="rt-item mine"><span class="rt-y">2015–17</span><b>Optimal rule lists (CORELS, decision sets)</b> — small rule sets certified optimal under a stated objective.</li>
+        <li class="rt-item mine"><span class="rt-y">2016</span><b>inTrees</b> — rules extracted from ensembles; the black box becomes partly legible.</li>
+        <li class="rt-item mine"><span class="rt-y">2017</span><b>SCENIC</b> — regulons as mined, thresholded rules for single cells, validated against motif support.</li>
+        <li class="rt-item gov"><span class="rt-y">2018</span><b>Shielding, semantic loss, DeepProbLog</b> — rules as runtime constraints and as differentiable knowledge.</li>
+        <li class="rt-item mine"><span class="rt-y">2019</span><b>Rudin</b> — constrain the hypothesis class; do not explain it after the fact.</li>
+
+        <li class="rt-era">2020–2022 · <span>rules meet language models</span> · bottleneck: formalization</li>
+        <li class="rt-item mine"><span class="rt-y">2020</span><b>DreamCoder, Logic Tensor Networks</b> — library learning compresses solved tasks; logic becomes differentiable.</li>
+        <li class="rt-item agent"><span class="rt-y">2022</span><b>Constitutional AI</b> — natural-language rules as a training signal: rules <i>for</i> the model, not inside it.</li>
+        <li class="rt-item agent"><span class="rt-y">2022</span><b>Program-aided reasoning</b> — the model writes code, the interpreter computes; the template for solver-in-the-loop.</li>
+
+        <li class="rt-era">2023–2026 · <span>agents</span> · bottleneck: selection and governance</li>
+        <li class="rt-item agent"><span class="rt-y">2023</span><b>Logic-LM, LINC, SatLM</b> — the model formalizes, the prover decides; formalization becomes the dominant error source.</li>
+        <li class="rt-item agent"><span class="rt-y">2023</span><b>Voyager, Code as Policies</b> — rules as executable skills an agent writes, indexes, and reuses.</li>
+        <li class="rt-item agent"><span class="rt-y">2023</span><b>FunSearch</b> — program search against an exact evaluator finds new constructions and better heuristics.</li>
+        <li class="rt-item gov"><span class="rt-y">2023</span><b>NeMo Guardrails</b> — rules for agents in a dialogue DSL; enforcement starts to leave the prompt.</li>
+        <li class="rt-item agent"><span class="rt-y">2024</span><b>AlphaGeometry</b> — generation plus symbolic verification; the architecture, not the model, is the finding.</li>
+        <li class="rt-item agent"><span class="rt-y">2024</span><b>ExpeL, Agent Workflow Memory</b> — experience distilled into reusable rules, with the promotion criteria still undefined.</li>
+        <li class="rt-item agent"><span class="rt-y">2024</span><b>GPT-4 cell typing</b> — the model proposes marker rules; the expression matrix falsifies them.</li>
+        <li class="rt-item gov"><span class="rt-y">2025</span><b>AgentSpec, emergent norms</b> — runtime enforcement DSLs, and conventions mined by agent populations.</li>
+        <li class="rt-item agent"><span class="rt-y">2026</span><b>This note</b> — the loop assembled: agent proposes, engine measures, statistics filter, human signs, monitor enforces.</li>
+      </ul>
+
+      <div class="rt-legend" style="margin:2px 0 0">
+        <span class="rt-key"><span class="rt-dot"></span>authored / symbolic</span>
+        <span class="rt-key"><span class="rt-dot" style="border-color:#2f855a"></span>mined / statistical</span>
+        <span class="rt-key"><span class="rt-dot" style="border-color:#718096"></span>verification and guardrails</span>
+        <span class="rt-key"><span class="rt-dot" style="border-color:#b7791f"></span>agentic / LLM era</span>
+      </div>
+
+      <p>Three things are visible in the list that are not visible in any single paper. <b>First, the failures recur on a twenty-year period.</b> The knowledge-acquisition bottleneck of 1984 and the validation bottleneck of 2026 are the same problem with different tooling: the cost of producing a candidate fell, and the cost of checking it did not. <b>Second, the durable contributions are all checkers, not generators.</b> Rete made matching fast; Apriori made support computable; ILP made clauses testable; stability selection and optimal rule lists made “is this rule real?” answerable. Nobody remembers the generator that produced the most rules, because producing rules was never the hard part. <b>Third, every era's headline method was adopted faster than the discipline that made it trustworthy</b> — association rules without multiplicity control, trees without calibration, and now agents without holdouts.</p>
+
+      <h3>(b) Authored rules: the expert-system era</h3>
+      <p>MYCIN (1970s) showed that a few hundred rules could match specialists on a narrow task, with a certainty-factor calculus bolted on because the rules were not certain. R1/XCON configured VAX orders and reportedly saved Digital enough money to justify the field. The production-rule engine (Rete) made thousands of rules fast enough to be practical <a href="https://doi.org/10.1016/0004-3702(82)90020-0">(Forgy, 1982, <em>PR</em>)</a>, and by the mid-1980s "expert system" was a product category.</p>
+
+      <p>Then the field hit the two walls that have not moved since. The <b>knowledge acquisition bottleneck</b>: experts cannot articulate what they know, and the people who can write the rules cannot get the expertise. The <b>maintenance wall</b>: rule bases accreted exceptions, exceptions to exceptions, and priority hacks until nobody could predict what the system would do. The failure was not reasoning. It was that a rule base is a program, and programs rot.</p>
+
+      <div class="banner"><strong>The lesson that transfers:</strong> an expert system does not fail because a rule is wrong. It fails because the <i>set</i> of rules becomes inconsistent, redundant, and unowned. Every agent-built rule base will hit this within a year, and it will hit it faster because the rules arrive faster. Budget for the librarian before you budget for the miner.</div>
+
+      <h3>(c) Mined rules: from trees to optimal lists</h3>
+      <p>The statistical tradition took the opposite bet: let the data write the rules. C4.5 and CART produce trees that convert to rule sets; CN2 and RIPPER produce ordered rules directly; Apriori and FP-growth enumerate itemset rules; ILP learns clauses with variables. By the 2000s the methods were mature and the results were consistent: <b>mined rule sets are competitive with black boxes on tabular problems of moderate size, and much easier to argue with</b> <a href="https://www.nature.com/articles/s42256-019-0048-x">(Rudin, <i>Nature Machine Intelligence</i> 2019, <em>PR</em>)</a>.</p>
+
+      <p>Three developments sharpened this. First, <b>optimal rule lists</b>: branch-and-bound over rule lists under a length constraint gave certifiably optimal small models, and the demonstration that a two-rule list could be competitive with a commercial risk score was more persuasive than a hundred interpretability papers <a href="https://arxiv.org/abs/1704.01701">(Angelino et al., 2018, <em>PR</em>)</a>. Second, <b>rule extraction from ensembles</b>: RuleFit and inTrees turn a forest into thousands of rules and then sparsify <a href="https://arxiv.org/abs/0811.1679">(Friedman &amp; Popescu, 2008, <em>PR</em>)</a>, <a href="https://arxiv.org/abs/1606.09066">(Hara &amp; Hayashi, 2016, <em>PP</em>)</a>. Third, <b>significance-aware pattern mining</b>: the realization that enumerating millions of patterns and reporting the significant ones is a multiple-testing problem, with corrections that exploit the discrete, support-limited structure of the search <a href="https://www.pnas.org/doi/10.1073/pnas.1302233110">(Terada et al., PNAS 2013, <em>PR</em>)</a>, <a href="https://dl.acm.org/doi/10.1145/2783258.2783363">(Llinares-López et al., KDD 2015, <em>PR</em>)</a>.</p>
+
+      <p>The pattern across both traditions is the same, and it is the pattern an agent will follow unless stopped: <b>the search expands to fill the budget, and the number of hypotheses grows faster than the number of checks</b>. Humans did this by hand and called it "clinical judgment." Agents do it in parallel and call it "discovery."</p>
+
+      <h2 id="why">5. Why rules survive the LLM era</h2>
+      <p>If a frontier model can answer the question directly, why keep a rule base at all? Because six properties of rules are not properties of model weights, and each one is a requirement somewhere:</p>
+
+      <ul>
+        <li><b>Determinism and testability.</b> A rule produces the same answer for the same input, and you can unit-test it. A model produces a distribution over answers, and testing it means sampling. In regulated, audited, or safety-critical settings, the ability to write a test that <i>fails</i> when behavior changes is the whole game.</li>
+        <li><b>Cost and latency.</b> A rule engine evaluates a million rows for pennies and microseconds. An LLM call per row is neither cheap nor fast, and it is not getting cheaper fast enough to close a four-order-of-magnitude gap.</li>
+        <li><b>Portability.</b> A rule mined in 2026 still works when the model is deprecated, the vendor changes pricing, or the deployment moves on-prem. Rules are the only artifact in this stack with a decade-scale shelf life.</li>
+        <li><b>Enforceability.</b> "Do not do X" is only meaningful if something <i>cannot</i> do X. A prompt is a suggestion; a policy engine is an enforcement mechanism (§13).</li>
+        <li><b>Composability.</b> Rules combine by conjunction, priority, and subsumption, with semantics you can reason about. Prompt fragments combine by concatenation and hope.</li>
+        <li><b>Auditability of the reason.</b> "Denied because rule R-0173 fired" is a complete explanation. "The model scored 0.83" is not, no matter how good the post-hoc attribution.</li>
+      </ul>
+
+      <p>And four properties where rules lose, which is why the hybrid wins:</p>
+      <ul>
+        <li><b>The long tail.</b> Rules cover the cases you thought of. The tail is, by definition, the cases you did not.</li>
+        <li><b>Perception.</b> Turning an image, a paragraph, or a cell's expression profile into a predicate is the hard part, and that is exactly what learned representations do well.</li>
+        <li><b>Unknown unknowns.</b> A rule base cannot flag a condition it has no vocabulary for. An embedding-based anomaly score can.</li>
+        <li><b>Conflict at scale.</b> Above a few thousand rules, humans cannot verify consistency by reading. You need tooling, and most teams do not have it, which is how you get rule sprawl.</li>
+      </ul>
+
+      <div class="guide-choice"><strong>Practical rule of thumb:</strong> use a rule for the decision you must defend, a model for the perception that feeds it, and an agent for the translation between them. The combination is not a compromise; it is the only arrangement in which each component is used for what it is actually good at.</div>
+
+      <h2 id="problem">6. Mining, formalized</h2>
+      <p>Stripped of engineering, rule mining is a search problem with a statistical filter. Writing it down makes the agent's role obvious and the failure modes predictable.</p>
+
+      <p><b>The inputs.</b> A dataset <code>D</code> of rows; a vocabulary <code>P</code> of predicates (each a boolean function of a row, with a cost); a target <code>y</code>; and an <b>admissibility contract</b> specifying which predicates may appear on the antecedent side. The contract is the most important and most neglected artifact: it encodes "no post-outcome variables," "no identifiers," "nothing recorded after the decision time," "no proxies for the label."</p>
+
+      <p><b>The hypothesis space.</b> Conjunctions of up to <code>k</code> predicates (<code>|P|^k</code>, which explodes immediately), or clauses with variables (infinite without a language bias), or ordered lists (combinatorial in the number of rules). Every practical method imposes a bias: a refinement operator, a beam, a maximum length, a minimum support.</p>
+
+      <p><b>The objective.</b> Not "find true rules" — that is not a well-posed objective, because most true rules are trivial. The workable objective is a constrained utility:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">maximize    U(R) = coverage(R) · effect(R) · actionability(R) − λ·|R|
+subject to  precision(R) ≥ p_min        (on held-out data)
+            support(R)   ≥ s_min        (enough rows to believe it)
+            stability(R) ≥ π_min        (survives resampling)
+            admissible(R) = true        (vocabulary contract)
+            R is consistent             (no two rules conflict)</pre>
+
+      <p>Each constraint kills a different pathology. <code>p_min</code> stops the pretty-but-useless rule. <code>s_min</code> stops the 12-row miracle. <code>π_min</code> stops the rule that exists only in this sample. <code>admissible</code> stops the rule that predicts the label from the label's own paperwork. Consistency stops the rule base that contradicts itself at 3 a.m.</p>
+
+      <p><b>The search.</b> Four families, in increasing order of what they can express:</p>
+      <ul>
+        <li><b>Level-wise enumeration</b> with anti-monotone pruning — support only decreases as a conjunction grows, so you can prune. This is Apriori's contribution and it is still the backbone of itemset mining.</li>
+        <li><b>Sequential covering</b> — learn one rule, remove the rows it covers, repeat. Fast, greedy, and the default for decision lists (RIPPER).</li>
+        <li><b>Exact optimization</b> — branch-and-bound or MILP/CP over rule lists and sets, with a length bound. Slower, but the output is optimal under the stated objective, which changes the conversation from "the model found" to "we chose."</li>
+        <li><b>Program synthesis / ILP</b> — refinement over clauses with variables, or stochastic search over programs scored by an evaluator. This is where LLMs add the most, because the language bias can come from text rather than from a hand-written refinement lattice.</li>
+      </ul>
+
+      <p><b>The filter.</b> For every candidate, compute support, precision with a confidence interval, lift against the base rate, and a p-value from an independence test; correct across the family of rules actually tested; then split, resample, and re-mine to measure stability. A rule that survives all four is a candidate. Nothing is a rule until it survives a held-out set it was not mined on.</p>
+
+      <div class="guide-callout"><strong>The single most useful reframing:</strong> rule mining is hypothesis testing where the hypothesis happens to be executable. Everything from the companion post on agents and hypothesis testing applies — pre-registration, multiplicity, holdouts, provenance, adversarial critique — except that here the failure is <em>easier</em> to detect, because each hypothesis can be run against held-out data and can be attacked with a counterexample search. That is a genuine advantage of rules over prose, and agents make it cheap.</div>
+
+      <h2 id="arithmetic">7. The arithmetic that kills naive rule mining</h2>
+      <p>Six calculations. All illustrative, all done by hand, and together they explain most of the bad rule sets in production.</p>
+
+      <h3>7.1 Multiplicity is not a metaphor</h3>
+      <p>If you test <code>K</code> rules at <code>α = 0.05</code> and report the survivors, the probability of at least one false positive is <code>1 − (1 − α)^K</code>:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">K =     10  →   40.1%
+K =    100  →   99.4%
+K =  1,000  →   ~100%   (expected false rules ≈ K·α = 50)
+K = 10,000  →   ~100%   (expected false rules ≈ 500)</pre>
+
+      <p>Correcting by <code>α/K</code> at <code>K = 1,000</code> means a rule needs <code>p &lt; 5×10⁻⁵</code>. Most real effects in messy observational data do not clear that bar at realistic sample sizes, which is why naive "significant rule mining" produces either nothing or nonsense, depending on whether you correct. The solution is not to stop correcting; it is to make <code>K</code> small by using priors to prune <i>before</i> testing, and to use corrections that exploit the structure of the search (Tarone-style minimum achievable p-values, permutation-based family-wise error) rather than blunt Bonferroni.</p>
+
+      <h3>7.2 Conjunctions make support vanish</h3>
+      <p>The expected support of a <code>k</code>-predicate antecedent, if the predicates are independent with prevalences <code>pᵢ</code>, is <code>Π pᵢ</code>. For five predicates each true in 40% of rows:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">0.4^5  =  0.0102   →  ~1% support
+10,000 rows  →  ~102 matches
+95% CI on a proportion near 0.9 at n = 102  →  roughly ±6 points</pre>
+
+      <p>So the rule that looks most impressive — five conditions, 96% precision — is also the rule with the widest error bar, and the one most likely to vanish on next quarter's data. Precision without support is a press release.</p>
+
+      <h3>7.3 Confidence is not lift</h3>
+      <p>A rule with confidence 0.80 sounds strong until you notice the outcome happens 78% of the time anyway:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">lift  =  confidence / P(Y)
+      =  0.80 / 0.78  =  1.03      → essentially no information
+
+risk ratio = P(Y | X) / P(Y | ¬X)   ← report this, with a CI</pre>
+
+      <p>Agents generate high-confidence rules by the thousand, because high-confidence rules are easy to find when the base rate is high. Always report the base rate next to the rule, and prefer effect sizes (risk ratio, risk difference) to confidence. A rule that does not move the base rate is a description, not a discovery.</p>
+
+      <h3>7.4 Coverage stacks, precision does not</h3>
+      <p>If <code>k</code> disjoint rules each cover a fraction <code>c</code>, the union covers <code>1 − (1 − c)^k</code>:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">c = 0.10, k = 10  →  1 − 0.9^10  =  65% coverage
+add a 10th rule at precision 0.70  →  set precision is a
+                                     weighted average, not the max</pre>
+
+      <p>This is why rule sets drift downward in quality as they grow: the first rule is chosen for precision, the last one is chosen because coverage was still short. The fix is to optimize the set, not the rule — set cover with a precision floor, or MDL over the whole list — and to report coverage and precision as a curve, never as a single number.</p>
+
+      <h3>7.5 Stability is a measurement, not a property</h3>
+      <p>Mine the same rule set on <code>B</code> bootstrap resamples and record, for each rule, the fraction of resamples in which it appears (stability selection <a href="https://doi.org/10.1111/j.1467-9868.2010.00740.x">(Meinshausen &amp; Bühlmann, 2010, <em>PR</em>)</a>). A rule with stability 0.4 is a coincidence with good formatting. In practice a threshold around 0.7–0.9 is where mined rules stop embarrassing you, and the exact value should be set before looking at the results, not after.</p>
+
+      <h3>7.6 Rule debt amortizes like technical debt</h3>
+      <p>If each rule has a per-quarter probability <code>q</code> of silently breaking (schema change, coding change, assay change, ontology rename), then for <code>n</code> rules the expected number of broken rules per quarter is <code>n·q</code>:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">n = 300 rules, q = 0.02/quarter  →  6 broken rules per quarter
+cost per decision = (build + n·q·T·repair_cost) / decisions</pre>
+
+      <p>This is the number that kills agent-mined rule bases. If an agent can produce 300 rules a day, the maintenance load is 6 silent failures a quarter, forever, and nobody owns them. The correct design is not "mine more rules." It is <b>mine many, deploy few, and give every deployed rule an owner, an expiry date, and a monitor</b>.</p>
+
+      <h2 id="agentminer">8. The agent as rule miner</h2>
+      <p>Here is where the relationship gets concrete. An agent contributing to rule mining is doing one of seven jobs, and each has a distinct failure mode that a prompt cannot fix.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Role</th><th>What the agent does</th><th>Why it is genuinely hard for humans</th><th>Failure if unguarded</th></tr></thead>
+          <tbody>
+            <tr><td><b>Vocabulary engineer</b></td><td>Reads schema, data dictionary, papers, and tickets; proposes predicates with definitions, units, and provenance</td><td>Predicate design is domain knowledge plus language, and it is the actual bottleneck of classical rule mining</td><td>Leaky predicates; a vocabulary so large that the search space and <code>K</code> explode</td></tr>
+            <tr><td><b>Prior / proposer</b></td><td>Ranks plausible rules using domain knowledge, so the search tests hundreds instead of millions</td><td>Literature and mechanism priors live in text, not in a refinement lattice</td><td>Plausible-but-boring rules; corpus-bound priors that miss the novel regularity</td></tr>
+            <tr><td><b>Compiler</b></td><td>Turns a natural-language rule into SQL, Python, Datalog, or Rego; turns code back into readable prose</td><td>Translating intent into an executable artifact is the expensive part of every rule project</td><td>Silent semantic drift: "recent" becomes 90 days, and nobody notices</td></tr>
+            <tr><td><b>Executor</b></td><td>Runs the query, caches results, parallelizes candidates, reports support/precision/lift</td><td>Mechanical, but slow and error-prone at scale</td><td>Cost blowup; an unbounded loop that tests forever until something is significant</td></tr>
+            <tr><td><b>Statistician</b></td><td>Computes CIs, applies multiplicity corrections, runs stability selection, reports <code>K</code></td><td>Easy to state, easy to get wrong, and almost never reported</td><td>Independence assumptions that are false; correcting over the wrong family</td></tr>
+            <tr><td><b>Critic</b></td><td>Actively hunts counterexamples, adversarial subgroups, and alternative explanations for a surviving rule</td><td>Humans fall in love with their rules; a critic with a different context does not</td><td>Same-family blind spots; critique that re-reads the rule instead of testing it</td></tr>
+            <tr><td><b>Librarian</b></td><td>Detects subsumption and conflict, dedupes, versions, assigns owners and expiry dates, proposes retirement</td><td>Nobody wants this job, and it is the job that determines whether the rule base survives year two</td><td>Rule sprawl; contradictory rules; a rule base nobody can delete from</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Three observations about this table.</p>
+
+      <p><b>The first three roles are where the leverage is.</b> Compilation, execution, and statistics are engineering that a framework can do. Vocabulary, priors, and critique are the parts that require reading and judgment, and they are exactly the parts that classical rule learners had no way to automate. An agent that only executes and counts is a faster Apriori. An agent that proposes predicates and hunts counterexamples is something new.</p>
+
+      <p><b>The librarian is the role everyone skips.</b> It is also the role with the highest expected return, because rule-base rot is the failure mode that kills real deployments, and it is a bookkeeping problem — the kind of thing agents are unambiguously good at. A librarian agent that runs nightly, diffs the rule base against the schema, replays each rule on the last 90 days, and files a ticket when a rule's precision decays is boring, cheap, and worth more than any mining result.</p>
+
+      <p><b>Role separation is a statistical requirement, not a style preference.</b> If the same context proposes, compiles, tests, and critiques, the critique is self-review, and self-review by re-reading does not work <a href="https://arxiv.org/abs/2310.01798">(Huang et al., ICLR 2024, <em>PR</em>)</a>. Put the critic on a different model family when you can; at minimum, give it only the rule and the held-out data, never the reasoning that produced the rule.</p>
+
+      <h2 id="loop">9. A closed loop you can actually run</h2>
+      <p>The loop below is a sketch, not a framework, but every step exists for a reason that §7 makes quantitative. The important design choice is that <b>nothing is a rule until it has been measured on data the proposer never saw</b>.</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">contract  := schema + admissibility(vocab, time, leakage) + budgets(K, tokens)
+vocab     := agent.vocabulary(schema, docs, tickets)      # human-reviewed
+train, val, holdout := split(by time, never by random rows)
+
+candidates := agent.propose(vocab, priors, K)             # fits in a prompt
+for r in candidates:
+    prog := agent.compile(r, target=SQL|Datalog|Python)
+    if not engine.admissible(prog): reject(r)             # no leakage, no time travel
+    st   := engine.evaluate(prog, train)                  # supp, prec, lift, CI
+    if st.support &lt; s_min or st.lift &lt; l_min: prune(r)
+
+survivors := stat.filter(candidates, alpha, family=K)     # Tarone / permutation
+stable    := stability.select(survivors, B=200, pi=0.8)
+set_      := optimize(stable, objective="coverage|MDL", prec_floor=p_min)
+audit     := agent.counterexample_hunt(set_, val)         # must find none
+cards     := agent.document(set_, provenance=True)         # rule cards, §10
+deploy    := shadow(cards, holdout) &lt; human_signoff &lt; canary
+monitor   := nightly_replay + drift_alerts + review_by_dates</pre>
+
+      <p>Four details that matter more than the pipeline diagram:</p>
+      <ul>
+        <li><b>Split by time, not at random.</b> Rules are for the future, and random splits leak the future into the past through slowly varying features. A random split will make a stale rule look stable.</li>
+        <li><b>Budget <code>K</code> in advance and log it.</b> The number of candidates tested is a reported quantity, like the number of trials in a clinical study. If the agent ran 4,000 candidates and you report three, the three are not the result.</li>
+        <li><b>The counterexample hunt is the deliverable.</b> A rule that survives is worth one line. The search that failed to break it is worth a paragraph, and it is what a reviewer will actually want to see.</li>
+        <li><b>Shadow before deploy.</b> Run the rule alongside the current decision, log disagreements, and measure both directions: what it would have caught, and what it would have wrongly blocked. The second number is the one that gets systems switched off.</li>
+      </ul>
+
+      <div class="banner"><strong>Anti-pattern to name explicitly:</strong> "agent mines rules until a good one appears" is p-hacking with extra steps. The tell is that <code>K</code> is unknown, the holdout was touched more than once, and the surviving rule has no refutation condition. Any one of those three makes the rule inadmissible, regardless of how it looks.</div>
+
+      <h2 id="prompts">10. Prompts that work, and the artifact to keep</h2>
+      <p>Five prompt shapes do most of the work. They are written as task contracts rather than personas, because personas add variance without adding information.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Task</th><th>Template skeleton</th><th>Why it works</th></tr></thead>
+          <tbody>
+            <tr><td><b>Vocabulary</b></td><td>"Here is the schema and 20 rows. Propose 25 candidate predicates. For each: definition, units, source column, whether it is known before the decision time, and one way it could leak the label."</td><td>Forces the admissibility question into the same breath as the definition, which is where leakage is normally born.</td></tr>
+            <tr><td><b>Compilation</b></td><td>"Translate this rule into SQL. Then list the three phrases where your translation made an assumption, and the alternative reading of each."</td><td>Makes semantic drift visible at compile time instead of at audit time.</td></tr>
+            <tr><td><b>Counterexample</b></td><td>"Here is a rule and a held-out table. Find rows where the antecedent holds and the consequent fails. Rank them by how ordinary they are, not how extreme."</td><td>Converts critique from opinion into a query, and ordinary counterexamples are the ones that matter.</td></tr>
+            <tr><td><b>Subgroup attack</b></td><td>"For this rule, find the subgroup with the lowest precision that has at least 50 rows. Report precision, base rate, and lift inside the subgroup."</td><td>Most false rules are true on average and false where they are used.</td></tr>
+            <tr><td><b>Documentation</b></td><td>"Write the rule card: plain-English statement, provenance, support, precision with CI, lift, stability, admissibility justification, refutation condition, owner, review date."</td><td>The card is what a human can actually sign, and signing is the step that creates accountability.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The rule card is the unit worth standardizing. It is the artifact that survives the model, the run, and the person who wrote it — and it is the thing that makes a rule base auditable rather than merely readable. An illustrative card (invented numbers, shown for shape only):</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">rule_id      R-0173                          status  shadow
+if           CD3E &gt; 1.2 ∧ CD19 &lt; 0.4 ∧ tissue = "blood"
+then         label = "T cell"
+support      0.041        precision  0.93  [0.88, 0.96]
+lift         4.8          base rate  0.19
+stability    0.87         (200 bootstraps, π ≥ 0.8)
+tests run    1,204        p_adj      3e-9   (Tarone over support classes)
+admissible   yes — all predicates measured pre-label, no ID fields
+provenance   lit:PMID-34164653 | run r-2026-10-30-a | code sha 9f2c
+refuted_by   CD3E+CD19 double-positive cells (3% of T cells) — see counterexample query Q-88
+owner        cell-typing squad     review_by 2027-02-01
+history      v1 mined 2026-10-30 · v2 threshold 1.2→1.1 2026-11-14 (recall +2pp)</pre>
+
+      <p>Everything in that card is checkable by a third party, which is the point. A rule without a card is a rumor with syntax.</p>
+
+      <h2 id="use">11. Rules the agent uses: let the solver dispose</h2>
+      <p>The second direction is the one that has produced the cleanest results, because the architecture is simple: <b>the model translates, the symbolic engine decides.</b> A language model is unreliable at multi-step deduction and reliable at formalization; a solver is the reverse. Putting them in series beats either alone.</p>
+
+      <ul>
+        <li><b>Deduction.</b> Logic-LM, LINC, and SatLM all follow the same recipe: translate premises and query into first-order logic or a SAT instance, hand it to a prover, and use the model only to repair parse failures <a href="https://arxiv.org/abs/2305.12295">(Pan et al., EMNLP Findings 2023, <em>PR</em>)</a>, <a href="https://arxiv.org/abs/2310.15164">(Olausson et al., EMNLP 2023, <em>PR</em>)</a>, <a href="https://arxiv.org/abs/2305.09656">(Ye et al., NeurIPS 2023, <em>PR</em>)</a>. Reported gains over chain-of-thought on ProofWriter/FOLIO-style tasks are substantial, and the residual errors concentrate in formalization, not in reasoning.</li>
+        <li><b>Arithmetic and data manipulation.</b> Program-aided prompting offloads computation to an interpreter <a href="https://arxiv.org/abs/2211.10435">(Gao et al., ICML 2023, <em>PR</em>)</a>. This is now unremarkable, which is how you know it worked.</li>
+        <li><b>Planning.</b> Translate to PDDL and let a classical planner find the plan (LLM+P), or emit executable policy code that calls perception APIs <a href="https://arxiv.org/abs/2304.11477">(Liu et al., 2023, <em>PP</em>)</a>, <a href="https://arxiv.org/abs/2209.07753">(Liang et al., ICRA 2023, <em>PR</em>)</a>. The plan is verifiable; the model's prose plan is not.</li>
+        <li><b>Proof search.</b> AlphaGeometry pairs a language model that proposes auxiliary constructions with a symbolic deduction engine that checks every step, and it reached gold-medal-range performance on IMO geometry problems <a href="https://www.nature.com/articles/s41586-023-06747-5">(Trinh et al., <i>Nature</i> 2024, <em>PR</em>)</a>. The architecture is the finding: generation without verification would not have worked.</li>
+        <li><b>Program search against an evaluator.</b> FunSearch evolves programs scored by a fast checker and found new constructions in combinatorics as well as better bin-packing heuristics <a href="https://www.nature.com/articles/s41586-023-06924-6">(Romera-Paredes et al., <i>Nature</i> 2024, <em>PR</em>)</a>; AlphaEvolve extends the idea to algorithm discovery, reporting improved matrix-multiplication routines <a href="https://arxiv.org/abs/2506.13131">(Novikov et al., 2025, <em>PP</em>)</a>. These are rule learners in everything but name: the output is a procedure that a checker certifies.</li>
+      </ul>
+
+      <div class="guide-policy"><strong>The caveat that matters:</strong> a solver verifies the <i>formalization</i>, not the world. If the agent translated "every student passed" as <code>∃x passed(x)</code> instead of <code>∀x passed(x)</code>, the prover will happily derive something true about the wrong sentence. Formalization bugs are silent, and they are now the dominant error source in this architecture. The cheapest guardrail is a round trip: ask the agent to translate the formal statement back into English and compare it to the source, then check a handful of examples by hand. This is cheap, boring, and catches a surprising share of errors.</div>
+
+      <p>The practical upshot: if a task has a checkable symbolic substrate — a database, a policy, a solver, a type system, a spreadsheet — the right design is almost always "agent writes the rule, substrate executes it." The agent's output is then a rule you can inspect, not a claim you have to trust.</p>
+
+      <h2 id="experience">12. Rules from the agent's own experience</h2>
+      <p>The third source of rules is the agent's own behavior. This is the most commercially interesting direction and the least evidenced, so it deserves careful language.</p>
+
+      <p>The pattern is old: <b>distill a trace into a reusable procedure</b>. Voyager built a growing library of executable skills in Minecraft, indexed for retrieval, and reported large gains in exploration and tech-tree progress relative to baselines <a href="https://arxiv.org/abs/2305.16291">(Wang et al., 2023, <em>PP</em>)</a>. ExpeL extracted cross-task "insights" from success and failure trajectories and retrieved them at inference time <a href="https://arxiv.org/abs/2308.10144">(Zhao et al., AAAI 2024, <em>PR</em>)</a>. Agent Workflow Memory induces reusable workflows from past trajectories and injects them into later ones <a href="https://arxiv.org/abs/2409.07429">(Wang et al., 2024, <em>PP</em>)</a>. On the program side, DreamCoder's wake–sleep library learning and LILO's compression-plus-documentation are the principled versions: an abstraction is worth keeping when it compresses the corpus of solved tasks <a href="https://arxiv.org/abs/2006.08381">(Ellis et al., PLDI 2021, <em>PR</em>)</a>, <a href="https://arxiv.org/abs/2310.19791">(Grand et al., 2023, <em>PP</em>)</a>. Prompt and program optimizers — DSPy, OPRO, TextGrad — are the same idea applied to the instruction layer <a href="https://arxiv.org/abs/2310.03714">(Khattab et al., ICLR 2024, <em>PR</em>)</a>, <a href="https://arxiv.org/abs/2309.03409">(Yang et al., 2023, <em>PP</em>)</a>, <a href="https://arxiv.org/abs/2406.07496">(Yuksekgonul et al., 2024, <em>PP</em>)</a>.</p>
+
+      <p>Industry has converged on the low-tech version: repository-level instruction files and agent "skills" that encode procedures as documents plus scripts. This is real practice, and there is essentially no controlled evidence on it yet — label it <em>IND</em> and treat the claims accordingly.</p>
+
+      <p>What should be promoted from a trace into a rule? The criteria below are the difference between a skill library and a superstition collection:</p>
+
+      <ol>
+        <li><b>Frequency.</b> The pattern appears in at least <code>f</code> independent episodes, not one heroic run.</li>
+        <li><b>Savings.</b> It measurably reduces steps, tokens, or wall-clock on a benchmark, with a confidence interval — not a vibe.</li>
+        <li><b>Preconditions.</b> The rule states when it applies, and someone has checked the stated preconditions against episodes where it failed.</li>
+        <li><b>No leaked label.</b> The rule does not encode information the agent would not have at decision time.</li>
+        <li><b>Rollback.</b> The rule can be disabled without breaking the system, and disabling it has been tested.</li>
+        <li><b>Promotion is a procedure, not a conclusion.</b> "Call the API with exponential backoff" is a procedure. "The API is more reliable at 3 a.m." is a conclusion that will be false next month and is unfalsifiable as stored.</li>
+      </ol>
+
+      <div class="banner"><strong>The distinction to enforce:</strong> promote <i>procedures</i>, not <i>conclusions</i>. Procedures are rules about how to act and they fail loudly. Conclusions are rules about how the world is and they fail silently, then get cited by other agents. A skill library of procedures improves monotonically; a memory of conclusions degrades into folklore.</div>
+
+      <h2 id="foragents">13. Rules for the agent: guardrails as a rule engine</h2>
+      <p>The fourth direction inverts the flow: rules that constrain the agent. This is where "rule-based" stops being a modeling choice and becomes a safety mechanism, and it is the direction with the clearest engineering consensus and the weakest measurement.</p>
+
+      <p>Guardrails come in three temporal positions, and each has a different guarantee:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Position</th><th>Mechanism</th><th>What it can guarantee</th><th>What it cannot</th></tr></thead>
+          <tbody>
+            <tr><td><b>Pre-execution</b></td><td>Static policy check; capability scoping; DSL compilers that reject illegal programs <a href="https://arxiv.org/abs/2503.18666">(AgentSpec, 2025, <em>PP</em>)</a>, <a href="https://arxiv.org/abs/2310.10501">(NeMo Guardrails / Colang, 2023, <em>IND</em>)</a></td><td>An illegal action is never attempted</td><td>Nothing about actions that are legal but unwise</td></tr>
+            <tr><td><b>In-flight</b></td><td>Interceptors, state machines, shields that restrict the action set to a verified-safe subset <a href="https://arxiv.org/abs/1708.08611">(Alshiekh et al., AAAI 2018, <em>PR</em>)</a></td><td>The system stays inside a specified region, by construction</td><td>Requires a model of the environment; a wrong model gives false assurance</td></tr>
+            <tr><td><b>Post-hoc</b></td><td>Trace conformance checking, invariant mining, drift and anomaly detection, audit diffs <a href="https://doi.org/10.1016/j.scico.2007.01.015">(Daikon, 2007, <em>PR</em>)</a>, <a href="https://dl.acm.org/doi/10.1145/503272.503275">(Ammons et al., POPL 2002, <em>PR</em>)</a></td><td>You learn what actually happened, and whether it matched policy</td><td>Nothing in real time; it is a detector, not a preventer</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two things are worth saying plainly. First, <b>specification mining is decades old and agents mostly reinvent it badly</b>. Daikon infers likely invariants from execution traces; Ammons et al. mine temporal specifications from traces; process mining reconstructs workflow models from event logs and checks conformance against them. Every "agent learns its own guardrails" pitch is a rerun of this literature with a language model in the loop, and the prior art already knows the hard part: inferred specifications are <i>hypotheses</i>, and enforcing an unvalidated hypothesis is how you get a guardrail that blocks legitimate work.</p>
+
+      <p>Second, <b>a guardrail is a rule and needs the same statistics</b>. Measure its precision and recall on a labelled set of traces; report the base rate of violations; measure the cost of a false block in human minutes. Almost nobody does this, which is why the observed lifecycle of guardrails is: deploy strict, generate false positives, get disabled, never return. An agent-authored guardrail with a 30% false-positive rate is worse than no guardrail, because it burns the credibility that the next guardrail will need.</p>
+
+      <div class="guide-callout"><strong>Design rule:</strong> separate <b>prohibition</b> from <b>advice</b>. Prohibitions go in an enforcement layer that cannot be talked out of it (a policy engine, a capability scope, a type check). Advice goes in the prompt or the instruction file. Mixing them produces systems that either over-block or quietly ignore their own rules, and the failure is indistinguishable from the outside.</div>
+
+      <h2 id="text">14. Rules from text: the compiler pattern</h2>
+      <p>Regulations, contracts, SOPs, clinical guidelines, and internal policies are rule bases written in prose, maintained by people who are not programmers. Turning them into executable rules was traditionally a consulting project. It is now a translation task with a checkable output, which is the best kind of task for an agent — provided the check is real.</p>
+
+      <p>The pattern that works:</p>
+      <ol>
+        <li><b>Segment</b> the source into obligations, permissions, and definitions, and keep span-level provenance for each.</li>
+        <li><b>Compile</b> each into a typed predicate in a target language (Rego for policy, Datalog for eligibility, SQL for screening, Colang for dialogue).</li>
+        <li><b>Back-translate</b> and diff against the source text; have a human adjudicate every difference. This catches most formalization errors, and it is cheap.</li>
+        <li><b>Test on cases</b>: a set of labelled scenarios, including edge cases written specifically to separate the plausible readings.</li>
+        <li><b>Log the ambiguity</b> rather than resolving it silently. "This clause admits two readings; we implemented reading A and flagged B" is a legitimate output. A confident single reading is not.</li>
+      </ol>
+
+      <p>Knowledge graphs are the other half of this direction. Rule mining over KGs is a mature line — AMIE and AnyBURL learn Horn rules from large graphs and use them for completion and validation — and an agent adds value mostly as a proposer of predicates and a filter on triviality. The same statistics apply: a rule mined from a million triples can be highly significant and completely uninteresting, and the interestingness measures (novelty, lift over a closed-world baseline) are what separate knowledge from tautology.</p>
+
+      <p>The newest wrinkle is <b>norms</b>. Populations of agents that interact repeatedly develop conventions — shared rules nobody wrote — and there is now evidence that LLM populations do this too, including the uncomfortable part where arbitrary initial advantages harden into conventions that later agents treat as natural <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">(Ashery et al., <i>Science Advances</i> 2025, <em>PR</em>)</a>. Norm emergence is rule mining without a statistician, and the older multi-agent literature already showed that emergent norms can be stable and bad <a href="https://www.ijcai.org/Proceedings/07/Papers/258.pdf">(Sen &amp; Airiau, IJCAI 2007, <em>PR</em>)</a>. If agents are going to run in populations, norms are rules, and rules need the same audit as everything else.</p>
+
+      <h2 id="biology">15. The biology case, where rules never left</h2>
+      <p>This site is about single-cell models, and the single-cell field is the best available example of rule-based ML that never went away — because the decisions are high-stakes, the vocabulary is expert-authored, and the audit trail matters.</p>
+
+      <p><b>Marker rules for cell typing.</b> The classical workflow is literally a rule set: <i>if CD3E high and CD19 low then T cell</i>. Computational versions are scorecards over marker sets (ScType scores positive and negative markers per cell type) or per-type linear models with majority voting (CellTypist) — rules with learned weights rather than hand-written thresholds. LLMs can now annotate from marker genes and agree with experts on a useful fraction of cases, with errors concentrated in closely related types and in hallucinated markers <a href="https://www.nature.com/articles/s41592-024-02235-4">(Hou &amp; Ji, <i>Nature Methods</i> 2024, <em>PR</em>)</a>. The lesson is not "the LLM replaces the rule." It is that <b>the LLM is good at proposing the vocabulary and the rule, and the expression matrix is good at falsifying it</b> — which is exactly the loop in §9, with a checker that costs milliseconds.</p>
+
+      <p><b>Regulons are mined rules.</b> A SCENIC regulon is a transcription factor plus a co-expressed, motif-supported target set, and a cell's regulon activity is a thresholded score <a href="https://www.nature.com/articles/nmeth.4463">(Aibar et al., <i>Nature Methods</i> 2017, <em>PR</em>)</a>. That is a rule: <i>if this TF's targets are coordinately active, then this program is on</i>. It has a support, a specificity, and a validation path. Almost nobody calls it rule mining, and that is a branding problem, not a technical one.</p>
+
+      <p><b>Perturbation rules.</b> "Knock down G in state S and module M goes up" is a rule, and perturbation screens produce them by the thousand. The good news is that the field already has the right validation design: <b>hold out genes, not cells</b>. A rule that only works for genes seen in training is a lookup table. A rule that transfers to unseen perturbations is a mechanism, and that is a testable distinction that most rule-mining papers outside biology do not bother to make.</p>
+
+      <p><b>Causal and decision rules.</b> The output that clinicians and drug hunters actually want is a decision rule: <i>if biomarker in this range, this perturbation is worth trying</i>. The honest pipeline is: estimate heterogeneous effects (causal forests, virtual twins), then fit a shallow rule list to those estimates, then validate prospectively. Subgroup-search methods (SIDES, PRIM) have done the middle step for years; the agent's contribution is to propose candidate effect modifiers from mechanism, not to invent the statistics.</p>
+
+      <div class="guide-choice"><strong>The virtual cell as a rule base:</strong> the most useful framing of a virtual cell is not "a model that predicts any perturbation" but "a curated, versioned rule base with provenance, support, and refutation conditions for each rule." Prediction without a rule is a number. A rule with a refutation condition is a scientific claim, and it is the thing that accumulates.</div>
+
+      <h2 id="failure">16. Nine failure modes</h2>
+      <ol>
+        <li><b>Leaky predicates.</b> The rule predicts the label from a variable that exists because of the label — the billing code, the follow-up visit, the "case closed" flag. This is the most common serious error and the hardest to see, because the rule is genuinely accurate. Fix: an admissibility contract reviewed before mining, plus a per-predicate "when is this recorded?" field.</li>
+        <li><b>Base-rate illusion.</b> Confidence reported without lift (§7.3). Fix: make lift a mandatory column; refuse rules with lift below a stated floor.</li>
+        <li><b>Subgroup spuriousness.</b> A rule that is true on average and false where it fires. Fix: the subgroup attack in §10, with a minimum subgroup size declared in advance.</li>
+        <li><b>Predicate drift.</b> Units change, codes are remapped, an assay is re-run on a new platform, an ontology term is renamed. The rule fires, silently, on different semantics. Fix: per-predicate monitoring of distribution and null-rate; a schema diff in CI; an owner per predicate, not just per rule.</li>
+        <li><b>Rule sprawl and conflict.</b> Rules shadow, subsume, and contradict each other; priority becomes the only semantics anyone understands. Fix: automated subsumption/conflict checks (SAT or graph reachability), a hard cap on rule count, and set-level optimization instead of rule-level accretion.</li>
+        <li><b>Interpretability theatre.</b> A rule nobody would act on, presented as an explanation. Readability is not validity, and validity is not actionability. Fix: a decision-curve or net-benefit analysis next to every deployed rule — does acting on it beat not acting?</li>
+        <li><b>Superstition promotion.</b> An agent promotes a trace-derived rule that rode a confound (§12). Fix: the promotion criteria, plus a scheduled re-test that can demote.</li>
+        <li><b>Guardrail false positives.</b> The rule that protects also blocks, and after enough blocks it is disabled (§13). Fix: measure block cost, tune to a stated budget, and keep a human override with an audit trail.</li>
+        <li><b>Semantic drift in compilation.</b> The prose said "recent," the code says 90 days, and the difference is discovered in an audit two years later. Fix: back-translation diffs plus labelled edge cases, stored with the rule.</li>
+      </ol>
+
+      <div class="banner"><strong>The compounding failure:</strong> an agent proposes a leaky predicate (1), the rule has high confidence from a high base rate (2), survives because the family of tests was never counted (3), is promoted from a trace without preconditions (7), contradicts an older rule that nobody checks (5), and is enforced as a guardrail that blocks legitimate work until it is disabled (8). Every step is locally reasonable. The result is a rule base that is simultaneously ignored and load-bearing.</div>
+
+      <h2 id="evidence">17. What the evidence actually supports</h2>
+      <p>Sorting by what the literature licenses, rather than by what the demos suggest:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Claim</th><th>Strongest support</th><th>Verdict</th></tr></thead>
+          <tbody>
+            <tr><td>Small mined rule sets are competitive with black boxes on tabular tasks</td><td>CORELS <a href="https://arxiv.org/abs/1704.01701">(2018)</a>, RuleFit <a href="https://arxiv.org/abs/0811.1679">(2008)</a>, the interpretable-models argument <a href="https://www.nature.com/articles/s42256-019-0048-x">(Rudin, 2019)</a></td><td><b>Supported</b> at moderate size and dimensionality; degrades as perception-heavy inputs enter.</td></tr>
+            <tr><td>Rule mining needs multiplicity control to be trustworthy</td><td>Significant pattern mining <a href="https://www.pnas.org/doi/10.1073/pnas.1302233110">(2013)</a>, <a href="https://dl.acm.org/doi/10.1145/2783258.2783363">(2015)</a>; stability selection <a href="https://doi.org/10.1111/j.1467-9868.2010.00740.x">(2010)</a></td><td><b>Supported and widely ignored.</b> The methods exist; the reporting norm does not.</td></tr>
+            <tr><td>LLM + symbolic solver beats LLM alone on deductive tasks</td><td>Logic-LM, LINC, SatLM <a href="https://arxiv.org/abs/2305.12295">(2023)</a>, <a href="https://arxiv.org/abs/2310.15164">(2023)</a>, <a href="https://arxiv.org/abs/2305.09656">(2023)</a>; AlphaGeometry <a href="https://www.nature.com/articles/s41586-023-06747-5">(2024)</a></td><td><b>Supported</b> on benchmarks; the residual error is formalization, not inference.</td></tr>
+            <tr><td>An automated evaluator makes LLM program search productive</td><td>FunSearch <a href="https://www.nature.com/articles/s41586-023-06924-6">(2024)</a>, AlphaEvolve <a href="https://arxiv.org/abs/2506.13131">(2025)</a></td><td><b>Supported</b> where the checker is fast, exact, and cheap. Not evidence for open-ended discovery.</td></tr>
+            <tr><td>An LLM can mine statistically valid rules from a database without tooling</td><td>—</td><td><b>Not supported.</b> The arithmetic in §7 is the failure; models are fluent about statistics and unreliable at applying them.</td></tr>
+            <tr><td>Agents can prune the rule search space with domain priors</td><td>Indirect: program search with LLM priors, ILP-with-LLM proposals</td><td><b>Plausible, weakly evidenced.</b> Needs a compute-matched comparison against exhaustive search at the same <code>K</code>.</td></tr>
+            <tr><td>Trace-derived skills improve future agent performance</td><td>Voyager <a href="https://arxiv.org/abs/2305.16291">(2023)</a>, ExpeL <a href="https://arxiv.org/abs/2308.10144">(AAAI 2024)</a>, AWM <a href="https://arxiv.org/abs/2409.07429">(2024)</a></td><td><b>Partly supported</b> in narrow, verifiable domains. Rarely compute-matched; effect sizes modest outside sandboxes.</td></tr>
+            <tr><td>Guardrails reliably eliminate unsafe agent behavior</td><td>DSL and runtime-enforcement papers <a href="https://arxiv.org/abs/2503.18666">(2025)</a>, shielding <a href="https://arxiv.org/abs/1708.08611">(2018)</a></td><td><b>Not supported as stated.</b> They reduce a measured class of violations at a false-positive cost that is almost never reported.</td></tr>
+            <tr><td>Agent-maintained rule bases stay healthy over time</td><td>—</td><td><b>Unknown.</b> No longitudinal study exists; the maintenance literature in software and clinical decision support suggests optimism is unwarranted.</td></tr>
+            <tr><td>Mined rules transfer across sites without revalidation</td><td>Clinical prediction-rule literature</td><td><b>Not supported.</b> Recalibration or revalidation per site is the norm, and the exceptions are the ones that make the news.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two meta-observations. The strongest results all have a <b>cheap, exact checker</b> — a solver, a compiler, a benchmark evaluator, an expression matrix. The weakest results all have a <b>human-judged notion of usefulness</b>. And almost nothing reports the <b>cost of the rules that were not deployed</b>: the true negative rate of the mining process, which is the number that determines whether a rule base is an asset or a liability.</p>
+
+      <h2 id="potential">18. Where the potential is</h2>
+      <p>Eight directions, ordered roughly by how soon they could be real, each with the thing that would have to be true and a test that would falsify it.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Potential</th><th>What it is</th><th>What must be true</th><th>Falsifying test</th></tr></thead>
+          <tbody>
+            <tr><td><b>P1. Distillation to rules</b></td><td>Agents do the expensive search; the deployed artifact is a small audited rule set, not a prompt or a model</td><td>Mined rules retain most of the agent's decision quality at a fraction of the cost</td><td>On a frozen task suite, a 50-rule list matches agent accuracy at ≤1/50 the inference cost</td></tr>
+            <tr><td><b>P2. Falsification-first mining</b></td><td>The agent's product is counterexamples and rule cards; a rule is a by-product</td><td>Counterexample search finds more real failures per unit budget than rule generation finds successes</td><td>At matched budget, counterexample-first pipelines deploy rules with lower held-out error and fewer retractions</td></tr>
+            <tr><td><b>P3. Rules as the inter-agent contract</b></td><td>Agents exchange typed rules with support, provenance, and refutation conditions instead of sharing transcripts</td><td>Rule bases converge faster and contradict less than prose or memory dumps</td><td>A 5-agent team solving a decomposable task with a shared rule base beats the same team with shared transcripts, at matched tokens</td></tr>
+            <tr><td><b>P4. Compiled compliance</b></td><td>Regulation → typed rule → runtime enforcement → audit trail, with the model only compiling</td><td>Compilation precision is high enough that human review is adjudication, not re-derivation</td><td>On a held-out set of clauses with lawyer-labelled cases, compiled rules reach high agreement and the disputes are localized</td></tr>
+            <tr><td><b>P5. Causal decision rules</b></td><td>Agent proposes effect modifiers and a causal graph; data estimates heterogeneous effects; output is an action rule</td><td>The graph is defensible and the effect estimates survive holdout and prospective tests</td><td>A mined treatment rule beats standard of care on prospective net benefit, not on retrospective fit</td></tr>
+            <tr><td><b>P6. Soft rules</b></td><td>Rules as differentiable constraints during training, auditable at inference <a href="https://arxiv.org/abs/1711.11157">(semantic loss, 2018)</a>, <a href="https://arxiv.org/abs/1805.10872">(DeepProbLog, 2018)</a>, <a href="https://arxiv.org/abs/2012.13635">(LTN, 2020)</a></td><td>Constraining the hypothesis class buys out-of-distribution robustness, not just in-distribution accuracy</td><td>Rule-constrained models match baseline in-distribution and beat it under distribution shift</td></tr>
+            <tr><td><b>P7. Rule governance as a product</b></td><td>A registry with owners, expiry, drift monitors, conflict checks, and a "rule debt" dashboard; an agent as librarian</td><td>Maintenance automation reduces time-to-detection of broken rules enough to justify the registry</td><td>Median time to detect a deliberately broken rule falls from months to days, at a stated false-alarm cost</td></tr>
+            <tr><td><b>P8. Heuristic mining</b></td><td>Agents evolve dispatch, pruning, and scheduling rules validated by benchmark performance — the FunSearch/AlphaEvolve lineage</td><td>Performance checkers exist for the operational problem at hand</td><td>An evolved heuristic beats a human-designed baseline on held-out instances of a real workload, not a toy one</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>P1 and P8 are the near-term wins, because both have an external checker and a clear cost metric. P2 and P7 are the highest-leverage neglected ones, because they attack the two failure modes (false rules, rule rot) that decide whether any of this survives contact with production. P3 is the most interesting open architectural question: if agents are going to work in teams, what should they share? A transcript is expensive and unauditable; a rule base is cheap, checkable, and composable, but it loses the nuance that made the episode useful. My guess is that the durable answer is "rules plus pointers to the episodes that justify them," which is exactly a rule card with provenance.</p>
+
+      <p>P5 and P6 are where the scientific value is, and both are slow because both require prospective validation. That is not a reason to skip them; it is a reason to start the prospective part now, when the retrospective part is still cheap.</p>
+
+      <div class="guide-callout"><strong>The pattern behind the potentials:</strong> the value of an agent is not that it produces rules. It is that it makes the <i>whole lifecycle</i> of a rule — propose, compile, measure, stability-test, counterexample-hunt, document, deploy, monitor, retire — cheap enough to do for rules that would previously not have justified the effort. That is a quantity-of-attention story, not a quality-of-reasoning story, and it is the one the evidence supports.</div>
+
+      <h2 id="open">19. Open questions</h2>
+      <ol>
+        <li><b>What is the right unit of multiplicity when the <i>vocabulary</i> is generated?</b> Counting rules undercounts; counting predicate sets overcounts; counting prompts is meaningless. Is there a principled <code>K</code> for a search over representations?</li>
+        <li><b>Can admissibility be checked automatically?</b> Given a typed schema and a temporal annotation, how much leakage can be detected without a causal diagram? Is the schema the right place to encode "recorded after the outcome"?</li>
+        <li><b>Do LLM priors improve the statistical quality of mined rules, or only their plausibility?</b> This is testable today at matched <code>K</code>: same budget, with and without a proposer, compare held-out precision and stability.</li>
+        <li><b>Is there a coverage/precision frontier that saturates?</b> Every domain has a point where the next rule costs more maintenance than it returns. Can that point be estimated before deployment?</li>
+        <li><b>Can rule stability be predicted from a single sample?</b> If bootstrap stability predicts future drift, monitoring budgets can be allocated per rule instead of uniformly.</li>
+        <li><b>What is the rule algebra for independently authored rules?</b> Two agents, same domain, no shared context: how often do their rule sets conflict, and is subsumption checking enough to reconcile them?</li>
+        <li><b>Does promoting trace experience into rules beat retrieving the raw traces?</b> Distillation is lossy and retrieval is expensive; the crossover point is unmeasured.</li>
+        <li><b>Are rules the right verification substrate for LLM claims at scale?</b> A rule can check a narrow factual claim cheaply. What recall does that buy against an LLM judge, and at what cost per claim?</li>
+        <li><b>Do rules stay valid across model generations?</b> The portability argument assumes yes. If rules mined with one model systematically encode that model's priors, the asset is less durable than advertised.</li>
+        <li><b>How should a rule base be tested as a whole?</b> Unit tests per rule do not catch interaction effects, and end-to-end tests do not localize failures. Is there a conformance suite for rule bases?</li>
+        <li><b>Who is accountable for a harmful mined rule?</b> The miner, the librarian, the approver, or the data owner? The answer determines whether anyone will approve anything.</li>
+        <li><b>Is interpretability-by-rules the right target in high-stakes decisions?</b> Rudin's argument is that the hypothesis class should be constrained, not that a black box should be explained. The agent era makes it easy to generate plausible explanations for anything, which strengthens her case and also makes it easier to fake.</li>
+      </ol>
+
+      <h2 id="pilot">20. A four-week pilot</h2>
+      <p>Pick a domain where you already have a schema, a labelled outcome, and a decision someone makes weekly. The goal is not a rule base. It is a measured profile of where the agent helped, at what cost, and what broke.</p>
+
+      <ol>
+        <li><b>Week 1 — contract and baselines.</b> Write the admissibility contract (predicates, time boundaries, leakage notes). Build three baselines: the current human rules, a gradient-boosted model, and an LLM asked for rules with no statistical tooling. Freeze a time-based holdout before looking at anything.</li>
+        <li><b>Week 2 — mine, with the loop.</b> Run §9 with a declared budget. Log <code>K</code> and every candidate. Report the survival funnel: candidates → admissible → significant → stable → set-consistent. The funnel itself is the finding; most projects die at "stable."</li>
+        <li><b>Week 3 — attack and document.</b> Counterexample hunt on the validation split; subgroup attack at the declared minimum size; back-translation diff for every compiled rule. Produce rule cards and a list of rules you deliberately did <i>not</i> deploy, with reasons.</li>
+        <li><b>Week 4 — shadow, cost, and retire.</b> Shadow-deploy on the holdout window; measure both directions (caught, wrongly blocked); compute cost per decision including maintenance at <code>n·q</code>; assign owners and review dates; write the retirement criteria.</li>
+      </ol>
+
+      <p>Then compare against the three baselines on four numbers: held-out precision at fixed coverage, decision quality (net benefit, not accuracy), cost per decision, and the number of rules a human would actually sign. If the agent's rule set does not beat the human rules on at least two of the four, the honest conclusion is that the bottleneck was never rule authorship in your domain — and that is worth knowing before you build the platform.</p>
+
+      <h2 id="checklist">21. Checklist</h2>
+      <ul>
+        <li><b>Write the admissibility contract before the vocabulary.</b> Leakage is designed in, not discovered.</li>
+        <li><b>Budget <code>K</code> up front and report it.</b> An unreported search is an unreported experiment.</li>
+        <li><b>Always report the base rate next to the confidence.</b> Lift or nothing.</li>
+        <li><b>Split by time; keep the holdout sealed until the end.</b> Random splits flatter stale rules.</li>
+        <li><b>Measure stability by resampling, and set the threshold in advance.</b></li>
+        <li><b>Optimize the rule set, not the rule.</b> Coverage and precision are a curve.</li>
+        <li><b>Give the critic the data, not the reasoning.</b> Self-review does not work.</li>
+        <li><b>Promote procedures from traces, never conclusions.</b></li>
+        <li><b>Enforce prohibitions in an engine; keep advice in the prompt.</b> Do not blur them.</li>
+        <li><b>Every deployed rule gets a card, an owner, a monitor, and an expiry date.</b> Unmaintained rules are liabilities with good formatting.</li>
+        <li><b>Cost the whole lifecycle, including retirement.</b> Mining is the cheap part.</li>
+      </ul>
+
+      <h2 id="sources">22. Selected sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark paper, <em>IND</em> = industry report or practice note.</p>
+
+      <h3>Rule learning and interpretable models</h3>
+      <ul>
+        <li>Forgy, <a href="https://doi.org/10.1016/0004-3702(82)90020-0">Rete: A fast algorithm for the many pattern/many object pattern match problem</a> (<i>Artificial Intelligence</i> 1982) — <em>PR</em></li>
+        <li>Quinlan, C4.5: Programs for Machine Learning (Morgan Kaufmann, 1993) — <em>PR</em></li>
+        <li>Cohen, <a href="https://doi.org/10.1016/B978-1-55860-377-6.50023-2">Fast Effective Rule Induction</a> (ICML 1995) — <em>PR</em></li>
+        <li>Lakkaraju, Bach &amp; Leskovec, <a href="https://dl.acm.org/doi/10.1145/2939672.2939874">Interpretable Decision Sets</a> (KDD 2016) — <em>PR</em></li>
+        <li>Angelino et al., <a href="https://arxiv.org/abs/1704.01701">Learning Certifiably Optimal Rule Lists for Categorical Data</a> (JMLR 2018) — <em>PR</em></li>
+        <li>Letham et al., <a href="https://arxiv.org/abs/1511.01644">Interpretable Classifiers Using Rules and Bayesian Analysis</a> (2015) — <em>PP</em></li>
+        <li>Friedman &amp; Popescu, <a href="https://arxiv.org/abs/0811.1679">Predictive Learning via Rule Ensembles</a> (2008) — <em>PR</em></li>
+        <li>Hara &amp; Hayashi, <a href="https://arxiv.org/abs/1606.09066">Making Tree Ensembles Interpretable</a> (2016) — <em>PP</em></li>
+        <li>Rudin, <a href="https://www.nature.com/articles/s42256-019-0048-x">Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead</a> (<i>Nature Machine Intelligence</i> 2019) — <em>PR</em></li>
+        <li>Muggleton, <a href="https://doi.org/10.1007/BF03037089">Inductive logic programming</a> (1991) — <em>PR</em></li>
+      </ul>
+
+      <h3>Pattern mining and statistics</h3>
+      <ul>
+        <li>Agrawal &amp; Srikant, <a href="https://www.vldb.org/conf/1994/P487.PDF">Fast Algorithms for Mining Association Rules</a> (VLDB 1994) — <em>PR</em></li>
+        <li>Han, Pei &amp; Yin, <a href="https://doi.org/10.1145/335191.335372">Mining Frequent Patterns without Candidate Generation</a> (SIGMOD 2000) — <em>PR</em></li>
+        <li>Terada et al., <a href="https://www.pnas.org/doi/10.1073/pnas.1302233110">Statistical significance of combinatorial regulations</a> (PNAS 2013) — <em>PR</em></li>
+        <li>Llinares-López et al., <a href="https://dl.acm.org/doi/10.1145/2783258.2783363">Fast and memory-efficient significant pattern mining via permutation testing</a> (KDD 2015) — <em>PR</em></li>
+        <li>Meinshausen &amp; Bühlmann, <a href="https://doi.org/10.1111/j.1467-9868.2010.00740.x">Stability selection</a> (JRSS-B 2010) — <em>PR</em></li>
+        <li>Benjamini &amp; Hochberg, <a href="https://www.jstor.org/stable/2346101">Controlling the false discovery rate</a> (JRSS-B 1995) — <em>PR</em></li>
+        <li>Peters, Bühlmann &amp; Meinshausen, <a href="https://doi.org/10.1111/rssb.12167">Causal inference using invariant prediction</a> (JRSS-B 2016) — <em>PR</em></li>
+        <li>Manheim &amp; Garrabrant, <a href="https://arxiv.org/abs/1803.04585">Categorizing Variants of Goodhart's Law</a> (2018) — <em>PP</em></li>
+      </ul>
+
+      <h3>Neurosymbolic and solver-backed reasoning</h3>
+      <ul>
+        <li>Pan et al., <a href="https://arxiv.org/abs/2305.12295">Logic-LM: Empowering Large Language Models with Symbolic Solvers</a> (EMNLP Findings 2023) — <em>PR</em></li>
+        <li>Olausson et al., <a href="https://arxiv.org/abs/2310.15164">LINC: A Neurosymbolic Approach for Logical Reasoning</a> (EMNLP 2023) — <em>PR</em></li>
+        <li>Ye et al., <a href="https://arxiv.org/abs/2305.09656">SatLM: Satisfiability-Aided Language Models</a> (NeurIPS 2023) — <em>PR</em></li>
+        <li>Gao et al., <a href="https://arxiv.org/abs/2211.10435">Program-Aided Language Models</a> (ICML 2023) — <em>PR</em></li>
+        <li>Liang et al., <a href="https://arxiv.org/abs/2209.07753">Code as Policies</a> (ICRA 2023) — <em>PR</em></li>
+        <li>Liu et al., <a href="https://arxiv.org/abs/2304.11477">LLM+P: Empowering LLMs with Optimal Planning Proficiency</a> (2023) — <em>PP</em></li>
+        <li>Trinh et al., <a href="https://www.nature.com/articles/s41586-023-06747-5">Solving olympiad geometry without human demonstrations</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Xu et al., <a href="https://arxiv.org/abs/1711.11157">A Semantic Loss Function for Deep Learning with Symbolic Knowledge</a> (ICML 2018) — <em>PR</em></li>
+        <li>Manhaeve et al., <a href="https://arxiv.org/abs/1805.10872">DeepProbLog</a> (NeurIPS 2018) — <em>PR</em></li>
+        <li>Badreddine et al., <a href="https://arxiv.org/abs/2012.13635">Logic Tensor Networks</a> (2020) — <em>PP</em></li>
+      </ul>
+
+      <h3>Program search and heuristic discovery</h3>
+      <ul>
+        <li>Ellis et al., <a href="https://arxiv.org/abs/2006.08381">DreamCoder: Growing generalizable, interpretable knowledge with wake-sleep Bayesian program learning</a> (2020/21; PLDI 2021 version on library learning) — <em>PR</em></li>
+        <li>Grand et al., <a href="https://arxiv.org/abs/2310.19791">LILO: Learning Interpretable Libraries by Compressing and Documenting Code</a> (2023) — <em>PP</em></li>
+        <li>Romera-Paredes et al., <a href="https://www.nature.com/articles/s41586-023-06924-6">Mathematical discoveries from program search with large language models</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Novikov et al., <a href="https://arxiv.org/abs/2506.13131">AlphaEvolve: A coding agent for scientific and algorithmic discovery</a> (2025) — <em>PP</em></li>
+        <li>Liu et al., <a href="https://arxiv.org/abs/2401.02051">Evolution of Heuristics</a> (2024) — <em>PP</em></li>
+        <li>Brunton, Proctor &amp; Kutz, <a href="https://www.pnas.org/doi/10.1073/pnas.1517384113">Discovering governing equations from data</a> (PNAS 2016) — <em>PR</em></li>
+        <li>Udrescu &amp; Tegmark, <a href="https://www.science.org/doi/10.1126/sciadv.aay2631">AI Feynman</a> (<i>Science Advances</i> 2020) — <em>PR</em></li>
+        <li>Cranmer et al., <a href="https://arxiv.org/abs/2006.11287">Discovering symbolic models from deep learning with inductive biases</a> (2020) — <em>PP</em></li>
+      </ul>
+
+      <h3>Agent experience, skills, and workflows</h3>
+      <ul>
+        <li>Wang et al., <a href="https://arxiv.org/abs/2305.16291">Voyager: An Open-Ended Embodied Agent with Large Language Models</a> (2023) — <em>PP</em></li>
+        <li>Zhao et al., <a href="https://arxiv.org/abs/2308.10144">ExpeL: LLM Agents Are Experiential Learners</a> (AAAI 2024) — <em>PR</em></li>
+        <li>Wang et al., <a href="https://arxiv.org/abs/2409.07429">Agent Workflow Memory</a> (2024) — <em>PP</em></li>
+        <li>Khattab et al., <a href="https://arxiv.org/abs/2310.03714">DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines</a> (ICLR 2024) — <em>PR</em></li>
+        <li>Yang et al., <a href="https://arxiv.org/abs/2309.03409">Large Language Models as Optimizers</a> (2023) — <em>PP</em></li>
+        <li>Yuksekgonul et al., <a href="https://arxiv.org/abs/2406.07496">TextGrad: Automatic Differentiation via Text</a> (2024) — <em>PP</em></li>
+        <li>Huang et al., <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a> (ICLR 2024) — <em>PR</em></li>
+        <li>Anthropic, <a href="https://arxiv.org/abs/2212.08073">Constitutional AI: Harmlessness from AI Feedback</a> (2022) — <em>PP</em></li>
+      </ul>
+
+      <h3>Verification, guardrails, and specification mining</h3>
+      <ul>
+        <li>Ernst et al., <a href="https://doi.org/10.1016/j.scico.2007.01.015">The Daikon system for dynamic detection of likely invariants</a> (<i>Science of Computer Programming</i> 2007) — <em>PR</em></li>
+        <li>Ammons, Bodík &amp; Larus, <a href="https://dl.acm.org/doi/10.1145/503272.503275">Mining specifications</a> (POPL 2002) — <em>PR</em></li>
+        <li>Alshiekh et al., <a href="https://arxiv.org/abs/1708.08611">Safe Reinforcement Learning via Shielding</a> (AAAI 2018) — <em>PR</em></li>
+        <li>Rebedea et al., <a href="https://arxiv.org/abs/2310.10501">NeMo Guardrails: A Toolkit for Controllable and Safe LLM Applications with Programmable Rails</a> (2023) — <em>IND</em></li>
+        <li>Wang et al., <a href="https://arxiv.org/abs/2503.18666">AgentSpec: Customizable Runtime Enforcement for Safe and Reliable LLM Agents</a> (2025) — <em>PP</em></li>
+        <li>Xiang et al., <a href="https://arxiv.org/abs/2406.09187">GuardAgent: Safeguard LLM Agents by a Guard Agent via Knowledge-Enabled Reasoning</a> (2024/25) — <em>PP</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Norms and collective rules</h3>
+      <ul>
+        <li>Sen &amp; Airiau, <a href="https://www.ijcai.org/Proceedings/07/Papers/258.pdf">Emergence of norms through social learning</a> (IJCAI 2007) — <em>PR</em></li>
+        <li>Ashery et al., <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">Emergent social conventions and collective bias in populations of LLM agents</a> (<i>Science Advances</i> 2025) — <em>PR</em></li>
+      </ul>
+
+      <h3>Biology: markers, regulons, and decision rules</h3>
+      <ul>
+        <li>Aibar et al., <a href="https://www.nature.com/articles/nmeth.4463">SCENIC: single-cell regulatory network inference and clustering</a> (<i>Nature Methods</i> 2017) — <em>PR</em></li>
+        <li>Domínguez Conde et al., <a href="https://www.science.org/doi/10.1126/science.abl5197">Cross-tissue immune cell analysis reveals tissue-specific features in humans</a> (<i>Science</i> 2022; CellTypist) — <em>PR</em></li>
+        <li>Ianevski et al., <a href="https://www.nature.com/articles/s41467-022-28803-w">Fully-automated and ultra-fast cell-type identification using specific marker combinations (ScType)</a> (<i>Nature Communications</i> 2022) — <em>PR</em></li>
+        <li>Hou &amp; Ji, <a href="https://www.nature.com/articles/s41592-024-02235-4">Assessing GPT-4 for cell type annotation in single-cell RNA-seq analysis</a> (<i>Nature Methods</i> 2024) — <em>PR</em></li>
+        <li>Lipkovich et al., Subgroup identification based on differential effect search (SIDES) (<i>Statistics in Medicine</i> 2011) — <em>PR</em></li>
+        <li>Friedman &amp; Fisher, Bump hunting in high-dimensional data (PRIM) (<i>Statistics and Computing</i> 1999) — <em>PR</em></li>
+        <li>Wager &amp; Athey, <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1319839">Estimation and inference of heterogeneous treatment effects using random forests</a> (JASA 2018) — <em>PR</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>Rule-based machine learning never lost; it just became unfashionable, then quietly became the substrate of every system that has to explain itself. What it was missing was a translator between the messy world and the formal one, and that translator was always an expensive human. Agents are the first credible substitute, and the substitution changes which part of the problem is hard.</p>
+
+      <p>The authorship bottleneck becomes cheap. The validation bottleneck does not: an agent can produce a thousand plausible rules an hour and cannot tell you which of them are true, and the arithmetic in §7 does not care how fluent the proposer was. The maintenance bottleneck also does not move, because a rule base is a program and programs rot; it only gets worse, because the rules arrive faster than the owners do.</p>
+
+      <p>So the useful architecture is not "an AI that writes the rules." It is a loop in which the agent expands the hypothesis space and shrinks the bookkeeping, the engine and the statistics decide what survives, the human signs the two things that cannot be automated — what counts as evidence, and what counts as worth doing — and the librarian keeps the whole thing from turning into folklore. Rules are the interface because they are the only artifact that all five parties can read: the model can write them, the database can measure them, the statistician can test them, the lawyer can audit them, and the next model, five years from now, can still run them.</p>
+
+      <p>That is a smaller ambition than "automated discovery," and a much more durable one. The rules you mine this year will outlive the model that mined them. Build accordingly.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

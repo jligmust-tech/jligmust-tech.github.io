@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: from target to drug, 1982–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the target-to-drug toolkit: a maturity heatmap of the six stages of structure-based design from 1985 to 2026, the chronology of docking, free energy, generative design and co-folding, and why the pipeline still fails at the stages nobody benchmarks.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.bench::before { border-color: var(--green); }
+    .tm-item.model::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+    .hm { border-collapse: separate; border-spacing: 3px; font-size: 11.5px; }
+    .hm th { padding: 4px 6px; font-size: 10.5px; letter-spacing: 0.03em; color: var(--muted); background: none; border: 0; white-space: nowrap; }
+    .hm td { padding: 7px 8px; border: 0; border-radius: 5px; white-space: normal; line-height: 1.3; min-width: 94px; vertical-align: middle; }
+    .hm td:first-child { background: none !important; color: var(--text); font-weight: 700; min-width: 120px; text-align: left; }
+    .hm .m0 { background: #ffffff; border: 1px solid var(--border); color: var(--muted); }
+    .hm .m1 { background: #e3eefb; color: #1a365d; }
+    .hm .m2 { background: #a9c8e8; color: #12314f; }
+    .hm .m3 { background: #3182ce; color: #fff; }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. The maturity heatmap</a>
+          <a href="#record">3. The record</a>
+          <a href="#pipeline">4. The pipeline's weakest link</a>
+          <a href="#bench">5. What is actually benchmarked</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-30</span>
+      </div>
+      <h1>Timeline review: from target to drug, 1982–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-09-30-target-to-drug-toolkit.html">toolkit post</a> walked through six stages — target, structure, docking, affinity, generative design, selectivity — and the methods available at each. A timeline adds the one thing a method list cannot: <b>which stages actually got better, and which merely got faster.</b></p>
+
+      <p>The answer is lopsided. Pose prediction improved by orders of magnitude. Affinity prediction improved modestly. Target validation and selectivity prediction barely improved at all, and those are the stages where molecules actually fail.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The heatmap in §2 is an editorial maturity assessment on an ordinal 0–3 scale, not a measured performance score, and the cells name representative methods rather than all methods. No docking run, benchmark, or free-energy calculation was performed for this post.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> structure-based design automated the stages that have a <em>geometric</em> ground truth and left the stages that require a <em>biological</em> one. That is why a 2026 pipeline can generate a plausible binder for a wrong target in an afternoon, and why the field's failures are increasingly upstream of the part everyone benchmarks.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>Drug discovery has an unusually clean external clock: the approval. Everything upstream is judged by a signal that arrives eight to fifteen years later, which means the field's methods are always evaluated on pipelines that started with a different toolset. Any claim that a new method improves success rates is therefore an extrapolation, and the historical record is the only place to check whether such extrapolations have ever held.</p>
+
+      <p>They have held exactly once, and not where people expected: structure prediction. AlphaFold did not improve clinical success rates; it removed a specific, expensive, well-defined bottleneck and made a whole class of downstream work cheap. That is a real contribution, and it is a different kind of contribution from "better drugs."</p>
+
+      <h2 id="figure">2. The maturity heatmap</h2>
+
+      <div class="tm-fig">
+        <div class="tm-legend">
+          <span class="tm-key"><span class="tm-sw" style="background:#ffffff;border:1px solid #e2e8f0"></span>not available</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#e3eefb"></span>expert-only</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#a9c8e8"></span>routine</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#3182ce"></span>infrastructure</span>
+        </div>
+        <div class="tblwrap">
+          <table class="hm">
+            <thead>
+              <tr><th></th><th>1985</th><th>1995</th><th>2005</th><th>2015</th><th>2022</th><th>2026</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Target identification</td>
+                <td class="m1">genetics, biochemistry</td>
+                <td class="m1">GWAS begins</td>
+                <td class="m2">RNAi screens</td>
+                <td class="m3">CRISPR screens, depmaps</td>
+                <td class="m2">perturbation atlases</td>
+                <td class="m2">multi-omic + agents</td>
+              </tr>
+              <tr>
+                <td>Structure determination</td>
+                <td class="m1">X-ray, sparse</td>
+                <td class="m2">NMR + crystallography</td>
+                <td class="m2">structural genomics</td>
+                <td class="m2">cryo-EM revolution</td>
+                <td class="m3">AlphaFold 2</td>
+                <td class="m3">AF3, co-folding</td>
+              </tr>
+              <tr>
+                <td>Docking / virtual screening</td>
+                <td class="m1">DOCK (1982)</td>
+                <td class="m2">AutoDock</td>
+                <td class="m2">screening at scale</td>
+                <td class="m1">billion-compound libraries</td>
+                <td class="m2">learned scoring</td>
+                <td class="m2">diffusion docking</td>
+              </tr>
+              <tr>
+                <td>Affinity prediction</td>
+                <td class="m1">empirical scores</td>
+                <td class="m1">FEP, expert-only</td>
+                <td class="m1">MM/PBSA</td>
+                <td class="m2">FEP+ in production</td>
+                <td class="m2">ML potentials</td>
+                <td class="m2">co-folding + affinity</td>
+              </tr>
+              <tr>
+                <td>Generative design</td>
+                <td class="m0">—</td>
+                <td class="m0">—</td>
+                <td class="m1">fragment-based</td>
+                <td class="m2">deep generative</td>
+                <td class="m2">structure-based diffusion</td>
+                <td class="m3">de novo binders</td>
+              </tr>
+              <tr>
+                <td>Selectivity &amp; ADMET</td>
+                <td class="m1">in vivo only</td>
+                <td class="m1">QSAR</td>
+                <td class="m2">ADMET models</td>
+                <td class="m2">multi-task learning</td>
+                <td class="m1">large assay sets</td>
+                <td class="m1">uncertainty-aware</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="tm-cap"><b>Figure 1. Maturity by stage, 1985–2026.</b> "Infrastructure" means the stage is a service anyone can call, cheap enough to use by default. Two observations. First, the diagonal runs down and to the right: each stage matures later than the one above it, because each depends on the outputs of the one above. Second, the bottom row does not converge with the top: selectivity and ADMET stay at "routine" for twenty years, because the data is biological and the ground truth is expensive. The last column is the one that matters for decisions — and it is the least blue.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">1982–1999 · <span>geometry and scoring</span> · what improved: search</li>
+        <li class="tm-item"><span class="tm-y">1982</span><b>DOCK</b> — ligand–receptor interaction as a geometric matching problem; virtual screening becomes a computation.</li>
+        <li class="tm-item"><span class="tm-y">1990s</span><b>AutoDock and empirical scoring</b> — fast docking with fitted energy terms; the field acquires a tool and a habit of trusting scores that were never calibrated to affinity.</li>
+        <li class="tm-item"><span class="tm-y">1997–2000</span><b>ChemScore, DrugScore</b> — consensus and knowledge-based scoring; the number of scoring functions grows faster than the evidence that any of them ranks.</li>
+
+        <li class="tm-era">2000–2013 · <span>scale and free energy</span> · what improved: throughput</li>
+        <li class="tm-item"><span class="tm-y">2000s</span><b>Structure-based virtual screening at scale</b> — million-compound libraries become routine; enrichment factors are reported, prospective hit rates are not.</li>
+        <li class="tm-item"><span class="tm-y">2005–13</span><b>Cryo-EM revolution</b> — structures of assemblies that crystallography could not reach; the structure bottleneck narrows from "any structure" to "the right conformation."</li>
+        <li class="tm-item model"><span class="tm-y">2014–15</span><b>FEP+ in production</b> — relative binding free energy becomes accurate enough for prospective optimization on congeneric series, and expensive enough to stay expert-only.</li>
+        <li class="tm-item model"><span class="tm-y">2017</span><b>REINVENT and deep generative design</b> — molecules generated by a model trained on chemistry; the objective function becomes the research problem.</li>
+
+        <li class="tm-era">2018–2023 · <span>learned structure and learned poses</span> · what improved: the input</li>
+        <li class="tm-item model"><span class="tm-y">2020–21</span><b>AlphaFold 2</b> — high-accuracy structures at scale; docking pipelines that assumed a crystal structure are rewritten to assume a predicted one.</li>
+        <li class="tm-item"><span class="tm-y">2020</span><b>Ultra-large virtual screening</b> — billion-scale libraries and GPU-accelerated docking; the search space stops being the constraint.</li>
+        <li class="tm-item model"><span class="tm-y">2023</span><b>DiffDock</b> — blind docking as generative pose prediction; the benchmark conversation shifts from enrichment to physical validity.</li>
+        <li class="tm-item model"><span class="tm-y">2023</span><b>RFdiffusion</b> — de novo protein design by diffusion; binder design becomes a generation problem with a checkable objective.</li>
+        <li class="tm-item bench"><span class="tm-y">2024</span><b>PoseBusters</b> — a systematic check that predicted poses are physically plausible; a large share of learned docking outputs fail basic geometry, which reframes the field's headline metrics.</li>
+
+        <li class="tm-era">2024–2026 · <span>complexes and the validation gap</span> · what improved: assemblies</li>
+        <li class="tm-item model"><span class="tm-y">2024</span><b>AlphaFold 3, Chai-1, Boltz-1</b> — co-folding of protein with ligand, nucleic acid, and ion; the unit of prediction becomes the assembly rather than the chain.</li>
+        <li class="tm-item model"><span class="tm-y">2025</span><b>Affinity from co-folding</b> — models that emit a binding estimate alongside the pose; the honest reading is that pose is now good and affinity is still the open problem.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — the pipeline's automation has moved upstream and downstream of the part that determines clinical success, which is target validation and selectivity.</li>
+      </ul>
+
+      <h2 id="pipeline">4. The pipeline's weakest link is not the one with the papers</h2>
+      <p>Two numbers frame the whole field, and neither is about docking. Attrition in clinical development is dominated by <b>lack of efficacy</b> and <b>toxicity</b>, not by bad poses. A model that improves pose accuracy by 20% therefore improves a quantity that is not in the causal path of most failures, while a model that improves target validation by 20% would be transformative and has no benchmark.</p>
+
+      <p>The timeline explains why this gap persists. Every stage in the heatmap that turned blue has a <b>geometric or arithmetic ground truth</b>: a structure, a pose, an energy, a synthesis route. Target validation has a <i>biological</i> ground truth that takes years and costs millions per data point, so the feedback loop is too slow to train on and too expensive to benchmark. Selectivity has the same problem in miniature: you can compute an off-target pose, but you cannot compute whether the off-target effect matters.</p>
+
+      <div class="banner"><strong>The structural problem, stated plainly:</strong> the field automated the stages where being wrong is detectable in an afternoon. It did not automate the stages where being wrong is detectable in a decade. That is a rational allocation of engineering effort and a poor allocation of scientific effort, and no amount of model scaling changes which stages have cheap checks.</div>
+
+      <h2 id="bench">5. What is actually benchmarked</h2>
+      <p>The benchmark column is where the field's self-image is most misleading, because the standard tasks are retrospective and the interesting tasks are prospective.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Stage</th><th>Standard benchmark</th><th>What it can show</th><th>What it cannot show</th></tr></thead>
+          <tbody>
+            <tr><td>Structure</td><td>CASP, blind, community-run since 1994</td><td>Accuracy on unseen targets, comparably</td><td>Whether the conformation matters for the question</td></tr>
+            <tr><td>Docking</td><td>Pose reproduction and enrichment on decoy sets</td><td>Ranking within a curated library</td><td>Prospective hit rate; decoy bias is well documented</td></tr>
+            <tr><td>Pose validity</td><td>Physical plausibility checks <a href="https://arxiv.org/abs/2308.05777">(<em>PP</em>)</a></td><td>Whether a pose is stereochemically possible</td><td>Whether it is the right pose</td></tr>
+            <tr><td>Affinity</td><td>Retrospective correlation on congeneric series</td><td>Relative ranking within a series</td><td>Absolute potency; scaffold hops; entropy and waters</td></tr>
+            <tr><td>Generative design</td><td>Computational oracles, then synthesis and assay</td><td>Whether the generator can satisfy a stated objective</td><td>Whether the objective was the right one</td></tr>
+            <tr><td>Selectivity</td><td>Assay panels, retrospective</td><td>Known off-targets</td><td>Unknown off-targets; the ones that cause failure</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The one row with a genuinely blind, community-run, adversarial benchmark is structure — and it is also the row that became infrastructure. That correlation is not a coincidence. <b>Blind benchmarks are what convert a method into a service</b>, because they establish the conditions under which the method can be trusted, and services can only be trusted conditionally.</p>
+
+      <p>Docking has no CASP. It has decades of enrichment studies on decoy sets that everyone now knows are easier than reality, plus a growing literature on physically implausible poses. The consequence is visible in practice: groups that dock a billion compounds and then test a hundred hits report success rates that vary by more than an order of magnitude across targets, and nobody can say in advance which target will work. That is the signature of an uncalibrated method, not a bad one.</p>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <ul>
+        <li><b>Structure is solved at the chain level, useful at the assembly level, unreliable for dynamics.</b> Co-folding made complexes routine; conformational change is still a research problem.</li>
+        <li><b>Pose prediction is good; pose validation is now the bottleneck.</b> Plausibility checks are cheap and should be mandatory before any pose is reported.</li>
+        <li><b>Affinity is the field's central unresolved claim.</b> It is the quantity medicinal chemists actually optimize, and it is the quantity the benchmarks measure least honestly.</li>
+        <li><b>Generative design is real but objective-limited.</b> The generator solves the objective you wrote; most failures are the objective's fault.</li>
+        <li><b>Selectivity and ADMET remain data-limited.</b> No architecture fixes a missing assay panel.</li>
+        <li><b>The next genuine improvement will be prospective.</b> A pre-registered, multi-target, prospective hit-rate study would be worth more than another point of pose accuracy.</li>
+      </ul>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark, <em>IND</em> = industry report.</p>
+
+      <h3>Docking and scoring</h3>
+      <ul>
+        <li>Kuntz et al., A geometric approach to macromolecule–ligand interactions (<i>Journal of Molecular Biology</i> 1982) — <em>PR</em></li>
+        <li>Morris et al., Automated docking using a Lamarckian genetic algorithm (<i>Journal of Computational Chemistry</i> 1998) — <em>PR</em></li>
+        <li>Gorgulla et al., An open-source drug discovery platform enables ultra-large virtual screens (<i>Nature</i> 2020) — <em>PR</em></li>
+        <li>Corso et al., <a href="https://arxiv.org/abs/2210.01776">DiffDock: Diffusion Steps, Twists, and Turns for Molecular Docking</a> (ICLR 2023) — <em>PR</em></li>
+        <li>Buttenschoen et al., <a href="https://arxiv.org/abs/2308.05777">PoseBusters: AI-based docking methods fail to generate physically valid poses or generalise to novel sequences</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Affinity and free energy</h3>
+      <ul>
+        <li>Wang et al., Accurate and reliable prediction of relative ligand binding potency in prospective drug discovery (FEP+; <i>JCIM</i> 2015) — <em>PR</em></li>
+        <li>Cournia et al., Relative binding free energy calculations in drug discovery (<i>JCIM</i> 2017) — <em>PR</em></li>
+      </ul>
+
+      <h3>Structure and design</h3>
+      <ul>
+        <li>Jumper et al., <a href="https://www.nature.com/articles/s41586-021-03819-2">Highly accurate protein structure prediction with AlphaFold</a> (<i>Nature</i> 2021) — <em>PR</em></li>
+        <li>Abramson et al., Accurate structure prediction of biomolecular interactions with AlphaFold 3 (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Watson et al., De novo design of protein structure and function with RFdiffusion (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Olivecrona et al., Molecular de-novo design through deep reinforcement learning (REINVENT; <i>Journal of Cheminformatics</i> 2017) — <em>PR</em></li>
+      </ul>
+
+      <h3>Targets and attrition</h3>
+      <ul>
+        <li>Shalem et al., Genome-scale CRISPR-Cas9 knockout screening in human cells (<i>Science</i> 2014) — <em>PR</em></li>
+        <li>Waring et al., An analysis of the attrition of drug candidates from four major pharmaceutical companies (<i>Nature Reviews Drug Discovery</i> 2015) — <em>PR</em></li>
+        <li>Peidli et al., scPerturb: harmonized single-cell perturbation data (<i>Nature Methods</i> 2024) — <em>BM</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The honest summary of forty-four years is that structure-based design got dramatically better at answering the question it posed in 1982 — given a target and a structure, what binds? — and only marginally better at the questions that determine whether a drug exists: is this the right target, does the molecule do what the model says in a cell, and does it avoid the off-targets nobody has screened.</p>
+
+      <p>That is not a failure of the field. It is what happens when one part of a pipeline has a cheap, exact check and the rest do not. The part with the check accelerates until it is infrastructure, and the parts without one stay where they are, accumulating papers about how hard they are. The lesson for the next wave, including the agentic one, is to ask which stage of your pipeline has a checker, and to be suspicious of progress everywhere else.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

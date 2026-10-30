@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: context engineering and model specialization, 2019–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the small-models/short-contexts post: the U-shaped attention curve that ended the context-stuffing era, the arrival of routing, cascades and sub-agents, and why right-sizing is a cost argument before it is an accuracy argument.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 620px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.meas::before { border-color: var(--green); }
+    .tm-item.eng::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. The U-curve</a>
+          <a href="#record">3. The record</a>
+          <a href="#cost">4. Cost first, accuracy second</a>
+          <a href="#specialize">5. Specialization by evidence</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-10</span>
+      </div>
+      <h1>Timeline review: context engineering and model specialization, 2019–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html">leaner-agents post</a> argued that right-sizing models and shortening contexts improves results, and set that against the "don't build multi-agents" counterargument. A timeline shows that this is not a taste dispute. <b>It is a sequence of measurements</b>, each of which invalidated the previous era's default.</p>
+
+      <p>The sequence has three steps: the demonstration that long context is not uniformly better (2023), the demonstration that most queries do not need the largest model (2023–24), and the demonstration that more agents mean more tokens before they mean more accuracy (2025). Each step was empirical, cheap to run, and largely ignored until the cost bill arrived.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curve in §2 is a schematic of the well-documented U-shaped position effect, drawn to the shape reported in the literature rather than digitized from a specific experiment. No model was evaluated for this post, and no cost figures here are measurements.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> context engineering became a discipline when two things were measured — that accuracy is not monotone in context length, and that cost <em>is</em>. Everything since (routing, cascades, compaction, sub-agents) is an engineering response to that pair of facts, and the response is better understood as <b>budget allocation</b> than as prompt craft.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>This topic is unusually vulnerable to recency bias, because the defaults change every few months: windows grow, prices fall, and any claim about what is "too much context" is dated the moment it is made. A timeline separates three things that get conflated — what the models can accept, what they can use, and what you should pay for.</p>
+
+      <p>Those three curves move at different speeds, and most bad practice comes from treating the first as if it were the second.</p>
+
+      <h2 id="figure">2. The U-curve</h2>
+
+      <div class="tm-fig">
+        <div class="tm-legend">
+          <span class="tm-key"><span class="tm-sw" style="background:#2f855a"></span>short context (~8k tokens)</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#b7791f"></span>long context (~200k tokens)</span>
+        </div>
+        <div class="tm-scroll">
+        <svg class="tm-plot" viewBox="0 0 720 300" role="img" aria-labelledby="tm-t tm-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="tm-t">Schematic: accuracy by position of relevant information in the context window</title>
+          <desc id="tm-d">Two U-shaped curves. With a short context, accuracy is high at the beginning and end and dips modestly in the middle. With a long context, accuracy at the beginning is similar but the middle dip is much deeper, and the end is worse than with a short context.</desc>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="80" y1="110" x2="700" y2="110" />
+            <line x1="80" y1="160" x2="700" y2="160" />
+            <line x1="80" y1="210" x2="700" y2="210" />
+          </g>
+          <g font-size="9.5" fill="#94a3b8" text-anchor="end">
+            <text x="72" y="113">0.9</text>
+            <text x="72" y="163">0.8</text>
+            <text x="72" y="213">0.7</text>
+          </g>
+
+          <line x1="390" y1="52" x2="390" y2="260" stroke="#3182ce" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
+          <text x="390" y="46" font-size="9.5" fill="#3182ce" text-anchor="middle">information in the middle</text>
+
+          <polyline fill="none" stroke="#2f855a" stroke-width="2.4" stroke-linejoin="round" points="80,90 204,120 390,130 576,120 700,95" />
+          <polyline fill="none" stroke="#b7791f" stroke-width="2.4" stroke-linejoin="round" points="80,100 204,165 390,200 576,170 700,120" />
+
+          <text x="700" y="86" font-size="10" fill="#2f855a" text-anchor="end">8k: mild dip</text>
+          <text x="700" y="140" font-size="10" fill="#b7791f" text-anchor="end">200k: deep dip</text>
+
+          <line x1="80" y1="260" x2="700" y2="260" stroke="#cbd5e0" />
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="80" y="278">start</text>
+            <text x="390" y="278">middle</text>
+            <text x="700" y="278">end</text>
+          </g>
+          <text x="390" y="294" font-size="10" fill="#64748b" text-anchor="middle">position of the relevant passage in the prompt</text>
+        </svg>
+        </div>
+        <p class="tm-cap"><b>Figure 1. Not monotone.</b> The shape is the finding: relevant information at the beginning or end of a prompt is used far more reliably than the same information in the middle, and the penalty grows with total length. The practical consequence is that a longer window does not buy proportional recall — it buys a larger space in which to misplace something. Every technique in §3 is a way of not relying on the middle.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">2019–2022 · <span>retrieval as a workaround</span> · default: stuff the prompt</li>
+        <li class="tm-item"><span class="tm-y">2020</span><b>Retrieval-augmented generation</b> — retrieve then condition; the first architecture that treats context as a budget rather than a transcript.</li>
+        <li class="tm-item"><span class="tm-y">2021–22</span><b>Vector search becomes infrastructure</b> — embedding indexes make "the right four paragraphs" cheap to fetch, and make relevance ranking the new bottleneck.</li>
+
+        <li class="tm-era">2023 · <span>the middle problem, and the first measurements</span></li>
+        <li class="tm-item meas"><span class="tm-y">2023</span><b>“Lost in the middle”</b> — the U-shaped position effect documented across models and tasks; the strongest single result in the whole area, and the one most often cited without being applied.</li>
+        <li class="tm-item meas"><span class="tm-y">2023</span><b>Cascades and routing</b> — FrugalGPT shows that a cheap model answers most queries and a strong model handles the residue, at a fraction of the cost; the first formal statement that model choice is a per-query decision.</li>
+        <li class="tm-item"><span class="tm-y">2023</span><b>Long-context marketing</b> — windows grow by an order of magnitude; "needle in a haystack" retrieval is reported as the benchmark, which measures finding a token, not using it.</li>
+
+        <li class="tm-era">2024 · <span>routing, caching, and sub-agents</span></li>
+        <li class="tm-item eng"><span class="tm-y">2024</span><b>Prompt caching</b> — repeated prefixes become cheap, which quietly rewards stable system prompts and penalizes context churn.</li>
+        <li class="tm-item meas"><span class="tm-y">2024</span><b>RouteLLM and learned routers</b> — routing as a trained classifier with a cost-quality trade-off curve, rather than a hand-written if-statement.</li>
+        <li class="tm-item eng"><span class="tm-y">2024</span><b>Chain-of-agents</b> — long inputs split across workers that pass summaries to a manager; a structural fix for the middle problem instead of a prompting fix.</li>
+        <li class="tm-item eng"><span class="tm-y">2024</span><b>Small models get good</b> — sub-10B models become viable for extraction, classification, and formatting; the specialization argument stops being hypothetical.</li>
+
+        <li class="tm-era">2025 · <span>the bill arrives</span></li>
+        <li class="tm-item meas"><span class="tm-y">2025</span><b>Orchestrator–worker at scale</b> — production write-ups report large gains on breadth-first research tasks and large token multipliers; both numbers are reported in the same document, which is progress.</li>
+        <li class="tm-item meas"><span class="tm-y">2025</span><b>“Context rot”</b> — systematic degradation as context grows, even when retrieval is perfect; the effect is now a product concern rather than a paper finding.</li>
+        <li class="tm-item"><span class="tm-y">2025</span><b>“Don't build multi-agents”</b> — the counterargument that most workflows need one agent with a good context, not several with a shared one. The disagreement with orchestrator–worker is about task shape, not about capability.</li>
+
+        <li class="tm-era">2026 · <span>budget allocation</span></li>
+        <li class="tm-item eng"><span class="tm-y">2026</span><b>Context budgets as an explicit design object</b> — token budgets per agent, compaction policies, and eviction rules written down before the prompt is written.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — the three curves (capacity, utilization, cost) are separated, and the practice is described as allocation rather than craft.</li>
+      </ul>
+
+      <h2 id="cost">4. Cost first, accuracy second</h2>
+      <p>The uncomfortable sequencing in this record is that the cost measurement usually came before the accuracy measurement, and it was the cost that changed behaviour. Long-context windows were adopted because they simplified engineering, not because they improved accuracy; routing was adopted because the invoice was visible; sub-agents were adopted because they parallelized latency, and only later was the token multiplier reported alongside the gain.</p>
+
+      <p>That is not a criticism of the engineering. It is a description of what actually drives adoption, and it has a practical implication: <b>if you want better context engineering, put cost on the dashboard next to accuracy</b>, because that is the only pairing that has historically produced better defaults.</p>
+
+      <p>Three quantities are worth tracking per task, and they are all cheap:</p>
+      <ul>
+        <li><b>Tokens per solved task</b> — not per request. This is the number that routing and compaction actually change.</li>
+        <li><b>Position of the load-bearing evidence</b> — if the answer depends on a passage, record where it sat. A U-curve penalty is invisible until someone measures the position.</li>
+        <li><b>Model tier per call</b> — the fraction of calls that needed the largest model. In most pipelines this is a small number, and it is almost never audited.</li>
+      </ul>
+
+      <div class="banner"><strong>The cheap experiment nobody runs:</strong> take your production logs and re-run 200 solved tasks through the smallest model that passes your eval. If the pass rate holds, you have found a routing opportunity worth money; if it drops, you have learned which tasks genuinely need capacity. Both outcomes are useful, and the total cost is a few dollars.</div>
+
+      <h2 id="specialize">5. Specialization by evidence</h2>
+      <p>The word "specialization" hides three different claims, with very different amounts of support.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Claim</th><th>What it means</th><th>Evidence</th><th>How to test it locally</th></tr></thead>
+          <tbody>
+            <tr><td><b>Task specialization</b></td><td>A small model fine-tuned for one task beats a large general model on that task</td><td><b>Supported</b> for narrow, high-volume, well-labelled tasks</td><td>Hold out 500 labelled items; compare accuracy at equal cost</td></tr>
+            <tr><td><b>Role specialization</b></td><td>Prompting the same model as a "specialist" improves it</td><td><b>Weak</b>; mostly a prompt-formatting effect</td><td>Compare specialist prompt vs plain instruction at equal tokens</td></tr>
+            <tr><td><b>Architectural specialization</b></td><td>Different agents with different models and contexts beat one agent with all of it</td><td><b>Conditional</b> — wins when subtasks are separable and contexts would otherwise collide</td><td>Same task, one agent vs split agents, matched total tokens</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The middle row is where most of the industry's language lives and where the least evidence is. Role prompts change formatting and tone reliably, and change reasoning capacity unreliably. The third row is the interesting one, and its condition — separability — is exactly what the orchestrator-versus-single-agent debate is about. Both sides are right about their own workloads.</p>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <ul>
+        <li><b>Capacity is not the constraint.</b> Windows are large enough for almost any single document task; utilization is the constraint.</li>
+        <li><b>Routing is the highest-return change</b> for most teams, because it reduces cost without touching the task.</li>
+        <li><b>Compaction is under-used.</b> Summarize-and-restart beats carrying a long transcript, and it is a ten-line change.</li>
+        <li><b>Sub-agents win on separable, parallel, breadth-first work</b> and lose on work that needs one coherent context.</li>
+        <li><b>Role-play specialization is mostly formatting.</b> Task fine-tuning is real; persona prompting is cheap but not a capability multiplier.</li>
+        <li><b>Put tokens-per-solved-task on the dashboard.</b> It is the only metric that has historically changed defaults.</li>
+      </ul>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>IND</em> = industry report.</p>
+      <ul>
+        <li>Lewis et al., <a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a> (NeurIPS 2020) — <em>PR</em></li>
+        <li>Liu et al., <a href="https://arxiv.org/abs/2307.03172">Lost in the Middle: How Language Models Use Long Contexts</a> (2023/24) — <em>PR</em></li>
+        <li>Chen, Zaharia &amp; Zou, <a href="https://arxiv.org/abs/2305.05176">FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance</a> (2023) — <em>PP</em></li>
+        <li>Ong et al., <a href="https://arxiv.org/abs/2406.18665">RouteLLM: Learning to Route LLMs with Preference Data</a> (2024) — <em>PP</em></li>
+        <li>Zhang et al., <a href="https://arxiv.org/abs/2406.02818">Chain of Agents: Large Language Models Collaborating on Long-Context Tasks</a> (2024) — <em>PP</em></li>
+        <li>Packer et al., <a href="https://arxiv.org/abs/2310.08560">MemGPT: Towards LLMs as Operating Systems</a> (2023) — <em>PP</em></li>
+        <li>Anthropic, <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a> (2025) — <em>IND</em></li>
+        <li>Anthropic, <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How we built our multi-agent research system</a> (2025) — <em>IND</em></li>
+        <li>Cognition, <a href="https://cognition.ai/blog/dont-build-multi-agents">Don't Build Multi-Agents</a> (2025) — <em>IND</em></li>
+        <li>Chroma, <a href="https://research.trychroma.com/context-rot">Context Rot</a> (2025) — <em>IND</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The leaner-agents argument is often read as a bet against capability scaling. It is better read as a bet about where the marginal return is. Once a window is large enough to hold the task, adding tokens to it adds cost and middle, not information; once a model is strong enough to format a record, a bigger model adds latency, not correctness. The measurements that established this were cheap, published, and mostly made on the customer's side of the API.</p>
+
+      <p>Which is why the practical advice is so unglamorous: route, compact, and count. The teams that do this are not using weaker models. They are spending the same budget on more attempts, and the attempts are where the accuracy comes from.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

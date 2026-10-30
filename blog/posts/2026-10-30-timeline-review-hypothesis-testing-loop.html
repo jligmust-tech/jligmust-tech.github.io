@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: the hypothesis-testing loop, 1935–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the substep survey of agents for hypothesis testing: when each step of the loop (S0–S9) first became mechanically executable, when it became credible to automate, and which guard lagged behind. Six eras, a band chart, the statistics-software precedent, the guard lag arithmetic, and three falsifiable predictions.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    /* Scoped to this post: loop-automation timeline */
+    .ht-fig { margin: 14px 0 24px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .ht-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 10px; font-size: 11.5px; color: var(--muted); }
+    .ht-key { display: inline-flex; align-items: center; gap: 6px; }
+    .ht-sw { display: inline-block; width: 18px; height: 10px; border-radius: 2px; background: #d6e7f8; }
+    .ht-sw.solid { background: #3182ce; opacity: 0.85; }
+    .ht-sw.dash { background: none; border: 1px dashed #3182ce; }
+    .ht-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .ht-plot { display: block; width: 100%; min-width: 640px; height: auto; }
+    .ht-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .ht-tl { position: relative; margin: 20px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .ht-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4 0%, #b7e4c7 45%, #dfe5ec 75%, #f6d9a8 100%); }
+    .ht-era { margin: 22px 0 10px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .ht-era:first-child { margin-top: 2px; }
+    .ht-era span { color: var(--text); }
+    .ht-item { position: relative; margin: 0 0 9px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .ht-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .ht-item.stat::before { border-color: var(--green); }
+    .ht-item.meta::before { border-color: #718096; }
+    .ht-item.agent::before { border-color: var(--amber); }
+    .ht-y { display: inline-block; min-width: 64px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .ht-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. A timeline is a test</a>
+          <a href="#figure">2. Reading the figure</a>
+          <a href="#eras">3. The timeline, era by era</a>
+          <a href="#oldest">4. The oldest automation hurt</a>
+          <a href="#landing">5. Where automation lands</a>
+          <a href="#lag">6. The guard lag</a>
+          <a href="#position">7. Where 2026 sits</a>
+          <a href="#predict">8. Three predictions</a>
+          <a href="#open">9. Open questions</a>
+          <a href="#adopt">10. What to adopt now</a>
+          <a href="#sources">11. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-28</span>
+      </div>
+      <h1>Timeline review: the hypothesis-testing loop, 1935–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-10-28-agents-for-hypothesis-testing.html">previous note</a> decomposed hypothesis testing into nine commitments — prior (S0), hypothesis (S1), operationalization (S2), design (S3), execution (S4), QC (S5), statistics (S6), critique (S7), decision (S8), reporting (S9) — and argued that agents are strong at search, translation, and bookkeeping, and weak at measurement validity and identification. That argument was made in the present tense, which is a weakness: it says what agents can do now, not how long "now" is likely to last.</p>
+
+      <p>A timeline fixes that. If the decomposition is right, then the history of automation should be <b>uneven in a predictable way</b>: each step should become mechanical as soon as a cheap external checker exists for it, and stay un-automated wherever correctness cannot be checked by a machine. That is a testable claim about a hundred years of tooling, and the historical record — from Fisher's randomization to robot scientists to reproduction agents — mostly confirms it, with one important exception that turns out to be the most useful thing on the chart.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is a companion review, not a history of statistics and not a systematic review. Dates mark <em>first credible instance</em> of a capability, not adoption, and the bands in Figure 1 are my editorial judgments, stated so they can be argued with. <strong>No bibliometric analysis was performed</strong> and no dataset was measured. Labels follow the companion note: <em>PR</em>, <em>PP</em>, <em>BM</em>, <em>IND</em>.</div>
+
+      <div class="guide-callout"><strong>Central finding:</strong> the step of the loop that was automated <em>earliest</em> and most completely is S6 — statistics, mechanized by software in the 1960s and 70s. It is also the step where automation most clearly <b>increased</b> the rate of wrong published claims, because analysis was automated while the guards around it — pre-specified plans, multiplicity accounting, stopping rules, complete reporting — were not. Agents are the second wave of exactly that pattern, arriving 60 years later at 1000× the throughput. The history does not say "automation is good" or "automation is bad." It says <b>a step gets automated long before its guard does, and the gap is where the error lives.</b></div>
+
+      <h2 id="why">1. A timeline is a test of the decomposition</h2>
+      <p>Three questions are easier to answer with dates than with arguments.</p>
+
+      <p><b>First: is the decomposition real?</b> If "hypothesis testing" were one act, automation would arrive for it all at once, and capability would move as a single front. If it is ten commitments, automation should arrive in a ragged pattern that follows the availability of checkers. The raggedness is the evidence.</p>
+
+      <p><b>Second: is today's boundary stable?</b> The companion note put the frontier between S1/S4/S5/S9 (automatable) and S2/S3/S7/S8 (not). If that boundary has moved repeatedly — and it has, twice — then it will move again, and any protocol that assumes it is fixed will be wrong within a few years. A timeline tells you how fast boundaries move and what moves them.</p>
+
+      <p><b>Third: what happens when a step is automated without its guard?</b> This is the question with a historical answer, because it has already happened once. Statistics software is the natural experiment, and it is not encouraging.</p>
+
+      <h2 id="figure">2. Reading the figure</h2>
+
+      <div class="ht-fig">
+        <div class="ht-legend">
+          <span class="ht-key"><span class="ht-sw"></span>mechanically executable</span>
+          <span class="ht-key"><span class="ht-sw solid"></span>credible when automated (external check exists)</span>
+          <span class="ht-key"><span class="ht-sw dash"></span>assistive only — a human must adjudicate</span>
+        </div>
+        <div class="ht-scroll">
+        <svg class="ht-plot" viewBox="0 0 760 384" role="img" aria-labelledby="ht-plot-t ht-plot-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="ht-plot-t">Timeline, 1935–2026: when each step of the hypothesis-testing loop became mechanically executable and when it became credible to automate</title>
+          <desc id="ht-plot-d">Ten rows, S0 to S9. Light bands show when a step first became mechanically executable. Solid bands show when automating it became credible because a cheap external check existed. Dashed hollow bands mark steps that remain assistive: operationalization, design, adversarial critique and stopping decisions. The axis is broken between 2008 and the recent period to give the last eighteen years room.</desc>
+
+          <text x="190" y="24" font-size="10.5" fill="#64748b">first credible instance — editorial assessment, not adoption</text>
+          <text x="730" y="44" font-size="9.5" fill="#94a3b8" text-anchor="end">now (2026)</text>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="215.3" y1="48" x2="215.3" y2="356" />
+            <line x1="316.7" y1="48" x2="316.7" y2="356" />
+            <line x1="418.1" y1="48" x2="418.1" y2="356" />
+            <line x1="519.5" y1="48" x2="519.5" y2="356" />
+            <line x1="605.6" y1="48" x2="605.6" y2="356" />
+            <line x1="644.4" y1="48" x2="644.4" y2="356" />
+            <line x1="683.3" y1="48" x2="683.3" y2="356" />
+          </g>
+
+          <!-- S0 priors and literature -->
+          <rect x="372.5" y="65" width="187.5" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="590" y="65" width="140" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="675.6" y="65" width="54.4" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <!-- S1 hypothesis -->
+          <rect x="397.8" y="95" width="162.2" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="590" y="95" width="140" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="706.7" y="95" width="23.3" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <!-- S2 operationalization -->
+          <rect x="691.1" y="125" width="38.9" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="714.4" y="125" width="15.6" height="12" rx="3" fill="none" stroke="#3182ce" stroke-width="1.2" stroke-dasharray="4 3" />
+
+          <!-- S3 design -->
+          <rect x="301.5" y="155" width="258.5" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="590" y="155" width="140" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="478.9" y="155" width="81.1" height="12" rx="3" fill="none" stroke="#3182ce" stroke-width="1.2" stroke-dasharray="4 3" />
+          <rect x="590" y="155" width="140" height="12" rx="3" fill="none" stroke="#3182ce" stroke-width="1.2" stroke-dasharray="4 3" />
+
+          <!-- S4 execution -->
+          <rect x="597.8" y="185" width="132.2" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="706.7" y="185" width="23.3" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <!-- S5 QC -->
+          <rect x="494.1" y="215" width="65.9" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="590" y="215" width="140" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="706.7" y="215" width="23.3" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <!-- S6 statistics -->
+          <rect x="342.1" y="245" width="217.9" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="590" y="245" width="140" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="652.2" y="245" width="77.8" height="12" rx="3" fill="none" stroke="#3182ce" stroke-width="1.2" stroke-dasharray="4 3" />
+
+          <!-- S7 critique -->
+          <rect x="706.7" y="275" width="23.3" height="12" rx="3" fill="#d6e7f8" />
+
+          <!-- S8 decision -->
+          <rect x="342.1" y="305" width="217.9" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="590" y="305" width="140" height="12" rx="3" fill="#d6e7f8" />
+
+          <!-- S9 reporting -->
+          <rect x="636.7" y="335" width="93.3" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="714.4" y="335" width="15.6" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <!-- axis break mask -->
+          <rect x="560" y="48" width="30" height="310" fill="#f6f8fa" />
+          <g stroke="#94a3b8" stroke-width="1.4">
+            <line x1="563" y1="359" x2="571" y2="349" />
+            <line x1="572" y1="359" x2="580" y2="349" />
+          </g>
+
+          <line x1="190" y1="356" x2="560" y2="356" stroke="#cbd5e0" />
+          <line x1="590" y1="356" x2="730" y2="356" stroke="#cbd5e0" />
+
+          <g font-size="11.5" fill="#2d3748" text-anchor="end">
+            <text x="182" y="75"><tspan font-weight="800" fill="#3182ce">S0</tspan>  Priors &amp; literature</text>
+            <text x="182" y="105"><tspan font-weight="800" fill="#3182ce">S1</tspan>  Hypothesis generation</text>
+            <text x="182" y="135"><tspan font-weight="800" fill="#3182ce">S2</tspan>  Operationalization</text>
+            <text x="182" y="165"><tspan font-weight="800" fill="#3182ce">S3</tspan>  Design &amp; power</text>
+            <text x="182" y="195"><tspan font-weight="800" fill="#3182ce">S4</tspan>  Execution</text>
+            <text x="182" y="225"><tspan font-weight="800" fill="#3182ce">S5</tspan>  QC &amp; provenance</text>
+            <text x="182" y="255"><tspan font-weight="800" fill="#3182ce">S6</tspan>  Statistical analysis</text>
+            <text x="182" y="285"><tspan font-weight="800" fill="#3182ce">S7</tspan>  Adversarial critique</text>
+            <text x="182" y="315"><tspan font-weight="800" fill="#3182ce">S8</tspan>  Decision &amp; stopping</text>
+            <text x="182" y="345"><tspan font-weight="800" fill="#3182ce">S9</tspan>  Reporting &amp; replication</text>
+          </g>
+
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="215.3" y="372">1940</text>
+            <text x="316.7" y="372">1960</text>
+            <text x="418.1" y="372">1980</text>
+            <text x="519.5" y="372">2000</text>
+            <text x="605.6" y="372">2010</text>
+            <text x="644.4" y="372">2015</text>
+            <text x="683.3" y="372">2020</text>
+          </g>
+          <text x="730" y="372" font-size="10.5" fill="#64748b" text-anchor="end">2026</text>
+        </svg>
+        </div>
+        <p class="ht-cap"><b>Figure 1. When each commitment became a machine's job, and when that became defensible.</b> Light bars: the earliest date at which the step could be executed mechanically at all — retrieval by database (S0), rule induction (S1), power tables (S3), statistical software (S6), value-of-information arithmetic (S8), automated lab QC (S5), robot scientists (S4), reproducibility checks (S9). Solid bars: the earliest date at which automating the step became <i>credible</i>, because a cheap external check made its output falsifiable — a benchmark with held-out items (S0), an automated evaluator (S1), an instrument (S4), an immutable log (S5), an enumerated analysis family (S6), a deposited artifact (S9). Dashed bars: steps where automation produces candidates that a human must still adjudicate. The axis is broken between 2008 and 2010 because the last eighteen years contain more relevant events than the previous forty, which is itself the point.</p>
+      </div>
+
+      <p>Read the figure by looking for the pattern in the <i>right edges</i>, not the left. Almost every step acquired a light bar in the twentieth century. Only five acquired solid bars, and four of those acquired them after 2015. The steps that never got a solid bar — S2, S3, S7, S8 — are exactly the four that the companion note identified as non-delegable, and they are the four whose checkers do not exist at any price, because there is no artifact that certifies "this measurement means the construct" or "this comparison identifies a cause."</p>
+
+      <h2 id="eras">3. The timeline, era by era</h2>
+      <p>Six eras, each named for what it mechanized and what it did not.</p>
+
+      <ul class="ht-tl">
+        <li class="ht-era">1933–1965 · <span>the valid test gets a formalism</span> · automated: nothing · bottleneck: theory</li>
+        <li class="ht-item stat"><span class="ht-y">1933</span><b>Neyman–Pearson</b> — tests become decisions with two named error rates; the cost framing that S8 still uses, in one paper.</li>
+        <li class="ht-item stat"><span class="ht-y">1935</span><b>Fisher, <i>The Design of Experiments</i></b> — randomization, blocking, significance; the tea-tasting lady as a protocol rather than an anecdote.</li>
+        <li class="ht-item stat"><span class="ht-y">1961</span><b>Raiffa &amp; Schlaifer</b> — applied decision analysis; value of information gives S8 an arithmetic, which nobody automates for another sixty years.</li>
+        <li class="ht-item stat"><span class="ht-y">1965</span><b>BMI / BMDP</b> — statistical packages arrive; S6 becomes mechanically executable, and the first p-values are computed by people who did not write the test.</li>
+
+        <li class="ht-era">1966–1990 · <span>automated discovery, first attempt</span> · automated: search · bottleneck: representation</li>
+        <li class="ht-item"><span class="ht-y">1971</span><b>DENDRAL</b> — hypothesis formation from mass spectra as constrained search; the first system where a machine proposes structures and the data eliminate them.</li>
+        <li class="ht-item"><span class="ht-y">1976</span><b>Meta-DENDRAL</b> — rules induced from spectra: the first hypothesis miner, and the first system to raise the contamination question nobody asked again for forty years.</li>
+        <li class="ht-item"><span class="ht-y">1976</span><b>Glass</b> — “meta-analysis” named; S0 stops being a literature review and becomes an estimate.</li>
+        <li class="ht-item"><span class="ht-y">1979–83</span><b>AM</b> — heuristics for mathematical discovery; the ceiling appears within a few years, for reasons that are still the ceiling (taste, not search).</li>
+        <li class="ht-item meta"><span class="ht-y">1980s</span><b>Expert systems in medicine</b> — rules for diagnosis ship, then stall on maintenance and liability. The first guard lag: capability without audit.</li>
+
+        <li class="ht-era">1991–2005 · <span>bookkeeping and bias</span> · automated: reporting · bottleneck: disclosure</li>
+        <li class="ht-item"><span class="ht-y">1992</span><b>G*Power</b> (and its descendants) — power analysis becomes a tool; design <i>computation</i> is solved while design <i>judgment</i> is untouched.</li>
+        <li class="ht-item meta"><span class="ht-y">1996</span><b>CONSORT</b> — reporting becomes a checklist: a machine-checkable schema a decade before anyone called it that, and the first guard that scaled by template.</li>
+        <li class="ht-item stat"><span class="ht-y">2005</span><b>Ioannidis</b> — pre-test odds enter the discourse; the arithmetic of §12 in the companion note was published as an argument about medicine, not as a statistical novelty.</li>
+        <li class="ht-item meta"><span class="ht-y">2005</span><b>Trial registration (ICMJE)</b> — a plan registered before the data, at scale. The first deployed pre-registration regime, and the template for everything after.</li>
+
+        <li class="ht-era">2006–2015 · <span>the crisis becomes empirical</span> · automated: re-analysis · bottleneck: reproducibility</li>
+        <li class="ht-item stat"><span class="ht-y">2011</span><b>Simmons, Nelson &amp; Simonsohn</b> — researcher degrees of freedom named and demonstrated; flexibility, not fraud, is identified as the mechanism.</li>
+        <li class="ht-item stat"><span class="ht-y">2012</span><b>Begley &amp; Ellis</b> — 6 of 53 landmark preclinical cancer results confirmed by industry labs; the crisis stops being a psychology story.</li>
+        <li class="ht-item stat"><span class="ht-y">2015</span><b>Open Science Collaboration</b> — 36% of 100 replications reproduced; reproducibility becomes a measured rate rather than a complaint.</li>
+        <li class="ht-item meta"><span class="ht-y">2013–15</span><b>Registered Reports</b> — journals review the plan before the result. The only guard that changes incentives rather than adding paperwork.</li>
+        <li class="ht-item"><span class="ht-y">2009–15</span><b>Adam and Eve</b> — robot scientists close narrow hypothesis–experiment–revision loops in genomics. S4 gets its first solid bar, and its scope is exactly as wide as the instrument.</li>
+
+        <li class="ht-era">2016–2022 · <span>reform tools and prediction infrastructure</span> · automated: enumeration · bottleneck: discipline</li>
+        <li class="ht-item stat"><span class="ht-y">2016–20</span><b>Multiverse and specification curves</b> — the analysis space becomes the object of study; S6 gets the check that makes automated analysis search honest.</li>
+        <li class="ht-item meta"><span class="ht-y">2018</span><b>Preregistration revolution</b> — the protocol as a first-class artifact, with a template and a registry; adoption remains uneven and self-selected.</li>
+        <li class="ht-item"><span class="ht-y">2020–21</span><b>AlphaFold 2</b> — structure prediction becomes infrastructure; S1 and S2 gain a fast oracle for a whole class of hypotheses, with the caveat that the oracle is not the assay.</li>
+        <li class="ht-item agent"><span class="ht-y">2022</span><b>ChatGPT</b> — the interface that made “the model can do the bookkeeping” plausible to people who had not used a model before.</li>
+
+        <li class="ht-era">2023–2026 · <span>agents enter the loop</span> · automated: search, drafting, reproduction · bottleneck: validation and governance</li>
+        <li class="ht-item agent"><span class="ht-y">2023</span><b>Coscientist</b> — an LLM plans and executes chemistry experiments through APIs; S4 without a human at the keyboard.</li>
+        <li class="ht-item agent"><span class="ht-y">2023</span><b>A-Lab</b> — robot plus LLM closes the synthesis loop on a batch of targeted compounds; the failures are as informative as the successes and are reported, unusually.</li>
+        <li class="ht-item agent"><span class="ht-y">2023</span><b>Multi-agent debate</b> — critique as a service; S7 gets an implementation before it gets a validity check.</li>
+        <li class="ht-item agent"><span class="ht-y">2024</span><b>The AI Scientist</b> — the whole loop “end to end,” with documented invalid experiments and fabricated citations. The most useful negative result in the field.</li>
+        <li class="ht-item agent"><span class="ht-y">2024</span><b>CORE-Bench, SUPER, ScienceAgentBench</b> — reproduction becomes a benchmark; S9 gets its first solid bar because artifacts are checkable.</li>
+        <li class="ht-item agent"><span class="ht-y">2024</span><b>BioDiscoveryAgent</b> — experiment ranking against an automated evaluator; S1 with a checker beats S1 with a vibe.</li>
+        <li class="ht-item agent"><span class="ht-y">2025</span><b>Co-Scientist</b> — hypothesis tournaments with automated and expert judging; S1 at scale, with judge circularity as the open problem.</li>
+        <li class="ht-item meta"><span class="ht-y">2025</span><b>MAST</b> — a failure taxonomy for multi-agent systems: agents that never verify, disagree silently, and converge on unvalidated plans.</li>
+        <li class="ht-item meta"><span class="ht-y">2025</span><b>“AI Agents That Matter”</b> — cost, variance, and holdout performance as reporting requirements; the guard for the current wave.</li>
+        <li class="ht-item agent"><span class="ht-y">2026</span><b>These two notes</b> — the loop decomposed, and the same loop placed on a timeline. The second is only possible because the first was wrong in a checkable way.</li>
+      </ul>
+
+      <h2 id="oldest">4. The oldest automation is the one that hurt</h2>
+      <p>The least discussed item on the timeline is the most important one: <b>S6 was automated sixty years ago</b>. Statistical packages put a competent test in the hands of anyone with a dataset, which is exactly the promise agents make today for a different step. The result is the best natural experiment we have on what happens when a step of the loop is automated before its guards.</p>
+
+      <p>What followed was not a rise in fraud. It was a rise in <b>legitimate flexibility</b>: the analyst could try a transformation, then a covariate, then a subgroup, and report the one that worked, without ever forming the intention to cheat. The mechanism was named in 2011 <a href="https://journals.sagepub.com/doi/10.1177/0956797611417632">(Simmons et al., <em>PR</em>)</a> and generalized in 2013 <a href="http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf">(Gelman &amp; Loken, <em>PP</em>)</a>: the garden of forking paths does not require a gardener. Software made the garden cheap to walk through.</p>
+
+      <p>Three details of that episode transfer directly.</p>
+      <ul>
+        <li><b>The automation was correct.</b> The packages computed the requested test flawlessly. The error was in <i>which</i> test was requested, and the tool had no representation of that question. Agents inherit this exactly: the code they produce runs, the numbers are right, and the estimand was chosen by a search process nobody recorded.</li>
+        <li><b>The fix was not a better tool.</b> It was disclosure: registration (2005), registered reports (2013), multiverse analysis (2016), specification curves (2020). Each is a rule about <i>reporting the space</i>, not about computing better. That is why the fix took a decade and a half, and why it is still incomplete.</li>
+        <li><b>Adoption was driven by embarrassment, not by evidence.</b> The reproducibility projects (2012, 2015) created the demand; the templates created the supply. Agents will follow the same path, and the question is whether the embarrassment arrives before the volume does.</li>
+      </ul>
+
+      <div class="banner"><strong>The precedent, stated as a rule:</strong> when a step becomes mechanical before its guard becomes routine, the error rate of the <i>whole loop</i> rises even though the accuracy of that step improves. The loop is not protected by its strongest link.</div>
+
+      <h2 id="landing">5. Where automation lands</h2>
+      <p>The figure's solid bars are not distributed by importance or by difficulty. They are distributed by <b>whether a cheap, exact checker exists</b>. That is the single best predictor of automation in the whole timeline, and it is worth stating as a table because it makes the frontier legible.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Step</th><th>Checker that made it automatable</th><th>Checker arrived</th><th>What the checker cannot see</th></tr></thead>
+          <tbody>
+            <tr><td><b>S0 Priors</b></td><td>Retrieval with span-level provenance; held-out claim sets for literature synthesis</td><td>1971 → 2019</td><td>Whether the retrieved literature is the relevant literature</td></tr>
+            <tr><td><b>S1 Hypothesis</b></td><td>An automated evaluator: compiler, simulator, assay, or benchmark score</td><td>1976 → 2023</td><td>Whether the evaluator measures what the hypothesis claims</td></tr>
+            <tr><td><b>S2 Operationalization</b></td><td>None. Construct validity has no artifact.</td><td>—</td><td>Everything downstream, if the measure is a proxy</td></tr>
+            <tr><td><b>S3 Design</b></td><td>Arithmetic for power and MDE; not identifiability</td><td>1957 → 1992</td><td>Confounding, selection, interference</td></tr>
+            <tr><td><b>S4 Execution</b></td><td>The instrument, with interlocks and a logged action space</td><td>2009 → 2023</td><td>Whether the planned experiment answers the question</td></tr>
+            <tr><td><b>S5 QC</b></td><td>Negative controls, spike-ins, immutable logs, replayable pipelines</td><td>1995 → 2023</td><td>Outcome-dependent exclusion, the one choice that matters</td></tr>
+            <tr><td><b>S6 Statistics</b></td><td>An enumerated analysis family with all of it reported</td><td>1965 → 2016</td><td>Which estimand was worth estimating</td></tr>
+            <tr><td><b>S7 Critique</b></td><td>Evidence the generator did not see; a counterexample query</td><td>2023 → none</td><td>Shared priors across model families</td></tr>
+            <tr><td><b>S8 Decision</b></td><td>Value-of-information arithmetic; not the utility function</td><td>1961 → none</td><td>What the decision is worth to the person paying for it</td></tr>
+            <tr><td><b>S9 Reporting</b></td><td>Deposited artifacts: script, data hash, environment, run log</td><td>2014 → 2024</td><td>Whether the claim was ever stated precisely enough to check</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two consequences follow, and both are uncomfortable for the current wave.</p>
+
+      <p><b>The checker is always narrower than the step.</b> S1's automated evaluator checks that a program compiles or an assay runs, not that the hypothesis is interesting. S5's log checks that the pipeline did what it said, not that the exclusions were pre-specified. S6's enumeration checks that all analyses are reported, not that any of them is the right one. Automation is therefore always <i>real but partial</i>, and the partiality is invisible from inside the tool.</p>
+
+      <p><b>Agents change the checker, not the checked.</b> The reason S0, S1, S5 and S9 moved right in 2023–24 is that agents made the checkers cheap to apply — a span-level provenance check, an artifact replay, a 10,000-row counterexample query. The steps that did not move are the ones with no checker at any price. That is a much better explanation of the current frontier than "models got smarter," and it predicts where the next solid bar will appear: <b>wherever someone builds a cheap checker, not wherever a model gets a capability.</b></p>
+
+      <h2 id="lag">6. The guard lag</h2>
+      <p>The gap between a capability arriving and its guard arriving is the quantity that determines how much damage the capability does. The timeline permits a rough estimate, in years, for four regimes:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Regime</th><th>Capability arrives</th><th>Guard arrives</th><th>Lag</th><th>What filled the gap</th></tr></thead>
+          <tbody>
+            <tr><td>Statistical software (S6)</td><td>1965</td><td>2005–18 (registration → preregistration)</td><td>~40–50 yr</td><td>Publication bias, then reform driven by replication failures</td></tr>
+            <tr><td>Clinical expert systems (S1 in a narrow domain)</td><td>~1980</td><td>~1996 (CONSORT-style reporting, guideline governance)</td><td>~15 yr</td><td>Withdrawal of products; loss of clinical trust</td></tr>
+            <tr><td>High-throughput lab automation (S4/S5)</td><td>~2000</td><td>~2015 (data-integrity norms, ELN adoption)</td><td>~15 yr</td><td>Retractions, irreproducible screens</td></tr>
+            <tr><td>LLM agents (S0/S1/S5/S9)</td><td>2023</td><td>2026, partial (holdouts, <code>K</code> reporting, cost accounting)</td><td>?</td><td>Unknown; the point of this section</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The pattern in the first three rows is a lag of roughly fifteen to fifty years, with the long end belonging to the cheapest, most widely distributed capability. That is not encouraging, because LLM agents are the cheapest and most widely distributed capability in the list.</p>
+
+      <p>It is worth making the cost of the lag explicit, because the arithmetic is simple and it is rarely done:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">claims produced before the guard arrives
+      ≈  (tests / quarter) × (quarters of lag) × (share reported)
+
+Lab A, human:    20 tests/qtr × 40 qtrs × 0.3  =     240 claims
+Lab B, agentic: 400 tests/qtr ×  8 qtrs × 0.3  =   9,600 claims
+
+If the guard lag shortens from 10 years to 2 but throughput
+rises 20×, the unguarded-claim volume rises 4×, not 0.2×.</pre>
+
+      <p>This is the arithmetic that should govern investment. Speeding up the tool without speeding up the guard multiplies the exposure, because exposure is a product of throughput and lag, and throughput is the term that agents change most.</p>
+
+      <div class="guide-callout"><strong>The optimistic reading:</strong> the historical lags were long because guards required <em>coordination</em> — registries, journal policy, community norms — and coordination was slow. Agents are also good at coordination work: they can write the pre-registration from the plan, compute <code>K</code>, assemble the artifact package, and run the conformance check, all of which used to be the reason nobody bothered. If the guard's <em>labor</em> cost is what made the lag long, agents could compress it. If the guard's <em>political</em> cost is what made it long, they cannot, and the lag stays.</div>
+
+      <h2 id="position">7. Where 2026 sits</h2>
+      <p>Combining the figure with the companion note's evidence grades gives a defensible snapshot. The right-hand column is the part that matters: for every step, what a human is still on the hook for.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Step</th><th>Status 2026</th><th>Evidence</th><th>Residual human job</th></tr></thead>
+          <tbody>
+            <tr><td>S0 Priors</td><td><b>Solid</b> — retrieval with provenance, claim tables</td><td>Strong <a href="https://arxiv.org/abs/2409.13740">(<em>PP</em>)</a></td><td>Deciding what the literature does not contain</td></tr>
+            <tr><td>S1 Hypothesis</td><td><b>Solid with an evaluator</b>; weak without</td><td>Mixed <a href="https://www.nature.com/articles/s41586-023-06924-6">(<em>PR</em>)</a>, <a href="https://arxiv.org/abs/2502.18864">(<em>PP</em>)</a></td><td>Whether the hypothesis is worth testing</td></tr>
+            <tr><td>S2 Operationalization</td><td><b>Assistive</b> — proposals only</td><td>Weak</td><td>Construct validity, signed</td></tr>
+            <tr><td>S3 Design</td><td><b>Assistive</b> — arithmetic yes, identification no</td><td>Weak <a href="https://arxiv.org/abs/2305.00050">(<em>PP</em>)</a></td><td>Identifiability, signed</td></tr>
+            <tr><td>S4 Execution</td><td><b>Solid</b> in narrow action spaces</td><td>Strong in closed loops <a href="https://www.nature.com/articles/s41586-023-06792-0">(<em>PR</em>)</a>, <a href="https://www.nature.com/articles/s41586-023-06734-w">(<em>PR</em>)</a></td><td>Whether the loop is the right loop</td></tr>
+            <tr><td>S5 QC</td><td><b>Solid</b> as reporting, not as exclusion</td><td>Moderate</td><td>Pre-specifying exclusion rules</td></tr>
+            <tr><td>S6 Statistics</td><td><b>Assistive</b> — implementation solid, choice not</td><td>Strong negative <a href="https://arxiv.org/abs/2310.01798">(<em>PR</em>)</a></td><td>Estimand, exclusions, stopping</td></tr>
+            <tr><td>S7 Critique</td><td><b>Assistive</b> — useful if evidence-grounded</td><td>Mixed <a href="https://arxiv.org/abs/2305.14325">(<em>PP</em>)</a>, <a href="https://arxiv.org/abs/2503.13657">(<em>PP</em>)</a></td><td>Deciding which criticism is fatal</td></tr>
+            <tr><td>S8 Decision</td><td><b>Assistive</b> — arithmetic yes, utility no</td><td>Weak</td><td>The utility function</td></tr>
+            <tr><td>S9 Reporting</td><td><b>Solid</b> — artifacts, replays, claim-to-number links</td><td>Strong <a href="https://arxiv.org/abs/2409.11363">(<em>BM</em>)</a>, <a href="https://arxiv.org/abs/2409.07440">(<em>BM</em>)</a></td><td>Whether the claim was stated precisely</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>This is the companion note's division of labour, now with dates attached. Five solid bars, four assistive steps, one step that is solid precisely because it is bookkeeping. The dates also show why the division is likely to be stable for a while: the five solid steps all rest on checkers that exist, and the four assistive steps all rest on judgments that would require a checker we do not know how to build.</p>
+
+      <h2 id="predict">8. Three predictions</h2>
+      <p>Stated so that they can fail. Each is testable within three years with data that a well-run lab or a funder already collects.</p>
+
+      <ol>
+        <li><b>The guard lag will shorten, but not to zero, and the FDR will rise before it falls.</b> Test: compare claim-level false-discovery rates in agent-assisted versus matched human workflows, prospectively, at 12 and 36 months. Prediction: worse at 12 months, comparable or better at 36. If it is better at 12, the guard-lag model is wrong and the optimistic reading in §6 is right.</li>
+        <li><b>New solid bars will appear where a checker was built, not where a model improved.</b> Test: track which steps gain capability claims across model releases. Prediction: S2 and S3 will not move even as models get substantially better, and S5/S9 will keep improving with no model change at all, driven by tooling (logs, artifact replay, provenance). If S3 moves sharply after a model release, the "checker not capability" thesis is falsified.</li>
+        <li><b>Reporting will become the dominant intervention.</b> Test: compare the effect on claim-level FDR of (a) a better model, (b) a better prompt, (c) mandatory artifact deposit and <code>K</code> reporting. Prediction: (c) &gt; (a) + (b), and the gap widens as models improve. This is the pre-registration lesson applied to agents, and it is cheap to test with a single lab's backlog.</li>
+      </ol>
+
+      <div class="banner"><strong>What would change my mind:</strong> a demonstration that an agent can reliably certify measurement validity or identification on a novel question — not "flag possible confounders," but adjudicate them — with a prospective error rate low enough to sign. No such demonstration exists in the timeline, and the steps that remain assistive are assistive for a reason that is not about model capability: there is nothing to check the answer against.</div>
+
+      <h2 id="open">9. Open questions</h2>
+      <ol>
+        <li><b>Is the guard lag a labor problem or a coordination problem?</b> This is the single most consequential unknown in §6, and it is answerable: measure time-to-adoption of a free, agent-generated guard against time-to-adoption of a guard that requires a journal policy change.</li>
+        <li><b>Did statistical software actually increase the FDR, or only the number of published tests?</b> The literature establishes the mechanism (flexibility) more firmly than the magnitude. A credible magnitude estimate would sharpen every comparison in this post.</li>
+        <li><b>Which checkers are cheap to build and simply have not been built?</b> Counterexample queries, artifact replay, and <code>K</code> accounting are three. Is there a fourth for S2 — a routine test that a proxy is not the construct?</li>
+        <li><b>Does the "solid bar" ever retreat?</b> No step on this timeline has lost its solid bar. If one does — say, retrieval degrades as the web fills with generated text — that would be the first evidence that automation progress is not monotone.</li>
+        <li><b>What is the half-life of a solid bar?</b> S0 depended on MEDLINE; it now depends on retrieval plus provenance. As the substrate changes, do the bars need rebuilding, and how often?</li>
+        <li><b>Does the broken axis hide the important part?</b> The last eighteen years are dense because tooling cycles are fast, but density is not progress. Which of the 2023–26 entries will still look like an inflection in ten years?</li>
+        <li><b>Would a timeline of <i>adoption</i> rather than capability change the story?</b> Almost certainly. Capability dates are knowable; adoption curves are not, and the guard lag is an adoption phenomenon wearing a capability costume.</li>
+        <li><b>Is there a step missing from the S0–S9 decomposition that the timeline reveals?</b> Candidates: funding and question selection (upstream of S0), and archiving (downstream of S9). Both have automation stories and neither is in the loop.</li>
+      </ol>
+
+      <h2 id="adopt">10. What to adopt now</h2>
+      <p>If the timeline's lesson is that the guard must arrive with the capability, then the practical list is short and unglamorous.</p>
+      <ul>
+        <li><b>Deposit artifacts from day one</b>, including the run log of every agent action. This is the S9 bar, and it is free.</li>
+        <li><b>Report <code>K</code></b> — the number of analyses, hypotheses, or rules the system generated before the reported one. It is the one number that converts an agent's search into a testable claim.</li>
+        <li><b>Seal the holdout before the first agent run</b>, and split by time. Unsealing it is a reported event.</li>
+        <li><b>Put the checker on a different model family than the generator</b>, and give it the data rather than the reasoning trace.</li>
+        <li><b>Cost the loop</b> — tokens, wall-clock, dollars, human minutes — because a throughput gain that is not costed becomes an unguarded default.</li>
+      </ul>
+      <p>None of this is new advice. That is the point: the guards for the current wave are the guards from the last one, and the historical failure was not ignorance of them but the delay in adopting them.</p>
+
+      <h2 id="sources">11. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark paper, <em>IND</em> = industry report.</p>
+
+      <h3>Statistical foundations and the design of valid tests</h3>
+      <ul>
+        <li>Neyman &amp; Pearson, <i>On the problem of the most efficient tests of statistical hypotheses</i> (1933) — <em>PR</em></li>
+        <li>Fisher, <i>The Design of Experiments</i> (1935) — <em>PR</em></li>
+        <li>Raiffa &amp; Schlaifer, <i>Applied Statistical Decision Theory</i> (1961) — <em>PR</em></li>
+        <li>Glass, Primary, secondary, and meta-analysis of research (<i>Educational Researcher</i> 1976) — <em>PR</em></li>
+        <li>Faul et al., <a href="https://doi.org/10.3758/BF03193146">G*Power 3</a> (<i>Behavior Research Methods</i> 2007) — <em>PR</em></li>
+        <li>Rainforth et al., <a href="https://arxiv.org/abs/2302.14545">Modern Bayesian Experimental Design</a> (2023/24) — <em>PP</em></li>
+      </ul>
+
+      <h3>Automated discovery, first wave</h3>
+      <ul>
+        <li>Buchanan &amp; Feigenbaum, DENDRAL and Meta-DENDRAL: their applications dimension (<i>Artificial Intelligence</i> 1978) — <em>PR</em></li>
+        <li>Lenat, <i>EURISKO</i> and AM: heuristics for discovery (1983) — <em>PR</em></li>
+        <li>King et al., Functional genomic hypothesis generation and experimentation by a robot scientist (<i>Science</i> 2009) — <em>PR</em></li>
+        <li>Sparkes et al., <a href="https://doi.org/10.1186/1759-4499-2-1">Towards robot scientists for autonomous scientific discovery</a> (2010) — <em>PR</em></li>
+        <li>MacLeod et al., <a href="https://www.nature.com/articles/s41586-020-2442-2">Self-driving laboratory for accelerated discovery of thin-film materials</a> (<i>Nature</i> 2020) — <em>PR</em></li>
+      </ul>
+
+      <h3>Reproducibility, reporting, and reform</h3>
+      <ul>
+        <li>Ioannidis, <a href="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0020124">Why most published research findings are false</a> (<i>PLOS Medicine</i> 2005) — <em>PR</em></li>
+        <li>Simmons, Nelson &amp; Simonsohn, <a href="https://journals.sagepub.com/doi/10.1177/0956797611417632">False-Positive Psychology</a> (2011) — <em>PR</em></li>
+        <li>Begley &amp; Ellis, <a href="https://www.nature.com/articles/483531a">Raise standards for preclinical cancer research</a> (<i>Nature</i> 2012) — <em>PR</em></li>
+        <li>Open Science Collaboration, <a href="https://www.science.org/doi/10.1126/science.aac4716">Estimating the reproducibility of psychological science</a> (<i>Science</i> 2015) — <em>PR</em></li>
+        <li>Steegen et al., <a href="https://journals.sagepub.com/doi/10.1177/1745691616658637">Increasing transparency through a multiverse analysis</a> (2016) — <em>PR</em></li>
+        <li>Simonsohn, Simmons &amp; Nelson, <a href="https://www.nature.com/articles/s41562-020-0912-z">Specification curve analysis</a> (<i>Nature Human Behaviour</i> 2020) — <em>PR</em></li>
+        <li>Nosek et al., <a href="https://www.pnas.org/doi/10.1073/pnas.1708274114">The preregistration revolution</a> (PNAS 2018) — <em>PR</em></li>
+        <li><a href="https://www.consort-statement.org/">CONSORT</a> reporting guidelines (1996–) — <em>PR</em></li>
+        <li><a href="https://www.icmje.org/recommendations/">ICMJE</a> trial registration policy (2005–) — <em>PR</em></li>
+        <li>Baker, <a href="https://www.nature.com/articles/533452a">1,500 scientists lift the lid on reproducibility</a> (<i>Nature</i> 2016) — <em>PR</em></li>
+      </ul>
+
+      <h3>Agents, and the current wave</h3>
+      <ul>
+        <li>Boiko et al., <a href="https://www.nature.com/articles/s41586-023-06792-0">Autonomous chemical research with large language models</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Szymanski et al., <a href="https://www.nature.com/articles/s41586-023-06734-w">An autonomous laboratory for the accelerated synthesis of novel materials</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Romera-Paredes et al., <a href="https://www.nature.com/articles/s41586-023-06924-6">Mathematical discoveries from program search with large language models</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Trinh et al., <a href="https://www.nature.com/articles/s41586-023-06747-5">Solving olympiad geometry without human demonstrations</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Du et al., <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a> (2023) — <em>PP</em></li>
+        <li>Lu et al., <a href="https://arxiv.org/abs/2408.06292">The AI Scientist</a> (2024) — <em>PP</em></li>
+        <li>Siegel et al., <a href="https://arxiv.org/abs/2409.11363">CORE-Bench</a> (2024) — <em>BM</em></li>
+        <li>Bogin et al., <a href="https://arxiv.org/abs/2409.07440">SUPER: Evaluating Agents on Setting Up and Executing Tasks from Research Repositories</a> (2024) — <em>BM</em></li>
+        <li>Chen et al., <a href="https://arxiv.org/abs/2410.05080">ScienceAgentBench</a> (2024/25) — <em>BM</em></li>
+        <li>Roohani et al., <a href="https://arxiv.org/abs/2405.17631">BioDiscoveryAgent</a> (2024/25) — <em>PP</em></li>
+        <li>Google Research, <a href="https://arxiv.org/abs/2502.18864">Accelerating scientific discovery with Co-Scientist</a> (2025) — <em>PP</em></li>
+        <li>Skarlinski et al., <a href="https://arxiv.org/abs/2409.13740">Language agents achieve superhuman synthesis of scientific knowledge</a> (2024) — <em>PP</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Huang et al., <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a> (ICLR 2024) — <em>PR</em></li>
+        <li>Kiciman et al., <a href="https://arxiv.org/abs/2305.00050">Causal Reasoning and Large Language Models</a> (2023) — <em>PP</em></li>
+        <li>Panickssery et al., <a href="https://arxiv.org/abs/2404.13076">LLM Evaluators Recognize and Favor Their Own Generations</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Structural biology as an infrastructure case</h3>
+      <ul>
+        <li>Jumper et al., <a href="https://www.nature.com/articles/s41586-021-03819-2">Highly accurate protein structure prediction with AlphaFold</a> (<i>Nature</i> 2021) — <em>PR</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The timeline says something narrower than "AI is transforming science" and something more useful than "AI is overhyped." It says that <b>the loop has been automating in order of checkability, not in order of importance</b>, and that this order has been stable for ninety years. Statistics first, because arithmetic is checkable. Execution next, because instruments have interlocks. Reporting last, because artifacts can be replayed. Operationalization and identification never, because there is nothing to replay: no artifact certifies that a measurement is the construct or that a comparison is causal.</p>
+
+      <p>It also says that the field has already run this experiment once, with statistical software, and that the result was a rise in wrong claims produced by honest people using correct tools. The lesson was not to stop using software. It was to make the plan and the analysis space visible — and that lesson took forty years to become routine, which is the part of the graph that should worry anyone deploying agents this quarter.</p>
+
+      <p>The most plausible near-term future is therefore not a discontinuity. It is the same ragged frontier, moving right wherever somebody builds a cheap checker, with the guard arriving late unless someone deliberately pays for it early. The good news is that the guards are known, cheap, and mostly boring — deposit the artifacts, report <code>K</code>, seal the holdout, put the critic on another model, cost the loop. The bad news is that the historical reason they arrive late is that nobody is rewarded for adopting them before the embarrassment, and that reason has not changed.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

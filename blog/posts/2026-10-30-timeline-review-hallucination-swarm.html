@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: hallucination in the swarm, 2019–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the collective-confabulation review: five phases in how the field understood multi-agent hallucination, why the independence assumption behind voting and debate collapsed, and the measurements that replaced it.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 640px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.expect::before { border-color: var(--green); }
+    .tm-item.meas::before { border-color: #718096; }
+    .tm-item.agent::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. Five phases</a>
+          <a href="#record">3. The record</a>
+          <a href="#independence">4. The independence assumption</a>
+          <a href="#mechanism">5. Three mechanisms of correlation</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-10-20</span>
+      </div>
+      <h1>Timeline review: hallucination in the swarm, 2019–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html">review</a> argued that collective confabulation is a correlated-error problem wearing a coordination costume, and proposed a test battery around two measurable quantities: pairwise error correlation and the reproduction rate of a false claim. A timeline shows how the field arrived at that formulation — <b>not by discovering a new failure, but by discovering that an old assumption had never been checked.</b></p>
+
+      <p>Five phases in seven years, each one a correction to the previous phase's implicit model of independence.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The phase diagram in §2 places publications by their contribution rather than their submission date, so boundaries are approximate. No hallucination benchmark was run and no correlation was estimated for this post; the arithmetic in §4 is an illustration.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> every aggregation method in this literature — voting, debate, critique, society-of-minds — inherits the same assumption: that agents' errors are independent. That assumption was reasonable for classical ensembles of independently trained models and is <em>false</em> for a population of instances of one model. The measurement gap did not close because the assumption was disproven; it closed because the arithmetic of the assumption's failure became impossible to ignore.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>Hallucination research has a characteristic shape: a metric is proposed, systems optimize against it, and the metric stops measuring the thing. The multi-agent version adds a second layer, because the system can be optimized at the population level while the metric stays at the claim level. A timeline makes both layers visible, and it shows which phase introduced the metric that later phases had to correct.</p>
+
+      <p>It also explains an apparent contradiction. Multi-agent debate papers report gains; correlation studies report that the gains are small. Both are correct, because they measure different quantities: accuracy on benchmark items versus error decorrelation. The timeline is the only place where the two results sit next to each other.</p>
+
+      <h2 id="figure">2. Five phases</h2>
+
+      <div class="tm-fig">
+        <div class="tm-scroll">
+        <svg class="tm-plot" viewBox="0 0 720 268" role="img" aria-labelledby="tm-t tm-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="tm-t">Schematic: five phases in the study of multi-agent hallucination, 2019–2026</title>
+          <desc id="tm-d">A ribbon with five segments: taxonomy 2019 to 2021, ensembles and debate 2021 to 2023, correlated error 2023 to 2024, populations 2024 to 2025, and accounting 2025 to 2026. Under each segment, two short lines name what the phase established and what it assumed.</desc>
+
+          <text x="60" y="44" font-size="10.5" fill="#64748b">what each phase established, and the assumption it left unmeasured</text>
+
+          <rect x="60" y="90" width="182.9" height="40" rx="4" fill="#3182ce" opacity="0.9" />
+          <rect x="242.9" y="90" width="182.8" height="40" rx="4" fill="#2f855a" opacity="0.9" />
+          <rect x="425.7" y="90" width="91.4" height="40" rx="4" fill="#805ad5" opacity="0.9" />
+          <rect x="517.1" y="90" width="91.5" height="40" rx="4" fill="#b7791f" opacity="0.9" />
+          <rect x="608.6" y="90" width="91.4" height="40" rx="4" fill="#718096" opacity="0.9" />
+
+          <g font-size="9.5" fill="#ffffff" text-anchor="middle" font-weight="700">
+            <text x="151.5" y="114">taxonomy</text>
+            <text x="334.3" y="114">ensembles &amp; debate</text>
+            <text x="471.4" y="114">correlation</text>
+            <text x="562.9" y="114">populations</text>
+            <text x="654.3" y="114">accounting</text>
+          </g>
+
+          <g font-size="8.8" fill="#64748b" text-anchor="middle">
+            <text x="151.5" y="152">what counts as an error</text>
+            <text x="151.5" y="165">assumes errors are rare</text>
+
+            <text x="334.3" y="152">vote, debate, critique</text>
+            <text x="334.3" y="165">assumes errors independent</text>
+
+            <text x="471.4" y="152">errors correlate</text>
+            <text x="471.4" y="165">N_eff collapses</text>
+
+            <text x="562.9" y="152">norms and contagion</text>
+            <text x="562.9" y="165">bias can harden</text>
+
+            <text x="654.3" y="152">claim-level rates</text>
+            <text x="654.3" y="165">accounting, not fixing</text>
+          </g>
+
+          <line x1="60" y1="196" x2="700" y2="196" stroke="#cbd5e0" />
+          <g stroke="#cbd5e0">
+            <line x1="60" y1="196" x2="60" y2="202" />
+            <line x1="242.9" y1="196" x2="242.9" y2="202" />
+            <line x1="425.7" y1="196" x2="425.7" y2="202" />
+            <line x1="517.1" y1="196" x2="517.1" y2="202" />
+            <line x1="608.6" y1="196" x2="608.6" y2="202" />
+            <line x1="700" y1="196" x2="700" y2="202" />
+          </g>
+          <g font-size="10" fill="#64748b" text-anchor="middle">
+            <text x="60" y="216">2019</text>
+            <text x="242.9" y="216">2021</text>
+            <text x="425.7" y="216">2023</text>
+            <text x="517.1" y="216">2024</text>
+            <text x="608.6" y="216">2025</text>
+          </g>
+          <text x="700" y="216" font-size="10" fill="#64748b" text-anchor="end">2026</text>
+
+          <text x="60" y="244" font-size="9.5" fill="#94a3b8">segment width = emphasis in this review, not publication volume</text>
+        </svg>
+        </div>
+        <p class="tm-cap"><b>Figure 1. The correction, phase by phase.</b> Read the lower line of each segment as the assumption that the phase did not test. Phase two's assumption — independence — is the one that mattered, and it survived for two years because the benchmarks measured accuracy rather than agreement. Phase three replaced it with a measurement; phase five is still working out what to do with the number.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">2019–2021 · <span>what counts as an error</span> · assumption: errors are rare and local</li>
+        <li class="tm-item"><span class="tm-y">2020–21</span><b>Factuality benchmarks</b> — TruthfulQA and its descendants make "plausible but false" a measurable category, and immediately expose the problem that the metric is a judge.</li>
+        <li class="tm-item"><span class="tm-y">2022</span><b>Taxonomies</b> — hallucination split into intrinsic and extrinsic, faithful and factual; useful for diagnosis, useless for aggregation, because the categories are not independent.</li>
+
+        <li class="tm-era">2021–2023 · <span>aggregation as a remedy</span> · assumption: errors are independent</li>
+        <li class="tm-item expect"><span class="tm-y">2022</span><b>Self-consistency</b> — sample several reasoning paths and take the majority; the first widely adopted result that more samples help, and the source of the intuition that k agents beat one.</li>
+        <li class="tm-item expect"><span class="tm-y">2023</span><b>Multi-agent debate</b> — several instances argue and converge; reported gains on factuality and reasoning, with the mechanism attributed to disagreement.</li>
+        <li class="tm-item expect"><span class="tm-y">2023</span><b>Society of minds and critique loops</b> — role-diverse agents critique each other; the improvement is real on some tasks and mostly disappears when the critic shares the generator's context.</li>
+
+        <li class="tm-era">2023–2024 · <span>the independence assumption fails</span> · measured: correlation</li>
+        <li class="tm-item meas"><span class="tm-y">2023</span><b>Sycophancy and conformity</b> — models shift answers toward stated user or peer positions; the first evidence that agents influence each other's errors rather than merely averaging them.</li>
+        <li class="tm-item meas"><span class="tm-y">2024</span><b>Self-preference in judges</b> — evaluators favour their own generations, so a same-family judge inflates the apparent gain from a same-family ensemble.</li>
+        <li class="tm-item meas"><span class="tm-y">2024</span><b>Self-correction without evidence</b> — re-reading does not reliably fix reasoning; the gains attributed to critique are often prompt-format artifacts.</li>
+        <li class="tm-item meas"><span class="tm-y">2024</span><b>Hallucination as structural</b> — arguments that a model cannot in general certify the absence of a fact from its training distribution; the framing moves from bug to property.</li>
+
+        <li class="tm-era">2024–2025 · <span>populations</span> · measured: contagion and convention</li>
+        <li class="tm-item agent"><span class="tm-y">2024</span><b>Agent populations with memory</b> — persistent state means a false claim can be stored, retrieved, and cited by later agents; propagation becomes a network property.</li>
+        <li class="tm-item agent"><span class="tm-y">2025</span><b>Emergent conventions and collective bias</b> — populations of LLM agents converge on shared rules, including arbitrary ones that later agents treat as given.</li>
+        <li class="tm-item meas"><span class="tm-y">2025</span><b>Failure taxonomies for multi-agent systems</b> — agents that never verify, silently disagree, or converge on unvalidated plans; the taxonomy is the first shared vocabulary for the phenomenon.</li>
+
+        <li class="tm-era">2025–2026 · <span>accounting</span> · measured: claim-level error rates</li>
+        <li class="tm-item meas"><span class="tm-y">2025</span><b>Cost, variance, holdout</b> — multi-agent results are required to report a compute-matched single-agent baseline; several reported gains shrink or vanish under the requirement.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>Claim-level false-discovery accounting</b> — the unit of measurement moves from document to claim, and the question becomes the rate at which a system's individual assertions are wrong.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — the five phases are read as one long correction to an independence assumption nobody had tested.</li>
+      </ul>
+
+      <h2 id="independence">4. The independence assumption</h2>
+      <p>Every aggregation method in the literature is a form of averaging, and averaging has a known arithmetic. If <code>N</code> estimates have pairwise correlation <code>ρ</code>, the effective sample size is <code>N / (1 + (N−1)ρ)</code>, and the error reduction from a majority vote scales as <code>1 − 1/√N_eff</code>:</p>
+
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N = 10 agents        N_eff          error reduction
+ρ = 0.0  (independent)   10.0        1 − 1/√10   =  68%
+ρ = 0.5  (same model)     1.82       1 − 1/√1.82 =  26%
+ρ = 0.9  (same prompt)     1.10       1 − 1/√1.10 =   5%</pre>
+
+      <p>The middle row is the realistic case for a population of one model prompted differently, and the bottom row is the realistic case for the same model with the same context. <b>The gap between 68% and 5% is the entire disagreement between the debate literature and the correlation literature</b> — the first measures tasks where the population happened to decorrelate, the second measures the correlation directly.</p>
+
+      <p>Two consequences follow. First, "more agents" is not a scaling law; it is a bet on <code>ρ</code>, and <code>ρ</code> is a property of the ensemble's construction, not of its size. Second, the number of agents that is worth running is a function of how you made them differ. Ten instances of one model with ten personas is, in the arithmetic, closer to one agent and one prompt.</p>
+
+      <h2 id="mechanism">5. Three mechanisms of correlation</h2>
+      <p>The correlation has three sources, and each is fixable in a different way — which is why "use diverse agents" is advice without a mechanism.</p>
+
+      <ul>
+        <li><b>Shared pretraining.</b> The prior over what is plausible is common to every instance. Two agents will therefore make the same confident error on the same item, and no amount of debate between them will surface it. The only real fix is a different training distribution or an external evidence source.</li>
+        <li><b>Shared context.</b> If agents see the same retrieved passages, a bad passage produces a correlated error by construction. Fix: retrieve independently, or give the critic evidence the generator did not see.</li>
+        <li><b>Shared judge.</b> The aggregator is usually a model from the same family, and it prefers its own outputs. Fix: cross-family judging, plus a human-scored subset to calibrate the judge.</li>
+      </ul>
+
+      <div class="banner"><strong>What would count as evidence of independence:</strong> an assay that perturbs the <i>inputs</i> rather than the personas — different retrieval, different model family, different evidence order — and reports the resulting change in pairwise error correlation. No mainstream multi-agent paper reports this, which is why the field still argues about whether debate works.</div>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <ul>
+        <li><b>Correlation is the right variable</b> and it is measurable in a small harness: pairwise agreement on a labelled set plus a canary set the models have not seen.</li>
+        <li><b>Persona diversity is not independence.</b> It changes tone and format reliably, and decorrelates errors unreliably.</li>
+        <li><b>Debate helps conditionally</b> — when participants have different evidence and the judge is independent.</li>
+        <li><b>Populations add a failure mode that ensembles do not</b>: a false claim can persist in memory and be cited, which turns a one-shot error into shared state.</li>
+        <li><b>Claim-level error rates are the metric that matters</b>, and almost nobody reports them, because they require labelling claims rather than documents.</li>
+        <li><b>The honest summary of the phase we are in</b> is accounting: the field can now measure the problem and cannot yet fix it.</li>
+      </ul>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark, <em>IND</em> = industry report.</p>
+
+      <h3>Definition and measurement</h3>
+      <ul>
+        <li>Lin, Hilton &amp; Evans, <a href="https://arxiv.org/abs/2109.07958">TruthfulQA: Measuring How Models Mimic Human Falsehoods</a> (ACL 2022) — <em>PR</em></li>
+        <li>Ji et al., <a href="https://arxiv.org/abs/2202.03629">Survey of Hallucination in Natural Language Generation</a> (ACM CSUR 2023) — <em>PR</em></li>
+        <li>Xu et al., <a href="https://arxiv.org/abs/2401.11817">Hallucination is Inevitable: An Innate Limitation of Large Language Models</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Aggregation</h3>
+      <ul>
+        <li>Wang et al., <a href="https://arxiv.org/abs/2203.11171">Self-Consistency Improves Chain of Thought Reasoning in Language Models</a> (ICLR 2023) — <em>PR</em></li>
+        <li>Du et al., <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a> (2023) — <em>PP</em></li>
+        <li>Huang et al., <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a> (ICLR 2024) — <em>PR</em></li>
+        <li>Panickssery et al., <a href="https://arxiv.org/abs/2404.13076">LLM Evaluators Recognize and Favor Their Own Generations</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h3>Conformity, populations, and failure</h3>
+      <ul>
+        <li>Sharma et al., <a href="https://arxiv.org/abs/2310.13548">Towards Understanding Sycophancy in Language Models</a> (2023) — <em>PP</em></li>
+        <li>Park et al., <a href="https://arxiv.org/abs/2304.03442">Generative Agents: Interactive Simulacra of Human Behavior</a> (UIST 2023) — <em>PR</em></li>
+        <li>Ashery et al., <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">Emergent social conventions and collective bias in populations of LLM agents</a> (<i>Science Advances</i> 2025) — <em>PR</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Skarlinski et al., <a href="https://arxiv.org/abs/2409.13740">Language agents achieve superhuman synthesis of scientific knowledge</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The most useful thing to know about this literature is that the argument was never about capability. It was about a covariance that nobody estimated. Debate papers and correlation papers do not contradict each other; they measure different terms of the same expression, and the expression has been available since the first ensemble paper.</p>
+
+      <p>That is why the practical recommendation is so small. Before running a swarm, measure its <code>ρ</code> on a labelled set of a hundred items. If the pairwise agreement is high, the swarm will not decorrelate and the extra agents are a cost; if it is low, you have built something that behaves like an ensemble and should be evaluated like one. The measurement takes an afternoon and settles an argument that has now run for three years.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: AI for biology, 1994–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the AI-for-biology survey: when each domain's foundation model actually arrived, which corpus unlocked it, and why the agentic wave landed at the interfaces between domains rather than inside any one of them.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 620px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.data::before { border-color: #718096; }
+    .tm-item.model::before { border-color: var(--green); }
+    .tm-item.agent::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. The cumulative chart</a>
+          <a href="#record">3. The record</a>
+          <a href="#corpus">4. Corpora, not architectures</a>
+          <a href="#interfaces">5. Why agents landed at the seams</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-30</span>
+      </div>
+      <h1>Timeline review: AI for biology, 1994–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-09-30-ai-for-biology-2026.html">January–September 2026 survey</a> grouped the field by modality: protein, genome, cell, text, agents. A timeline reorders the same material by a different question — <b>what made each domain modellable at all</b> — and the answer is rarely the model.</p>
+
+      <p>In every case the enabling event is a corpus: a structure database that finally got big, a reference genome plus functional assays, an atlas with enough cells. The transformer arrives late and gets the credit. This is not a complaint about transformers; it is a warning about transfer. If a domain's success came from its corpus, then exporting the architecture to a domain without that corpus buys a demo, not a capability.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review, not a systematic history. The cumulative curve in §2 counts the milestones selected for this note — it is an illustrative selection, not a literature count, and it is drawn as a step function for legibility. Dates mark first credible publication, not deployment or adoption. No benchmark was run.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> biology's foundation-model progress tracks <b>corpus availability</b>, and its agentic progress tracks <b>interfaces between corpora</b>. That is why the 2023–26 wave produced useful retrieval, formatting, and execution agents while producing very little new biology: the seams are where a language model is the right tool, and the seams were the unautomated part.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>Three claims in the survey are hard to assess in the present tense. That protein structure is "solved." That cell foundation models are "early." That agents are "the next layer." Each is a statement about a moving frontier, and each looks different once the arrival dates are next to the datasets.</p>
+
+      <p>Two patterns are worth checking against the record. First, whether capability follows corpus size with a lag. Second, whether the domains that look mature are mature because of data volume, or because of a <i>verification loop</i> — a way to check a prediction cheaply. Protein has both. Cell has data and a weak loop. Clinical text has neither.</p>
+
+      <h2 id="figure">2. The cumulative chart</h2>
+
+      <div class="tm-fig">
+        <div class="tm-legend">
+          <span class="tm-key"><span class="tm-sw" style="background:#3182ce"></span>protein</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#2f855a"></span>genome</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#805ad5"></span>cell</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#b7791f"></span>text and agents</span>
+        </div>
+        <div class="tm-scroll">
+        <svg class="tm-plot" viewBox="0 0 720 320" role="img" aria-labelledby="tm-t tm-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="tm-t">Schematic: cumulative milestones per domain, 1990–2026</title>
+          <desc id="tm-d">Four step curves. Protein milestones accumulate slowly from 1994 and sharply from 2018. Genome and cell curves are flat until 2015 and 2018 respectively, then rise. Text and agent milestones appear only from 2022. All four curves steepen in the 2020–2026 window.</desc>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="266.7" y1="48" x2="266.7" y2="270" />
+            <line x1="433.4" y1="48" x2="433.4" y2="270" />
+            <line x1="600.1" y1="48" x2="600.1" y2="270" />
+          </g>
+          <line x1="64" y1="232" x2="700" y2="232" stroke="#eef2f6" stroke-dasharray="3 4" />
+          <line x1="64" y1="194" x2="700" y2="194" stroke="#eef2f6" stroke-dasharray="3 4" />
+          <line x1="64" y1="156" x2="700" y2="156" stroke="#eef2f6" stroke-dasharray="3 4" />
+          <line x1="64" y1="118" x2="700" y2="118" stroke="#eef2f6" stroke-dasharray="3 4" />
+
+          <line x1="566.8" y1="48" x2="566.8" y2="270" stroke="#b7791f" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
+          <text x="566.8" y="44" font-size="9.5" fill="#b7791f" text-anchor="middle">2018 · the turn</text>
+          <line x1="666.7" y1="48" x2="666.7" y2="270" stroke="#b7791f" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
+          <text x="666.7" y="58" font-size="9.5" fill="#b7791f" text-anchor="middle">2024 · the pile-up</text>
+
+          <path d="M64,232 H566.8 V194 H600.1 V156 H633.4 V118 H666.7 V80 H700" fill="none" stroke="#3182ce" stroke-width="2.2" stroke-linejoin="round" />
+          <path d="M64,232 H516.8 V194 H616.7 V156 H650.1 V118 H666.7 V80 H700" fill="none" stroke="#2f855a" stroke-width="2.2" stroke-linejoin="round" />
+          <path d="M64,232 H566.8 V194 H616.7 V156 H650.1 V118 H666.7 V80 H700" fill="none" stroke="#805ad5" stroke-width="2.2" stroke-linejoin="round" />
+          <path d="M64,232 H633.4 V194 H650.1 V156 H666.7 V118 H683.4 V80 H700" fill="none" stroke="#b7791f" stroke-width="2.2" stroke-linejoin="round" />
+
+          <text x="64" y="36" font-size="10.5" fill="#64748b">milestones in this review, cumulative — a selection, not a literature count</text>
+
+          <line x1="64" y1="270" x2="700" y2="270" stroke="#cbd5e0" />
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="100" y="286">1990</text>
+            <text x="266.7" y="286">2000</text>
+            <text x="433.4" y="286">2010</text>
+            <text x="600.1" y="286">2020</text>
+          </g>
+          <text x="700" y="286" font-size="10.5" fill="#64748b" text-anchor="end">2026</text>
+        </svg>
+        </div>
+        <p class="tm-cap"><b>Figure 1. Four curves, one inflection.</b> Each step is a milestone from §3. The protein curve starts earliest because its corpus (the PDB) started earliest, and it steepens at 2018 for reasons that have nothing to do with data — the architecture finally used the corpus well. Genome and cell are flat until their corpora exist, then rise fast. Text and agents have no history before 2022, which is the strongest evidence that this wave is a different kind of event rather than a continuation of the previous one.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">1990–2012 · <span>prediction without learning</span> · bottleneck: structure</li>
+        <li class="tm-item"><span class="tm-y">1973–94</span><b>Anfinsen to CASP</b> — the folding problem is posed as a prediction task, then made comparable through a blind community assessment; the benchmark precedes the methods by decades.</li>
+        <li class="tm-item"><span class="tm-y">2003</span><b>Rosetta</b> — fragment assembly and energy functions make de novo structure plausible for small proteins; the field learns that physics and search can substitute for data, expensively.</li>
+        <li class="tm-item model"><span class="tm-y">2015</span><b>DeepSEA</b> — sequence-to-function prediction from chromatin data; the genome gets a supervised learning task with a real label.</li>
+
+        <li class="tm-era">2013–2019 · <span>representation learning arrives</span> · bottleneck: labels</li>
+        <li class="tm-item data"><span class="tm-y">2016</span><b>Human Cell Atlas launches</b> — the cell gets a corpus strategy, and the field gains a decade-long answer to "where will the training data come from?"</li>
+        <li class="tm-item model"><span class="tm-y">2018</span><b>AlphaFold 1</b> — distance-prediction plus gradient descent wins CASP13; the lesson is that a learned potential plus search beats either alone.</li>
+        <li class="tm-item model"><span class="tm-y">2018</span><b>scVI</b> — a probabilistic latent space for single-cell counts; the embedding that later "foundation" models are compared against.</li>
+        <li class="tm-item model"><span class="tm-y">2020</span><b>ESM-1b / protein language models</b> — unsupervised pretraining on sequences works, and it works because evolution already labelled the corpus.</li>
+
+        <li class="tm-era">2020–2022 · <span>the foundation-model prelude</span> · bottleneck: scale and evaluation</li>
+        <li class="tm-item model"><span class="tm-y">2020–21</span><b>AlphaFold 2</b> — CASP14 accuracy changes the field's default; structure stops being a research problem and becomes an input.</li>
+        <li class="tm-item model"><span class="tm-y">2021</span><b>Enformer</b> — long-range sequence-to-expression prediction; regulatory grammar becomes a learnable function of context.</li>
+        <li class="tm-item model"><span class="tm-y">2022</span><b>ESMFold, BioGPT</b> — fast structure from language models, and a domain LLM over biomedical text; both are immediately useful and immediately over-claimed.</li>
+
+        <li class="tm-era">2023–2024 · <span>domain foundation models and first agents</span> · bottleneck: verification</li>
+        <li class="tm-item model"><span class="tm-y">2023</span><b>Geneformer, scGPT</b> — pretraining on cell atlases; the open question is whether unperturbed cells teach perturbed biology.</li>
+        <li class="tm-item model"><span class="tm-y">2024</span><b>Evo, Nucleotide Transformer</b> — genome-scale sequence models trained on whole genomes, including non-coding sequence.</li>
+        <li class="tm-item model"><span class="tm-y">2024</span><b>AlphaFold 3</b> — complexes, ligands, nucleic acids; prediction expands from a chain to an assembly.</li>
+        <li class="tm-item agent"><span class="tm-y">2023</span><b>Coscientist</b> — an LLM plans and executes chemistry through tools; the first widely cited agent that acts rather than answers.</li>
+        <li class="tm-item agent"><span class="tm-y">2024</span><b>BioDiscoveryAgent, GPT-4 cell typing</b> — experiment ranking with an automated evaluator, and marker-rule proposal checked against expression; agents find work at the boundaries of existing pipelines.</li>
+
+        <li class="tm-era">2025–2026 · <span>agents and accounting</span> · bottleneck: trust and cost</li>
+        <li class="tm-item agent"><span class="tm-y">2025</span><b>Co-Scientist</b> — hypothesis tournaments with automated and expert judging; the open problem is judge independence, not generation.</li>
+        <li class="tm-item data"><span class="tm-y">2025</span><b>Virtual-cell challenges</b> — perturbation prediction becomes a public benchmark with declared splits.</li>
+        <li class="tm-item"><span class="tm-y">2025–26</span><b>Failure taxonomies and cost accounting</b> — the field starts measuring what agent systems cost and how they fail, which is the precondition for anyone trusting them with a claim.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — the survey's modality grouping is re-read as a corpus story, and the agentic layer is located at the seams rather than inside any domain.</li>
+      </ul>
+
+      <h2 id="corpus">4. Corpora, not architectures</h2>
+      <p>Set the arrival dates next to the data that preceded them and the pattern is hard to miss:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Domain</th><th>Corpus that unlocked it</th><th>Model wave</th><th>Verification loop</th><th>What is still missing</th></tr></thead>
+          <tbody>
+            <tr><td><b>Protein</b></td><td>PDB (1971–), then metagenomic sequences</td><td>2018 → 2024</td><td><b>Strong</b> — experimental structures, blind CASP</td><td>Dynamics, complexes in cells, function</td></tr>
+            <tr><td><b>Genome</b></td><td>Reference genomes plus functional genomics assays</td><td>2015 → 2024</td><td><b>Moderate</b> — held-out chromosomes, MPRA</td><td>Cell-type-specific regulation, causality</td></tr>
+            <tr><td><b>Cell</b></td><td>Single-cell atlases (2016–)</td><td>2018 → 2026</td><td><b>Weak</b> — perturbation screens are the only real test</td><td>Perturbation coverage, spatial context, time</td></tr>
+            <tr><td><b>Text</b></td><td>PubMed and clinical notes</td><td>2022 → 2026</td><td><b>Weak</b> — no ground truth for synthesis</td><td>Provenance, contradiction detection</td></tr>
+            <tr><td><b>Agents</b></td><td>Tools, APIs, and repositories</td><td>2023 → 2026</td><td><b>Mixed</b> — strong where a checker exists</td><td>Cost, variance, and claim-level error rates</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The right-hand columns do more explanatory work than the model column. <b>Protein is mature because it has a verification loop, not because it has the most data.</b> A predicted structure can be checked against an experimentally determined one, blind, on a schedule, by a community that has been doing it since 1994. Cell biology has more measurements per experiment than structural biology ever did, and almost no equivalent loop: to check a predicted perturbation response you must run the perturbation, which is the thing the model was supposed to replace.</p>
+
+      <p>That asymmetry explains a fact that otherwise looks like a mystery: why protein models are trusted for decisions and cell models are not, despite the cell models being trained on more recent architectures and larger parameter counts. Trust follows the loop.</p>
+
+      <div class="banner"><strong>Corollary:</strong> a domain gets a foundation model when it gets a corpus, and it gets <i>trusted</i> when it gets a cheap check. The two events are years apart, and most of the disappointment in this field lives in the gap. Expect the same gap for virtual cells, and price it in.</div>
+
+      <h2 id="interfaces">5. Why agents landed at the seams</h2>
+      <p>Look again at where the agentic milestones sit: not inside protein, not inside genome, not inside cell, but at the transitions. Text to structure. Text to experiment. Repository to run. Question to ranked experiment. The pattern is not accidental.</p>
+
+      <p>Each domain already had a good model for its own modality by 2023. What it did not have was a way to move between modalities: a paper's claim into a database query, a hypothesis into a protocol, a result into a figure legend, an artifact into a reproduction. Those are translation tasks with a checkable output, which is precisely the shape of work a language model does well. The agents did not add biology. They removed the friction at the joints, and the joints were where the unautomated labour was.</p>
+
+      <p>Two predictions follow, and they are testable within a year or two. First, agent value should be highest in workflows that span more than one modality, and close to zero inside a single well-tooled pipeline. Second, agent benchmarks that measure a single domain task should saturate faster than benchmarks that require chaining two or three. Both are consistent with what the benchmarks in the survey already report, which is uneven and chain-length-dependent performance.</p>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <ul>
+        <li><b>Structure is infrastructure.</b> The remaining problems are assemblies, dynamics, and function — not folding.</li>
+        <li><b>Genome models are mid-transition.</b> Sequence-to-function is real; cell-type-specific causal regulation is not.</li>
+        <li><b>Cell models are data-limited and loop-limited.</b> The binding constraint is measured perturbations, not parameters.</li>
+        <li><b>Text models are utility, not authority.</b> Useful for retrieval, extraction, and drafting; unusable as a source of fact without provenance.</li>
+        <li><b>Agents are seam-fillers.</b> Valuable exactly where a task crosses modalities and has a checker; expensive and unreliable where it does not.</li>
+        <li><b>The next unlock is a loop, not a model.</b> The most valuable thing anyone could build in 2027 is a cheap, routine way to falsify a predicted cellular response.</li>
+      </ul>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark, <em>IND</em> = industry report.</p>
+
+      <h3>Structure and protein</h3>
+      <ul>
+        <li>Anfinsen, Principles that govern the folding of protein chains (<i>Science</i> 1973) — <em>PR</em></li>
+        <li>Jumper et al., <a href="https://www.nature.com/articles/s41586-021-03819-2">Highly accurate protein structure prediction with AlphaFold</a> (<i>Nature</i> 2021) — <em>PR</em></li>
+        <li>Abramson et al., Accurate structure prediction of biomolecular interactions with AlphaFold 3 (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Lin et al., Evolutionary-scale prediction of atomic-level protein structure with a language model (<i>Science</i> 2023; ESMFold) — <em>PR</em></li>
+      </ul>
+
+      <h3>Genome and sequence</h3>
+      <ul>
+        <li>Zhou &amp; Troyanskaya, Predicting effects of noncoding variants with deep learning (DeepSEA; <i>Nature Methods</i> 2015) — <em>PR</em></li>
+        <li>Avsec et al., Effective gene expression prediction from sequence by integrating long-range interactions (Enformer; <i>Nature Methods</i> 2021) — <em>PR</em></li>
+        <li>Nguyen et al., Sequence modeling and design from molecular to genome scale with Evo (<i>Science</i> 2024) — <em>PR</em></li>
+        <li>Dalla-Torre et al., <a href="https://arxiv.org/abs/2306.15006">The Nucleotide Transformer</a> (2023) — <em>PP</em></li>
+      </ul>
+
+      <h3>Cell and perturbation</h3>
+      <ul>
+        <li>Lopez et al., Deep generative modeling for single-cell transcriptomics (<i>Nature Methods</i> 2018) — <em>PR</em></li>
+        <li>Theodoris et al., Transfer learning enables predictions in network biology (<i>Nature</i> 2023; Geneformer) — <em>PR</em></li>
+        <li>Cui et al., scGPT: toward building a foundation model for single-cell multi-omics (<i>Nature Methods</i> 2024) — <em>PR</em></li>
+        <li>Hou &amp; Ji, <a href="https://www.nature.com/articles/s41592-024-02235-4">Assessing GPT-4 for cell type annotation in single-cell RNA-seq analysis</a> (<i>Nature Methods</i> 2024) — <em>PR</em></li>
+        <li>Peidli et al., scPerturb (<i>Nature Methods</i> 2024) — <em>BM</em></li>
+      </ul>
+
+      <h3>Text and agents</h3>
+      <ul>
+        <li>Luo et al., <a href="https://arxiv.org/abs/2210.10341">BioGPT</a> (2022) — <em>PP</em></li>
+        <li>Boiko et al., <a href="https://www.nature.com/articles/s41586-023-06792-0">Autonomous chemical research with large language models</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Roohani et al., <a href="https://arxiv.org/abs/2405.17631">BioDiscoveryAgent</a> (2024/25) — <em>PP</em></li>
+        <li>Google Research, <a href="https://arxiv.org/abs/2502.18864">Accelerating scientific discovery with Co-Scientist</a> (2025) — <em>PP</em></li>
+        <li>Skarlinski et al., <a href="https://arxiv.org/abs/2409.13740">Language agents achieve superhuman synthesis of scientific knowledge</a> (2024) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The survey grouped AI-for-biology by modality because that is how the field presents itself. The timeline suggests the grouping is downstream of something else: each modality got a model when it got a corpus, and each got trusted when it got a check. Structure had both by 2021 and is now infrastructure. Cell has the first and not the second, which is why its leaderboard does not match its reputation.</p>
+
+      <p>The agentic layer is best understood as the field automating its seams — retrieval, translation, execution, reproduction — rather than its science. That is not a small contribution: the seams were where most of the human hours went. But it does mean that the honest description of 2026 is not "AI is doing biology." It is "AI is doing the paperwork between biological databases," and the paperwork was, in fact, enormous.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

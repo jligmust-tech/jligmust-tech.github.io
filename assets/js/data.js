@@ -1151,9 +1151,21 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-10-30", tag: "Research", title: "Rules, mined: rule-based ML, agents as rule miners, and the maintenance problem",
+      desc: "How rule-based machine learning relates to AI agents: a taxonomy of rules, the two rule traditions, the arithmetic of rule mining (multiplicity, support decay, lift, coverage stacking, stability, rule debt), seven agent roles, a closed loop with prompts and rule cards, solver-backed rule use, rules from agent traces, guardrails as rules, text-to-rule compilation, the single-cell case, nine failure modes, the evidence, and eight concrete potentials.",
+      url: "/blog/posts/2026-10-30-rules-mined-agents-and-rule-based-ml.html",
+      home: false
+    },
+    {
       date: "2026-10-28", tag: "Research", title: "Agents for hypothesis testing: a substep-by-substep survey",
       desc: "Where AI agents help the hypothesis-testing loop — literature priors, hypothesis generation, operationalization, experimental design, execution and QC, statistics, adversarial critique, decisions, and reporting — with the evidence grades, seven failure modes, the arithmetic of agent-amplified inference, a pre-registration protocol, and a one-week pilot.",
       url: "/blog/posts/2026-10-28-agents-for-hypothesis-testing.html",
+      home: false
+    },
+    {
+      date: "2026-10-28", tag: "Research", title: "Timeline review: the hypothesis-testing loop, 1935–2026",
+      desc: "A companion timeline to the substep survey of agents for hypothesis testing: when each step of the loop (S0–S9) first became mechanically executable, when automating it became credible, and which guard lagged behind. Six eras, a band chart, the statistics-software precedent, the guard-lag arithmetic, where 2026 sits, and three falsifiable predictions.",
+      url: "/blog/posts/2026-10-30-timeline-review-hypothesis-testing-loop.html",
       home: false
     },
     {
@@ -1162,9 +1174,21 @@ window.SCAI_DATA = {
       url: "/blog/posts/2026-10-20-hallucination-in-the-swarm.html"
     },
     {
+      date: "2026-10-20", tag: "Research", title: "Timeline review: hallucination in the swarm, 2019–2026",
+      desc: "A companion timeline to the collective-confabulation review: five phases in how the field understood multi-agent hallucination, the independence assumption behind voting and debate, the arithmetic of its collapse, and the measurements that replaced it.",
+      url: "/blog/posts/2026-10-30-timeline-review-hallucination-swarm.html",
+      home: false
+    },
+    {
       date: "2026-10-16", tag: "Research", title: "Using 500 agents in parallel: orchestration, synchronization, and cost",
       desc: "A design brief on running 500 AI agents at once — what \"500\" counts, why parallel agents are now practical, a reference architecture, synchronization and lease discipline, compact-context fast workers, workload patterns, serial-vs-parallel cost arithmetic, failure modes, an adoption playbook, a readiness checklist, and a ten-template prompt pack.",
       url: "/blog/posts/2026-10-16-use-500-agents-in-parallel.html"
+    },
+    {
+      date: "2026-10-16", tag: "Research", title: "Timeline review: many agents in parallel, 2004–2026",
+      desc: "A companion timeline to the 500-agents design brief: the distributed-systems patterns that predate agents, the point where synchronization and merge cost eat the parallel gain, and why '500 agents' needs a definition before it needs a benchmark.",
+      url: "/blog/posts/2026-10-30-timeline-review-500-agents-parallel.html",
+      home: false
     },
     {
       date: "2026-10-10", tag: "Research", title: "Small models, short contexts: why agentic AI is getting leaner",
@@ -1172,9 +1196,21 @@ window.SCAI_DATA = {
       url: "/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html"
     },
     {
+      date: "2026-10-10", tag: "Research", title: "Timeline review: context engineering and model specialization, 2019–2026",
+      desc: "A companion timeline to the small-models post: the U-shaped position effect that ended the context-stuffing era, routing, cascades, compaction and sub-agents, and why right-sizing is a cost argument before it is an accuracy argument.",
+      url: "/blog/posts/2026-10-30-timeline-review-context-engineering.html",
+      home: false
+    },
+    {
       date: "2026-10-10", tag: "Research", title: "Swarm intelligence for AI: from boids to societies of agents",
       desc: "A survey of swarm-intelligence ideas reborn in modern AI — from PSO, ACO, and boids to LLM multi-agent frameworks, debate and society-of-minds, optimizable agent graphs, generative-agent simulation, many-agent civilizations, and autonomous science, with safety and evaluation caveats.",
       url: "/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html"
+    },
+    {
+      date: "2026-10-10", tag: "Research", title: "Timeline review: swarm intelligence, 1959–2026",
+      desc: "A companion timeline to the swarm-intelligence survey: two waves of metaphor-driven coordination, what survived the first wave's backlash, and which swarm concepts transfer to LLM agent societies with evidence and which are decoration.",
+      url: "/blog/posts/2026-10-30-timeline-review-swarm-intelligence.html",
+      home: false
     },
     {
       date: "2026-09-30", tag: "Research", title: "Given a target, find the drug: structure prediction, docking, and binding-affinity advances in 2026",
@@ -1182,14 +1218,32 @@ window.SCAI_DATA = {
       url: "/blog/posts/2026-09-30-target-to-drug-toolkit.html"
     },
     {
+      date: "2026-09-30", tag: "Research", title: "Timeline review: from target to drug, 1982–2026",
+      desc: "A companion timeline to the target-to-drug toolkit: a maturity heatmap of six stages from 1985 to 2026, the chronology of docking, free energy, generative design and co-folding, and why the pipeline still fails at the stages nobody benchmarks.",
+      url: "/blog/posts/2026-10-30-timeline-review-target-to-drug.html",
+      home: false
+    },
+    {
       date: "2026-09-30", tag: "Research", title: "AI for Biology in 2026: From Prediction Models to Autonomous Discovery",
       desc: "A January–September 2026 survey of AI and LLM advances for biology: genome, protein, and cell foundation models, biomedical LLMs, agentic discovery, drug discovery, data, and biosecurity.",
       url: "/blog/posts/2026-09-30-ai-for-biology-2026.html"
     },
     {
+      date: "2026-09-30", tag: "Research", title: "Timeline review: AI for biology, 1994–2026",
+      desc: "A companion timeline to the AI-for-biology survey: when each domain's foundation model arrived, which corpus unlocked it, why trust follows a verification loop rather than a leaderboard, and why the agentic wave landed at the seams between domains.",
+      url: "/blog/posts/2026-10-30-timeline-review-ai-for-biology.html",
+      home: false
+    },
+    {
       date: "2026-09-08", tag: "Research", title: "Stage 1 guide to perturbation models, virtual cells, and biology-aware embeddings",
       desc: "A ranked model core, benchmark datasets and suites, and a protocol for evaluating perturbation-aware embeddings without mistaking systematic variation for biology.",
       url: "/blog/posts/2026-09-08-perturbation-virtual-cell-guide.html"
+    },
+    {
+      date: "2026-09-08", tag: "Research", title: "Timeline review: perturbation screens and the virtual cell, 2001–2026",
+      desc: "A companion timeline to the perturbation and virtual-cell guide: which modalities existed when, what each one made measurable, why every jump came from an assay rather than an algorithm, the split that actually tests a virtual cell, and where 2026 sits.",
+      url: "/blog/posts/2026-10-30-timeline-review-perturbation-virtual-cell.html",
+      home: false
     },
     {
       date: "2026-09-08", tag: "Data", title: "First source-linked leaderboard snapshot",

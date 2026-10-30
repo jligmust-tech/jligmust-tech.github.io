@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline review: perturbation screens and the virtual cell, 2001–2026 — scAI Index</title>
+  <meta name="description" content="A companion timeline to the perturbation and virtual-cell guide: which perturbation modalities existed when, what each one made measurable, and why every jump in the field came from an assay rather than an algorithm — with the gene-held-out validation problem and where 2026 sits.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 620px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.assay::before { border-color: var(--green); }
+    .tm-item.model::before { border-color: var(--amber); }
+    .tm-item.data::before { border-color: #718096; }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why a timeline here</a>
+          <a href="#figure">2. The modality chart</a>
+          <a href="#record">3. The record</a>
+          <a href="#lesson1">4. Assays moved the field</a>
+          <a href="#lesson2">5. The validation problem</a>
+          <a href="#position">6. Where 2026 sits</a>
+          <a href="#sources">7. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-09-08</span>
+      </div>
+      <h1>Timeline review: perturbation screens and the virtual cell, 2001–2026</h1>
+
+      <p>The <a href="/blog/posts/2026-09-08-perturbation-virtual-cell-guide.html">stage-1 guide</a> ranked perturbation models, listed benchmarks, and argued for evaluating embeddings without mistaking systematic variation for biology. It described the field as a set of competing representations. The historical record suggests a simpler engine: <b>the field moves when a new perturbation modality becomes cheap, and the models follow a few years later.</b></p>
+
+      <p>That ordering matters, because it predicts where the next jump comes from. If models lead, the next advance is a better architecture. If assays lead, the next advance is a cheaper way to perturb and measure — and the current bottleneck is not representation quality but the number of <em>held-out perturbations</em> anyone has measured.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> companion review, not a systematic history. Dates mark first credible publication or deployment, not adoption. No screens were re-analyzed and no benchmark was run for this post. The chart in §2 is a schematic of modality availability, not a bibliometric count.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> every capability jump in perturbation biology came from a new assay — siRNA, pooled CRISPR, Perturb-seq, optical pooling — and every model class arrived <b>after</b> the data it needed already existed. The virtual cell is therefore less a modeling program than a <em>data-coverage</em> program, and its hard problem is generalization across perturbations, not across cell lines.</div>
+
+      <h2 id="why">1. Why a timeline here</h2>
+      <p>Perturbation data is unusual in one respect: the axis that matters is not time or tissue but <b>which interventions are measurable at all</b>. A model that predicts knockdowns is not a weaker version of a model that predicts knockouts; it is a model of a different intervention class, with different off-target structure and different noise. The history of the field is a history of expanding that intervention column, and each expansion invalidated a benchmark without invalidating the biology.</p>
+
+      <p>Two questions follow directly. When did each modality become available, and did the models that claim to generalize actually have the data to support the claim at that moment? The answer to the second question is uncomfortable often enough to be worth writing down.</p>
+
+      <h2 id="figure">2. The modality chart</h2>
+
+      <div class="tm-fig">
+        <div class="tm-legend">
+          <span class="tm-key"><span class="tm-sw" style="background:#2f855a"></span>perturbation assay</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#718096"></span>data resource</span>
+          <span class="tm-key"><span class="tm-sw" style="background:#b7791f"></span>model / benchmark</span>
+        </div>
+        <div class="tm-scroll">
+        <svg class="tm-plot" viewBox="0 0 720 330" role="img" aria-labelledby="tm-t tm-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="tm-t">Schematic: availability of perturbation modalities, 2001–2026</title>
+          <desc id="tm-d">Seven rows showing when each perturbation modality or in-silico approach was in active use: RNAi screens 2001 to 2012, chemical perturbation from 2006, pooled CRISPR knockout from 2013, CRISPR interference and activation from 2014, ORF overexpression from 2014, optical pooled screens from 2019, and in-silico perturbation prediction from 2022.</desc>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="246.4" y1="48" x2="246.4" y2="300" />
+            <line x1="354.4" y1="48" x2="354.4" y2="300" />
+            <line x1="462.4" y1="48" x2="462.4" y2="300" />
+            <line x1="570.4" y1="48" x2="570.4" y2="300" />
+            <line x1="678.4" y1="48" x2="678.4" y2="300" />
+          </g>
+
+          <rect x="160" y="68" width="237.6" height="14" rx="3" fill="#2f855a" opacity="0.75" />
+          <rect x="268" y="102" width="432" height="14" rx="3" fill="#2f855a" opacity="0.75" />
+          <rect x="419.2" y="136" width="280.8" height="14" rx="3" fill="#2f855a" opacity="0.85" />
+          <rect x="440.8" y="170" width="259.2" height="14" rx="3" fill="#2f855a" opacity="0.85" />
+          <rect x="440.8" y="204" width="216" height="14" rx="3" fill="#2f855a" opacity="0.65" />
+          <rect x="548.8" y="238" width="151.2" height="14" rx="3" fill="#2f855a" opacity="0.65" />
+          <rect x="613.6" y="272" width="86.4" height="14" rx="3" fill="#b7791f" opacity="0.85" />
+
+          <g font-size="11.5" fill="#2d3748" text-anchor="end">
+            <text x="148" y="79">RNAi / siRNA</text>
+            <text x="148" y="113">Chemical</text>
+            <text x="148" y="147">CRISPR knockout</text>
+            <text x="148" y="181">CRISPRi / a</text>
+            <text x="148" y="215">ORF overexpression</text>
+            <text x="148" y="249">Optical pooled</text>
+            <text x="148" y="283">In-silico prediction</text>
+          </g>
+
+          <line x1="160" y1="300" x2="700" y2="300" stroke="#cbd5e0" />
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="246.4" y="316">2005</text>
+            <text x="354.4" y="316">2010</text>
+            <text x="462.4" y="316">2015</text>
+            <text x="570.4" y="316">2020</text>
+            <text x="678.4" y="316">2025</text>
+          </g>
+          <text x="160" y="40" font-size="10.5" fill="#64748b">bar = modality in active use · not adoption share</text>
+        </svg>
+        </div>
+        <p class="tm-cap"><b>Figure 1. What could be perturbed, and when.</b> Bars mark periods of active use, not market share, and they overlap because laboratories do not switch modalities, they accumulate them. Three transitions dominate: 2001–03 (RNAi makes loss-of-function cheap and noisy), 2013–17 (pooled CRISPR plus single-cell readout makes genotype–phenotype links scalable and interpretable), and 2019–26 (optical pooling plus learned predictors makes imaging and sequencing readouts share a frame). The bottom row is the only one that is not an assay, which is the point of §4.</p>
+      </div>
+
+      <h2 id="record">3. The record</h2>
+      <ul class="tm-tl">
+        <li class="tm-era">2001–2012 · <span>loss of function becomes cheap</span> · readout: viability, bulk</li>
+        <li class="tm-item assay"><span class="tm-y">2001</span><b>siRNA in mammalian cells</b> — RNAi becomes a reagent rather than a phenomenon; genome-wide screens follow within two years.</li>
+        <li class="tm-item"><span class="tm-y">2003</span><b>First genome-wide RNAi screens</b> in fly and worm; the field learns that knockdown efficiency is itself a variable that must be measured.</li>
+        <li class="tm-item data"><span class="tm-y">2006</span><b>Connectivity Map</b> — 164 compounds, a handful of cell lines, and the idea that a transcriptional signature is a perturbation fingerprint.</li>
+        <li class="tm-item"><span class="tm-y">2012</span><b>Programmable CRISPR–Cas9</b> — the intervention becomes a sequence, which means it becomes a column in a table and a covariate in a model.</li>
+
+        <li class="tm-era">2013–2018 · <span>screens at scale, single-cell readout</span> · readout: counts per cell</li>
+        <li class="tm-item assay"><span class="tm-y">2013–14</span><b>Pooled genome-wide CRISPR screens</b> in human cells; dropout and enrichment become the standard readout, and essentiality maps appear.</li>
+        <li class="tm-item assay"><span class="tm-y">2014</span><b>CRISPRi and CRISPRa</b> — repression and activation give the field dose-like control and a second direction of effect, which turns out to matter enormously for model validation.</li>
+        <li class="tm-item assay"><span class="tm-y">2016</span><b>Perturb-seq</b> — pooled perturbations read out by single-cell transcriptomics; the unit of observation becomes <i>(cell, perturbation, transcriptome)</i>.</li>
+        <li class="tm-item assay"><span class="tm-y">2016</span><b>Cell Painting</b> — morphological profiling as a cheap, high-content readout that is not transcriptomic and therefore not redundant with it.</li>
+        <li class="tm-item data"><span class="tm-y">2017</span><b>L1000 / CMap 2.0</b> — a million-odd profiles at scale; the first resource where "perturbation space" is a real thing to interpolate in.</li>
+        <li class="tm-item"><span class="tm-y">2018</span><b>scVI</b> — probabilistic latent-variable modelling of single-cell counts; the embedding substrate that later perturbation models inherit.</li>
+
+        <li class="tm-era">2019–2021 · <span>spatial and optical pooling</span> · readout: images plus sequence</li>
+        <li class="tm-item assay"><span class="tm-y">2019</span><b>Optical pooled screens</b> — perturbation identity read out in situ, so imaging and genotype share an experiment; spatial phenotypes become accessible to screens.</li>
+        <li class="tm-item data"><span class="tm-y">2019–21</span><b>Atlases and harmonized resources</b> — cell atlases and perturbation compendia make cross-study comparison possible, at the cost of batch structure nobody fully models.</li>
+        <li class="tm-item model"><span class="tm-y">2021–22</span><b>Single-cell foundation models</b> — scBERT, then Geneformer and scGPT; a shared representation is proposed as the substrate for perturbation prediction.</li>
+
+        <li class="tm-era">2022–2024 · <span>prediction benchmarks</span> · readout: predicted post-perturbation state</li>
+        <li class="tm-item model"><span class="tm-y">2022–23</span><b>GEARS</b> — graph-based prediction over gene and perturbation relations, evaluated on held-out perturbations; the evaluation split becomes the argument.</li>
+        <li class="tm-item model"><span class="tm-y">2023</span><b>Geneformer, scGPT</b> — large-scale pretraining on unperturbed cells, then fine-tuning to perturbation tasks; the question of whether unperturbed pretraining teaches perturbation response is left open.</li>
+        <li class="tm-item model"><span class="tm-y">2024</span><b>scPerturb and harmonized benchmarks</b> — the field gets a common dataset layer and a common complaint: results depend on the split.</li>
+        <li class="tm-item model"><span class="tm-y">2024</span><b>LLM-based annotation of cell identity</b> — marker rules proposed by a model and falsified against expression; a cheap, high-throughput check on vocabulary.</li>
+
+        <li class="tm-era">2025–2026 · <span>virtual-cell programmes</span> · readout: contested</li>
+        <li class="tm-item data"><span class="tm-y">2025</span><b>Virtual-cell challenges and consortia</b> — benchmarked prediction of perturbation response across cell types, with leaderboards and, for once, explicit split definitions.</li>
+        <li class="tm-item model"><span class="tm-y">2025–26</span><b>State-space and multimodal cell models</b> — perturbation, imaging, and expression pushed into one latent space; the claim under test is transfer across modalities rather than within one.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>This review</b> — the field's bottleneck is stated as data coverage over perturbations, not representation capacity. That is a falsifiable claim, and §6 says how to test it.</li>
+      </ul>
+
+      <h2 id="lesson1">4. Assays moved the field</h2>
+      <p>Look at the lag between the bottom row and the rows above it. In-silico prediction begins around 2022, eleven years after the first pooled CRISPR screen and six after Perturb-seq. Every model class in the field is downstream of an assay that made its target variable measurable. There is no case in this record where a model created a new class of observable.</p>
+
+      <p>That asymmetry has three consequences.</p>
+      <ul>
+        <li><b>Benchmarks are modality-specific, and so are the models.</b> A model trained on CRISPR knockout screens has seen a particular off-target and efficiency distribution. Transferring it to CRISPRi is not a domain shift in the usual sense; the intervention's mechanism has changed. Papers that report one number across modalities are usually reporting an average of two different tasks.</li>
+        <li><b>New assays reset the credibility of old claims.</b> When optical pooled screens arrived, every claim about "morphological response" made from bulk readouts became a claim about a proxy. The models did not get worse; the target moved.</li>
+        <li><b>The next jump is likely an assay, not an architecture.</b> The obvious candidates are cheaper combinatorial perturbations (two genes at once), perturbation in primary and spatially resolved tissue, and time-resolved readouts. Each would invalidate the current benchmark suite the way Perturb-seq invalidated bulk screens.</li>
+      </ul>
+
+      <div class="banner"><strong>Prediction, stated so it can fail:</strong> a perturbation model that leads with architecture and reports a single pooled benchmark will not survive the next modality change. A model that reports per-modality performance, per-gene-held-out performance, and its split definition will. The second kind is rarer and more useful, and it is a reporting choice, not a modeling one.</div>
+
+      <h2 id="lesson2">5. The validation problem is the whole problem</h2>
+      <p>The guide's central methodological warning — do not mistake systematic variation for biology — has a precise historical form in this field: <b>how you split determines what you have shown</b>. Three splits are routinely conflated.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Split</th><th>What it tests</th><th>What it flatters</th><th>Typical result</th></tr></thead>
+          <tbody>
+            <tr><td><b>Cell held out</b></td><td>Transfer across cell contexts for known perturbations</td><td>Batch correction and donor structure; the perturbation identity is memorized</td><td>High scores, weak mechanism</td></tr>
+            <tr><td><b>Gene held out</b></td><td>Generalization to unseen regulators</td><td>Gene-network priors if the graph leaks; nearest-neighbour structure in expression space</td><td>Moderate scores, honest mechanism</td></tr>
+            <tr><td><b>Both held out</b></td><td>The virtual-cell claim proper</td><td>Almost nothing — this is the hard test</td><td>Low scores, real information</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The record shows why this matters more here than elsewhere. Because each new modality arrives with a new set of measured perturbations, the <i>number</i> of distinct perturbations is always small relative to the number of cells, and the number of genes is always small relative to the number of possible interventions. A model can therefore look excellent on cells and poor on interventions, and the standard random split will report the first number. <b>Gene-held-out is the only split that corresponds to the virtual-cell promise</b>, because a virtual cell is exactly a claim about interventions nobody has run.</p>
+
+      <p>There is a second, subtler leak. Perturbation identity often correlates with expression state for trivial reasons: essential genes kill cells, and dead cells have a signature. A model that learns "this perturbation is lethal" scores well on viability-correlated tasks and learns nothing about regulation. The historical fix is not a better loss function; it is a control — non-targeting guides, safe-harbour controls, and matched viability strata reported alongside the headline number.</p>
+
+      <h2 id="position">6. Where 2026 sits</h2>
+      <p>A short, opinionated position table. Each row is a claim the field makes, and what would count as evidence for it.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Claim</th><th>Status</th><th>Evidence that would settle it</th></tr></thead>
+          <tbody>
+            <tr><td>Perturbation response is predictable within a modality</td><td><b>Partly supported</b>; effect sizes depend on the split</td><td>Standardized gene-held-out evaluation across ≥3 screens with per-gene reporting</td></tr>
+            <tr><td>Response transfers across modalities</td><td><b>Weakly supported</b>; mostly untested</td><td>Same gene, matched cell line, CRISPRi vs knockout vs ORF, predicted direction agreement</td></tr>
+            <tr><td>Response transfers across cell types</td><td><b>Partly supported</b> for strong effects</td><td>Held-out tissue with pre-registered effect-size floor</td></tr>
+            <tr><td>Pretraining on unperturbed cells helps</td><td><b>Unclear</b>; confounded by capacity and data volume</td><td>Compute-matched control, same architecture, with and without pretraining</td></tr>
+            <tr><td>Embeddings capture mechanism</td><td><b>Not supported</b> by current evaluations</td><td>Recovery of known pathway structure under perturbation, not just cluster separation</td></tr>
+            <tr><td>Combinatorial perturbation is predictable</td><td><b>Open</b>; data is the binding constraint</td><td>Held-out pairs, not held-out cells, with measured epistasis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The pattern across the rows is the same one the timeline shows: the field is data-limited in the specific sense that the interventions it wants to predict have not been measured. Better representations help at the margin. More measured perturbations help at the core, and they help every model class at once — which is why the resource papers in the list above matter more than their citation counts suggest.</p>
+
+      <h2 id="sources">7. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>BM</em> = benchmark/resource paper, <em>IND</em> = industry report.</p>
+
+      <h3>Assays and screens</h3>
+      <ul>
+        <li>Elbashir et al., Duplexes of 21-nucleotide RNAs mediate RNA interference in cultured mammalian cells (<i>Nature</i> 2001) — <em>PR</em></li>
+        <li>Jinek et al., A programmable dual-RNA-guided DNA endonuclease in adaptive bacterial immunity (<i>Science</i> 2012) — <em>PR</em></li>
+        <li>Shalem et al., Genome-scale CRISPR-Cas9 knockout screening in human cells (<i>Science</i> 2014) — <em>PR</em></li>
+        <li>Gilbert et al., Genome-scale CRISPR-mediated control of gene repression and activation (<i>Cell</i> 2014) — <em>PR</em></li>
+        <li>Dixit et al., Perturb-Seq: dissecting molecular circuits with scalable single-cell RNA profiling of pooled genetic screens (<i>Cell</i> 2016) — <em>PR</em></li>
+        <li>Bray et al., Cell Painting, a high-content image-based assay (<i>Nature Protocols</i> 2016) — <em>PR</em></li>
+        <li>Feldman et al., Optical pooled screens in human cells (<i>Cell</i> 2019) — <em>PR</em></li>
+      </ul>
+
+      <h3>Resources and compendia</h3>
+      <ul>
+        <li>Lamb et al., The Connectivity Map (<i>Science</i> 2006) — <em>PR</em></li>
+        <li>Subramanian et al., A next generation connectivity map: L1000 (<i>Cell</i> 2017) — <em>PR</em></li>
+        <li>Lopez et al., Deep generative modeling for single-cell transcriptomics (<i>Nature Methods</i> 2018) — <em>PR</em></li>
+        <li>Peidli et al., scPerturb: harmonized single-cell perturbation data (<i>Nature Methods</i> 2024) — <em>BM</em></li>
+      </ul>
+
+      <h3>Models and benchmarks</h3>
+      <ul>
+        <li>Roohani et al., <a href="https://arxiv.org/abs/2204.11189">GEARS: predicting transcriptional outcomes of novel multigene perturbations</a> (2022/23) — <em>PP</em></li>
+        <li>Theodoris et al., Transfer learning enables predictions in network biology (<i>Nature</i> 2023; Geneformer) — <em>PR</em></li>
+        <li>Cui et al., scGPT: toward building a foundation model for single-cell multi-omics (<i>Nature Methods</i> 2024) — <em>PR</em></li>
+        <li>Hou &amp; Ji, <a href="https://www.nature.com/articles/s41592-024-02235-4">Assessing GPT-4 for cell type annotation in single-cell RNA-seq analysis</a> (<i>Nature Methods</i> 2024) — <em>PR</em></li>
+        <li>Chen et al., <a href="https://arxiv.org/abs/2209.06614">scBERT as a large-scale pretrained deep language model for cell type annotation</a> (2022) — <em>PP</em></li>
+      </ul>
+
+      <h3>Methodology</h3>
+      <ul>
+        <li>Luecken et al., Benchmarking atlas-level data integration in single-cell genomics (<i>Nature Methods</i> 2022) — <em>BM</em></li>
+        <li>Peters, Bühlmann &amp; Meinshausen, <a href="https://doi.org/10.1111/rssb.12167">Causal inference using invariant prediction</a> (JRSS-B 2016) — <em>PR</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The interesting thing about this timeline is how little of it is about models. The field's real progress is a sequence of instruments that made new columns of the perturbation table measurable, followed by models that learned whatever the new columns contained. The virtual-cell programme inherits that structure whether or not it admits it: the promise is about interventions nobody has run, and the only evidence that can support it comes from interventions somebody has.</p>
+
+      <p>So the useful question in 2026 is not "which representation is best." It is "which unmeasured perturbation would you most want to predict, and what is the cheapest experiment that would test your prediction?" A field that answers that question with experiments will accumulate a virtual cell. A field that answers it with benchmarks will accumulate leaderboards.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>
