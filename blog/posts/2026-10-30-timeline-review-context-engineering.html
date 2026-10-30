@@ -71,7 +71,7 @@
 
       <p>The sequence has three steps: the demonstration that long context is not uniformly better (2023), the demonstration that most queries do not need the largest model (2023–24), and the demonstration that more agents mean more tokens before they mean more accuracy (2025). Each step was empirical, cheap to run, and largely ignored until the cost bill arrived.</p>
 
-      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curve in §2 is a schematic of the well-documented U-shaped position effect, drawn to the shape reported in the literature rather than digitized from a specific experiment. No model was evaluated for this post, and no cost figures here are measurements.</div>
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curve in §2 is a schematic of the well-documented U-shaped position effect, drawn to the shape reported in the literature rather than digitized from a specific experiment. No model was evaluated for this post, and no cost figures here are measurements. Sections link back to the companion post; its argument is not restated here.</div>
 
       <div class="guide-callout"><strong>Central claim:</strong> context engineering became a discipline when two things were measured — that accuracy is not monotone in context length, and that cost <em>is</em>. Everything since (routing, cascades, compaction, sub-agents) is an engineering response to that pair of facts, and the response is better understood as <b>budget allocation</b> than as prompt craft.</div>
 
@@ -156,7 +156,7 @@
 
       <p>That is not a criticism of the engineering. It is a description of what actually drives adoption, and it has a practical implication: <b>if you want better context engineering, put cost on the dashboard next to accuracy</b>, because that is the only pairing that has historically produced better defaults.</p>
 
-      <p>Three quantities are worth tracking per task, and they are all cheap:</p>
+      <p>Three quantities are worth tracking per task, and the budget arithmetic behind them — including the cascade and routing cost curves — is in the companion note's <a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html#evaluation">§8 “Evaluation and cost accounting”</a>:</p>
       <ul>
         <li><b>Tokens per solved task</b> — not per request. This is the number that routing and compaction actually change.</li>
         <li><b>Position of the load-bearing evidence</b> — if the answer depends on a passage, record where it sat. A U-curve penalty is invisible until someone measures the position.</li>
@@ -166,7 +166,7 @@
       <div class="banner"><strong>The cheap experiment nobody runs:</strong> take your production logs and re-run 200 solved tasks through the smallest model that passes your eval. If the pass rate holds, you have found a routing opportunity worth money; if it drops, you have learned which tasks genuinely need capacity. Both outcomes are useful, and the total cost is a few dollars.</div>
 
       <h2 id="specialize">5. Specialization by evidence</h2>
-      <p>The word "specialization" hides three different claims, with very different amounts of support.</p>
+      <p>The case for model specialization, and the orchestrator-versus-single-agent disagreement that follows from it, are made in the companion note's <a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html#small-models">§2</a> and <a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html#counterpoint">§6</a>. What is worth separating, when you try to buy that argument, is three different claims with very different amounts of support.</p>
 
       <div class="tblwrap">
         <table class="guide-table">

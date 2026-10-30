@@ -71,7 +71,7 @@
 
       <p>The parallel is not rhetorical. Wave one (1992–2015) produced a family of algorithms named after animals, applied to benchmark functions, evaluated against weak baselines, and published in volume. Wave two (2023–) produces systems named after organizations — societies, teams, parliaments, civilizations — applied to tasks, evaluated against single-agent baselines that are often under-resourced. The failure mode is the same: <b>the metaphor arrives before the mechanism, and the mechanism arrives before the metric.</b></p>
 
-      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curve in §2 is a schematic of attention and activity, drawn by hand, not a bibliometric series; it is there to make the shape of two waves legible, not to measure them. Dates mark first publication. No benchmark was run and no agent system was built for this post.</div>
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curve in §2 is a schematic of attention and activity, drawn by hand, not a bibliometric series; it is there to make the shape of two waves legible, not to measure them. Dates mark first publication. No benchmark was run and no agent system was built for this post. Sections link back to the companion post; its argument is not restated here.</div>
 
       <div class="guide-callout"><strong>Central claim:</strong> swarm intelligence's durable contribution was never the algorithms. It was three mechanisms — <b>indirect coordination through shared state, diversity maintenance, and evaluation against a strong baseline</b> — and all three are measurable. The parts that did not survive were the animal names and the claim that emergence is automatically good. LLM agent societies inherit the mechanisms and, so far, the names.</div>
 
@@ -169,7 +169,7 @@
       <div class="banner"><strong>The transferable lesson:</strong> in wave one, the tell was <i>a name that described the inspiration rather than the mechanism</i>. In wave two, the tell is <i>a name that describes the org chart</i> — society, team, parliament, civilization. Neither name predicts performance, and both make it harder to say what was actually varied.</div>
 
       <h2 id="transfer">5. What transfers, and what does not</h2>
-      <p>Sorting the swarm vocabulary by whether it survives contact with measurement:</p>
+      <p>Sorting the swarm vocabulary by whether it survives contact with measurement. The companion survey's <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html#classical">§2</a> covers the classical algorithms and <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html#debate">§4</a> the debate evidence; what follows is only the comparison the historical record makes possible.</p>
 
       <div class="tblwrap">
         <table class="guide-table">
@@ -190,13 +190,10 @@
       <p>The row that matters second is the last. Swarm methods are optimization procedures, and an optimization procedure without an objective is a process description. Much of the current literature describes a topology — who talks to whom — and reports that it worked, without a compute-matched single-agent baseline. That is exactly the wave-one pattern of comparing a new method to a weaker version of itself.</p>
 
       <h2 id="position">6. Where 2026 sits</h2>
+      <p>Where this leaves the field — what to watch, and the benchmark and safety questions that follow — is the companion survey's <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html#next">§11</a> and <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html#benchmarks">§9</a>. The timeline adds one caution and one bet:</p>
       <ul>
-        <li><b>Topology optimization is the most promising direction</b>, because it turns the swarm into an object with a measurable objective and a search procedure over it.</li>
-        <li><b>Shared-state coordination is the most under-used mechanism</b>, and the closest analogue to stigmergy: a rule base or artifact store that agents write to and read from is cheaper and more auditable than a transcript.</li>
-        <li><b>Persona diversity should be retired as a diversity mechanism</b> until someone shows that it decorrelates errors.</li>
-        <li><b>Emergence is a phenomenon to be measured, not a benefit to be claimed.</b> The measurable version is convergence rate, claim-level accuracy, and variance across seeds.</li>
-        <li><b>Cost accounting is now mandatory</b>, because the only robust finding about multi-agent systems is that they use more tokens than the single-agent baseline they are compared against.</li>
-        <li><b>The correction will arrive.</b> The open question is whether it arrives before or after a field-scale deployment, and the wave-one precedent suggests it takes about five years from the first strong critique.</li>
+        <li><b>The caution: persona diversity should be retired as a diversity mechanism</b> until someone shows that it decorrelates errors, because the arithmetic of correlated samples does not care about tone.</li>
+        <li><b>The bet: topology optimization is the durable direction</b>, because it turns the swarm into an object with a measurable objective and a search procedure over it — the only arrangement in which "swarm" names a mechanism rather than an org chart.</li>
       </ul>
 
       <h2 id="sources">7. Sources</h2>

@@ -69,7 +69,7 @@
 
       <p>Five phases in seven years, each one a correction to the previous phase's implicit model of independence.</p>
 
-      <div class="guide-policy"><strong>Scope note:</strong> companion review. The phase diagram in §2 places publications by their contribution rather than their submission date, so boundaries are approximate. No hallucination benchmark was run and no correlation was estimated for this post; the arithmetic in §4 is an illustration.</div>
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The phase diagram in §2 places publications by their contribution rather than their submission date, so boundaries are approximate. No hallucination benchmark was run and no correlation was estimated for this post; the arithmetic in §4 is an illustration. Sections link back to the companion post; its argument is not restated here.</div>
 
       <div class="guide-callout"><strong>Central claim:</strong> every aggregation method in this literature — voting, debate, critique, society-of-minds — inherits the same assumption: that agents' errors are independent. That assumption was reasonable for classical ensembles of independently trained models and is <em>false</em> for a population of instances of one model. The measurement gap did not close because the assumption was disproven; it closed because the arithmetic of the assumption's failure became impossible to ignore.</div>
 
@@ -172,19 +172,19 @@
       </ul>
 
       <h2 id="independence">4. The independence assumption</h2>
-      <p>Every aggregation method in the literature is a form of averaging, and averaging has a known arithmetic. If <code>N</code> estimates have pairwise correlation <code>ρ</code>, the effective sample size is <code>N / (1 + (N−1)ρ)</code>, and the error reduction from a majority vote scales as <code>1 − 1/√N_eff</code>:</p>
+      <p>The arithmetic of correlated ensembles is in the companion note's <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html#math">§5 “A little arithmetic”</a>: with <code>N</code> estimates at pairwise correlation <code>ρ</code>, the effective sample size is <code>N_eff = N / (1 + (N−1)ρ)</code>. What the timeline adds is what that means for a majority vote, where the error reduction scales as <code>1 − 1/√N_eff</code>:</p>
 
-      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N = 10 agents        N_eff          error reduction
-ρ = 0.0  (independent)   10.0        1 − 1/√10   =  68%
-ρ = 0.5  (same model)     1.82       1 − 1/√1.82 =  26%
-ρ = 0.9  (same prompt)     1.10       1 − 1/√1.10 =   5%</pre>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N = 10 agents            N_eff      error reduction
+  independent   ρ = 0.0    10.00      68%
+  same model    ρ = 0.5     1.82      26%
+  same prompt   ρ = 0.9     1.10       5%</pre>
 
       <p>The middle row is the realistic case for a population of one model prompted differently, and the bottom row is the realistic case for the same model with the same context. <b>The gap between 68% and 5% is the entire disagreement between the debate literature and the correlation literature</b> — the first measures tasks where the population happened to decorrelate, the second measures the correlation directly.</p>
 
       <p>Two consequences follow. First, "more agents" is not a scaling law; it is a bet on <code>ρ</code>, and <code>ρ</code> is a property of the ensemble's construction, not of its size. Second, the number of agents that is worth running is a function of how you made them differ. Ten instances of one model with ten personas is, in the arithmetic, closer to one agent and one prompt.</p>
 
       <h2 id="mechanism">5. Three mechanisms of correlation</h2>
-      <p>The correlation has three sources, and each is fixable in a different way — which is why "use diverse agents" is advice without a mechanism.</p>
+      <p>The correlation has three sources, and each is fixable in a different way — which is why “use diverse agents” is advice without a mechanism. The six ways a collective confabulates are catalogued in the companion note's <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html#collective">§2</a>; what follows is only the covariance side of that list.</p>
 
       <ul>
         <li><b>Shared pretraining.</b> The prior over what is plausible is common to every instance. Two agents will therefore make the same confident error on the same item, and no amount of debate between them will surface it. The only real fix is a different training distribution or an external evidence source.</li>

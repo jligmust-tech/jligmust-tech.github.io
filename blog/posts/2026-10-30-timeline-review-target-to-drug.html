@@ -77,7 +77,7 @@
 
       <p>The answer is lopsided. Pose prediction improved by orders of magnitude. Affinity prediction improved modestly. Target validation and selectivity prediction barely improved at all, and those are the stages where molecules actually fail.</p>
 
-      <div class="guide-policy"><strong>Scope note:</strong> companion review. The heatmap in §2 is an editorial maturity assessment on an ordinal 0–3 scale, not a measured performance score, and the cells name representative methods rather than all methods. No docking run, benchmark, or free-energy calculation was performed for this post.</div>
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The heatmap in §2 is an editorial maturity assessment on an ordinal 0–3 scale, not a measured performance score, and the cells name representative methods rather than all methods. No docking run, benchmark, or free-energy calculation was performed for this post. Sections link back to the companion post; its argument is not restated here.</div>
 
       <div class="guide-callout"><strong>Central claim:</strong> structure-based design automated the stages that have a <em>geometric</em> ground truth and left the stages that require a <em>biological</em> one. That is why a 2026 pipeline can generate a plausible binder for a wrong target in an afternoon, and why the field's failures are increasingly upstream of the part everyone benchmarks.</div>
 
@@ -188,14 +188,14 @@
       </ul>
 
       <h2 id="pipeline">4. The pipeline's weakest link is not the one with the papers</h2>
-      <p>Two numbers frame the whole field, and neither is about docking. Attrition in clinical development is dominated by <b>lack of efficacy</b> and <b>toxicity</b>, not by bad poses. A model that improves pose accuracy by 20% therefore improves a quantity that is not in the causal path of most failures, while a model that improves target validation by 20% would be transformative and has no benchmark.</p>
+      <p>Two numbers frame the whole field, and neither is about docking. Attrition in clinical development is dominated by <b>lack of efficacy</b> and <b>toxicity</b>, not by bad poses — the failure analysis is in the companion note's <a href="/blog/posts/2026-09-30-target-to-drug-toolkit.html#limits">§ What still fails</a>. A model that improves pose accuracy by 20% therefore improves a quantity that is not in the causal path of most failures, while a model that improves target validation by 20% would be transformative and has no benchmark.</p>
 
       <p>The timeline explains why this gap persists. Every stage in the heatmap that turned blue has a <b>geometric or arithmetic ground truth</b>: a structure, a pose, an energy, a synthesis route. Target validation has a <i>biological</i> ground truth that takes years and costs millions per data point, so the feedback loop is too slow to train on and too expensive to benchmark. Selectivity has the same problem in miniature: you can compute an off-target pose, but you cannot compute whether the off-target effect matters.</p>
 
       <div class="banner"><strong>The structural problem, stated plainly:</strong> the field automated the stages where being wrong is detectable in an afternoon. It did not automate the stages where being wrong is detectable in a decade. That is a rational allocation of engineering effort and a poor allocation of scientific effort, and no amount of model scaling changes which stages have cheap checks.</div>
 
       <h2 id="bench">5. What is actually benchmarked</h2>
-      <p>The benchmark column is where the field's self-image is most misleading, because the standard tasks are retrospective and the interesting tasks are prospective.</p>
+      <p>The benchmark column is where the field's self-image is most misleading, because the standard tasks are retrospective and the interesting tasks are prospective. What each stage's methods can and cannot do is in the companion note (<a href="/blog/posts/2026-09-30-target-to-drug-toolkit.html#docking">docking</a>, <a href="/blog/posts/2026-09-30-target-to-drug-toolkit.html#affinity">affinity</a>, <a href="/blog/posts/2026-09-30-target-to-drug-toolkit.html#limits">limits</a>); the table below asks a different question — which of those claims has a blind test behind it.</p>
 
       <div class="tblwrap">
         <table class="guide-table">

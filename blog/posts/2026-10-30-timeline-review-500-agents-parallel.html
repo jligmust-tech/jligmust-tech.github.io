@@ -71,7 +71,7 @@
 
       <p>That single difference — non-determinism plus natural-language interfaces — is what makes the old patterns hard to reuse, and it is also the reason "500 agents" is an ambiguous claim. Before it can be evaluated, it needs to be defined, and the definitions differ by three orders of magnitude in cost.</p>
 
-      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curves in §2 are schematic illustrations of standard speedup and efficiency behaviour; the efficiency numbers are invented for legibility and are not measurements from any system. No agent run was executed for this post.</div>
+      <div class="guide-policy"><strong>Scope note:</strong> companion review. The curves in §2 are schematic illustrations of standard speedup and efficiency behaviour; the efficiency numbers are invented for legibility and are not measurements from any system. No agent run was executed for this post. Sections link back to the companion post; its argument is not restated here.</div>
 
       <div class="guide-callout"><strong>Central claim:</strong> parallel agents are useful in exactly one regime — <b>many independent subtasks with a cheap, correct merge</b>. Outside that regime, adding agents adds tokens, coordination risk, and variance while adding little accuracy, and the cost grows linearly while the speedup saturates. The engineering work that matters is therefore not spawning, it is <em>reducing</em>: reduce the merge cost, reduce the context per worker, and reduce the number of workers you actually need.</div>
 
@@ -156,23 +156,22 @@
       </ul>
 
       <h2 id="patterns">4. Patterns that only work in parallel</h2>
-      <p>Parallelism is worth its overhead in a narrower set of cases than the discourse implies. Four patterns recur, and only three of them are genuinely parallel.</p>
+      <p>The workload taxonomy itself — map–reduce research, candidate generation, ensemble review, simulation search, multi-step collaboration, real-world actions — is in the companion brief's <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html#patterns">§ Workload patterns</a>, with the reducer and synchronization design in <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html#design">§ Reference design</a>. What the timeline adds is which of those patterns survive the merge, and one that is not parallel at all:</p>
 
       <div class="tblwrap">
         <table class="guide-table">
-          <thead><tr><th>Pattern</th><th>Why parallel helps</th><th>What it costs</th><th>When it wins</th></tr></thead>
+          <thead><tr><th>Pattern</th><th>What the parallel gain actually is</th><th>What it costs</th></tr></thead>
           <tbody>
-            <tr><td><b>Independent enumeration</b> (search 500 candidates, keep the best)</td><td>No cross-worker dependency; the merge is a max or a filter</td><td>Linear tokens; a cheap reducer</td><td>When the scoring function is cheap and the space is wide</td></tr>
-            <tr><td><b>Breadth-first research</b> (many sources, then synthesize)</td><td>Latency and coverage both improve; the merge is a summarization</td><td>Token multiplier; lossy summaries; duplicated findings</td><td>When coverage is the objective and the synthesis is cheap to check</td></tr>
-            <tr><td><b>Adversarial review</b> (generate, then attack from several angles)</td><td>Independent contexts see different failures</td><td>Only helps if the critics are genuinely decorrelated</td><td>When critics have different evidence, not different personas</td></tr>
-            <tr><td><b>Sequential refinement</b> (pipeline of specialists)</td><td>Not parallel at all — it is a pipeline</td><td>Error compounding at each stage</td><td>Rarely; it is usually a single agent with a longer context</td></tr>
+            <tr><td><b>Adversarial review</b> (generate, then attack from several angles)</td><td>Real only when the critics hold <i>different evidence</i>; correlated critics find correlated flaws</td><td>Cost scales with the number of angles; most of them repeat</td></tr>
+            <tr><td><b>Sequential refinement</b> (a pipeline of “specialists”)</td><td>None — it is a relay, not a fan-out; latency is the sum, not the max</td><td>Worst profile: each stage pays for the full context it inherits, and errors compound</td></tr>
+            <tr><td><b>Merge-bound breadth</b> (many sources, one reducer)</td><td>Bounded by the reducer, not the workers; reading speed is the ceiling</td><td>Linear tokens plus a summarization loss at every level</td></tr>
           </tbody>
         </table>
       </div>
 
-      <p>The fourth row is included because it is routinely described as "multi-agent" and is not parallel. A pipeline of five specialists has the failure profile of a five-stage relay, where each handoff loses information and each stage's errors are inherited. It also has the worst cost profile, because every stage pays for the full context it receives.</p>
+      <p>The second row is included because it is routinely sold as multi-agent work. A five-stage relay has the failure profile of five handoffs and the cost profile of five full contexts; in most cases it is a single agent with a longer context, spelled out as a pipeline.</p>
 
-      <div class="banner"><strong>The definitional test:</strong> before claiming "500 agents," answer three questions — 500 <i>concurrent</i> or 500 <i>total</i>? 500 <i>roles</i> or 500 <i>instances of one role</i>? and what does the merge cost? If the answers are "total," "instances," and "a human reads all of it," the parallel gain is real but the system is a batch job with an expensive reducer, and should be described that way.</div>
+      <div class="banner"><strong>Definition first:</strong> what “500” counts — tasks, calls, sessions, opinions, or workers — is set out in the companion brief's <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html#meaning">§ What does “500 agents” mean?</a>. The question that section does not ask is the one the timeline keeps returning to: <i>what does the merge cost?</i> If the answer is “a human reads all of it,” the parallel gain is real but the system is a batch job with an expensive reducer, and should be described that way.</div>
 
       <h2 id="merge">5. The merge is the system</h2>
       <p>In a deterministic parallel system, the merge is a fold and its cost is predictable. In an agent system, the merge is usually a language model reading N outputs, which means <b>the merge itself has the failure modes of an agent</b>: it can be distracted by the middle of its input, it can accept a confident wrong answer, and it can silently drop a finding that only one worker reported.</p>

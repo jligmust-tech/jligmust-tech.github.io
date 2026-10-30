@@ -72,7 +72,7 @@
 
       <p>That ordering matters, because it predicts where the next jump comes from. If models lead, the next advance is a better architecture. If assays lead, the next advance is a cheaper way to perturb and measure — and the current bottleneck is not representation quality but the number of <em>held-out perturbations</em> anyone has measured.</p>
 
-      <div class="guide-policy"><strong>Scope note:</strong> companion review, not a systematic history. Dates mark first credible publication or deployment, not adoption. No screens were re-analyzed and no benchmark was run for this post. The chart in §2 is a schematic of modality availability, not a bibliometric count.</div>
+      <div class="guide-policy"><strong>Scope note:</strong> companion review, not a systematic history. Dates mark first credible publication or deployment, not adoption. No screens were re-analyzed and no benchmark was run for this post. The chart in §2 is a schematic of modality availability, not a bibliometric count. Sections link back to the companion post; its argument is not restated here.</div>
 
       <div class="guide-callout"><strong>Central claim:</strong> every capability jump in perturbation biology came from a new assay — siRNA, pooled CRISPR, Perturb-seq, optical pooling — and every model class arrived <b>after</b> the data it needed already existed. The virtual cell is therefore less a modeling program than a <em>data-coverage</em> program, and its hard problem is generalization across perturbations, not across cell lines.</div>
 
@@ -180,22 +180,9 @@
       <div class="banner"><strong>Prediction, stated so it can fail:</strong> a perturbation model that leads with architecture and reports a single pooled benchmark will not survive the next modality change. A model that reports per-modality performance, per-gene-held-out performance, and its split definition will. The second kind is rarer and more useful, and it is a reporting choice, not a modeling one.</div>
 
       <h2 id="lesson2">5. The validation problem is the whole problem</h2>
-      <p>The guide's central methodological warning — do not mistake systematic variation for biology — has a precise historical form in this field: <b>how you split determines what you have shown</b>. Three splits are routinely conflated.</p>
+      <p>How to split is the companion guide's subject, not this note's: the three holdout questions (perturbation-exclusive, context-exclusive, and the combined perturbation × context case) and the case for a ladder of datasets rather than one split are set out in <a href="/blog/posts/2026-09-08-perturbation-virtual-cell-guide.html#report-protocol">§ How to read benchmark evidence</a> and <a href="/blog/posts/2026-09-08-perturbation-virtual-cell-guide.html#report-datasets">§ Benchmark datasets</a>. The timeline contributes the reason the split matters more here than elsewhere: each new modality arrives with a small set of measured perturbations, so a model can look excellent on cells and poor on interventions, and the standard random split will report the first number. <b>Gene-held-out is the only split that corresponds to the virtual-cell promise</b>, because a virtual cell is exactly a claim about interventions nobody has run.</p>
 
-      <div class="tblwrap">
-        <table class="guide-table">
-          <thead><tr><th>Split</th><th>What it tests</th><th>What it flatters</th><th>Typical result</th></tr></thead>
-          <tbody>
-            <tr><td><b>Cell held out</b></td><td>Transfer across cell contexts for known perturbations</td><td>Batch correction and donor structure; the perturbation identity is memorized</td><td>High scores, weak mechanism</td></tr>
-            <tr><td><b>Gene held out</b></td><td>Generalization to unseen regulators</td><td>Gene-network priors if the graph leaks; nearest-neighbour structure in expression space</td><td>Moderate scores, honest mechanism</td></tr>
-            <tr><td><b>Both held out</b></td><td>The virtual-cell claim proper</td><td>Almost nothing — this is the hard test</td><td>Low scores, real information</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p>The record shows why this matters more here than elsewhere. Because each new modality arrives with a new set of measured perturbations, the <i>number</i> of distinct perturbations is always small relative to the number of cells, and the number of genes is always small relative to the number of possible interventions. A model can therefore look excellent on cells and poor on interventions, and the standard random split will report the first number. <b>Gene-held-out is the only split that corresponds to the virtual-cell promise</b>, because a virtual cell is exactly a claim about interventions nobody has run.</p>
-
-      <p>There is a second, subtler leak. Perturbation identity often correlates with expression state for trivial reasons: essential genes kill cells, and dead cells have a signature. A model that learns "this perturbation is lethal" scores well on viability-correlated tasks and learns nothing about regulation. The historical fix is not a better loss function; it is a control — non-targeting guides, safe-harbour controls, and matched viability strata reported alongside the headline number.</p>
+      <p>There is also a leak the split cannot fix. Perturbation identity often correlates with expression state for trivial reasons: essential genes kill cells, and dead cells have a signature. A model that learns "this perturbation is lethal" scores well on viability-correlated tasks and learns nothing about regulation. The historical fix is not a better loss function; it is a control — non-targeting guides, safe-harbour controls, and matched viability strata reported alongside the headline number.</p>
 
       <h2 id="position">6. Where 2026 sits</h2>
       <p>A short, opinionated position table. Each row is a claim the field makes, and what would count as evidence for it.</p>
