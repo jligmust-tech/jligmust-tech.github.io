@@ -44,7 +44,7 @@
   </url>
   <url>
     <loc>https://jligmust-tech.github.io/blog/</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -107,5 +107,83 @@
     <lastmod>2026-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-rules-mined-agents-and-rule-based-ml.html</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-28-agents-for-hypothesis-testing.html</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-hypothesis-testing-loop.html</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-hallucination-swarm.html</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-500-agents-parallel.html</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-context-engineering.html</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-swarm-intelligence.html</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-target-to-drug.html</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-ai-for-biology.html</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-10-30-timeline-review-perturbation-virtual-cell.html</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-11-09-in-silico-metrics-protein-design.html</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-11-09-network-topology-multi-agent-systems.html</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jligmust-tech.github.io/blog/posts/2026-11-09-signal-or-noise-perturbation-effects.html</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

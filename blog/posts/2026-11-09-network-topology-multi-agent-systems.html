@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network topology for multi-agent systems: from blackboards to agent swarms — scAI Index</title>
+  <meta name="description" content="An investigation of network topology in multi-agent and parallel-agent systems: star, hierarchy, mesh, ring, chain, blackboard, complete graph, and learned graphs; message arithmetic, error propagation, synchronization, a 1959–2026 timeline, and a reporting checklist.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .tm-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .tm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: 11.5px; color: var(--muted); }
+    .tm-key { display: inline-flex; align-items: center; gap: 6px; }
+    .tm-sw { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+    .tm-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tm-plot { display: block; width: 100%; min-width: 640px; height: auto; }
+    .tm-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .tm-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .tm-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .tm-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .tm-era:first-child { margin-top: 2px; }
+    .tm-era span { color: var(--text); }
+    .tm-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .tm-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .tm-item.crit::before { border-color: #718096; }
+    .tm-item.agent::before { border-color: var(--amber); }
+    .tm-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .tm-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why topology</a>
+          <a href="#definition">2. What counts as topology</a>
+          <a href="#catalogue">3. Eight topologies</a>
+          <a href="#arithmetic">4. Message arithmetic</a>
+          <a href="#error">5. Error propagation</a>
+          <a href="#parallel">6. Parallel execution</a>
+          <a href="#evidence">7. What previous posts establish</a>
+          <a href="#timeline">8. Timeline, 1959–2026</a>
+          <a href="#position">9. Where 2026 sits</a>
+          <a href="#checklist">10. Reporting checklist</a>
+          <a href="#sources">11. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-11-09</span>
+      </div>
+      <h1>Network topology for multi-agent systems: from blackboards to agent swarms</h1>
+
+      <p>The <a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html">swarm survey</a> traced ideas from boids and ant colonies to LLM agent societies. The <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html">500-agents brief</a> treated massive parallelism as an orchestration problem. The <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html">collective-hallucination review</a> showed that correlated error, not headcount, decides whether a population is useful. And the <a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html">context-engineering post</a> described a real system that is a hierarchy with a shared filesystem.</p>
+
+      <p>Each of those posts touches the same missing variable: <b>who is allowed to talk to whom</b>. This post isolates it. It defines network topology as the message graph, compares the graphs that keep reappearing, works through the message arithmetic, connects topology to error propagation and parallel scheduling, and places the idea on a timeline from stigmergy to topology-aware evaluation.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is a synthesis and investigation, not a new benchmark. <strong>No agent system was run for this post.</strong> Message counts are illustrative arithmetic, not measurements; they exclude retries, acknowledgments, broadcasts, and source transfer. Publications are labeled <em>PR</em> (peer-reviewed), <em>PP</em> (preprint), or <em>IND</em> (industry report). The companion posts are linked rather than restated.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> topology is a <b>design variable with measurable consequences</b> — message count, exposure count, correction path, latency, and merge cost — and it is not the same thing as model choice, prompt quality, or context length. Most “swarms” are star or hierarchy graphs with a scheduler; most “debates” are small complete graphs; many “societies” lean on a shared memory or artifact store. Naming the graph is the first step toward attributing a result to wiring rather than to compute.</div>
+
+      <h2 id="why">1. Why topology deserves its own investigation</h2>
+      <p>Three claims recur in the multi-agent literature and are routinely conflated:</p>
+      <ul>
+        <li><b>More agents help.</b> This is a claim about population size.</li>
+        <li><b>More interaction helps.</b> This is a claim about the number and arrangement of edges.</li>
+        <li><b>More diversity helps.</b> This is a claim about the correlation of errors, which topology can either expose or hide.</li>
+      </ul>
+      <p>A result can be true for one and false for the others. A star with 500 workers is a large population with a small interaction graph; a five-agent debate is a small population with a dense interaction graph. Both are called “multi-agent,” and they are not the same experiment. The first is a fan-out problem; the second is a consensus problem.</p>
+      <p>The distinction also explains why the same benchmark can produce opposite conclusions. If the task rewards breadth and independent retrieval, a star wins because it parallelizes coverage. If the task rewards resolving a contradiction, a small complete graph may win because every agent can see every claim. If the task rewards consistency, a hierarchy may win because the merge is centralized. None of those outcomes is a fact about “swarms” in general.</p>
+
+      <h2 id="definition">2. What counts as topology</h2>
+      <p>In this post, <b>topology</b> means the <b>message graph</b>: nodes are agents, tools, or shared stores; edges are the channels through which one node can read, write, call, or observe another. The graph has two kinds of edges, and mixing them is a common source of confusion:</p>
+      <ul>
+        <li><b>Evidence edges</b> carry findings, citations, retrieved passages, or artifacts. They determine what an agent can condition on.</li>
+        <li><b>Control edges</b> carry assignments, cancellations, approvals, and budget limits. They determine what an agent is allowed to do.</li>
+      </ul>
+      <p>A star coordinator usually has both edges pointing at the hub. A blackboard has evidence edges to a shared store and control edges from a scheduler. A debate has dense evidence edges and almost no control edges beyond a stop rule. The distinction matters because a system can have a dense evidence graph and a centralized control graph at the same time — which is exactly what the Anthropic orchestrator-worker architecture does.</p>
+
+      <p>Three further distinctions keep the analysis honest:</p>
+      <ul>
+        <li><b>Logical vs. physical topology.</b> The logical graph is who reads whom. The physical graph is which process, provider, region, or queue carries the request. A logical star can be physically distributed; a logical mesh can run on one machine.</li>
+        <li><b>Topology vs. model.</b> Changing the graph while holding the model, prompts, tools, and token budget fixed is a topology ablation. Changing all four at once is a product launch.</li>
+        <li><b>Topology vs. context.</b> Giving each worker a short, isolated context is a context decision. Giving each worker a read edge to every peer is a topology decision. The two interact, but they are not the same knob.</li>
+      </ul>
+
+      <h2 id="catalogue">3. Eight topologies that keep reappearing</h2>
+      <p>The table names the graphs that account for most deployed systems and most of the literature. Message counts are per round for <i>N</i> workers, before retries and acknowledgments. The “best use” column is a design prior, not a benchmark result.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Topology</th><th>Message graph</th><th>Deliveries per round (<i>N</i> workers)</th><th>Strength</th><th>Characteristic failure</th><th>Best use</th></tr></thead>
+          <tbody>
+            <tr><td><b>Blackboard / shared store</b></td><td>Workers read and write a shared artifact store</td><td>O(<i>N</i>) writes plus reads</td><td>Decoupled, append-only, auditable</td><td>Stale reads, lost updates, silent divergence</td><td>Evidence-heavy research; filesystem handoff; long-lived memory</td></tr>
+            <tr><td><b>Star / coordinator</b></td><td>Each worker ↔ one hub</td><td>2<i>N</i></td><td>Simple accounting, rate limits, provenance</td><td>Hub bottleneck and single point of failure; hub context fills</td><td>Default for large fan-out; 500-worker sweeps</td></tr>
+            <tr><td><b>Hierarchy / tree</b></td><td>Workers → group leads → root</td><td><i>N</i> + group summaries</td><td>Bounded fan-in, local reduction</td><td>Summary loss; minority evidence discarded at each level</td><td>Hundreds of workers in separable groups</td></tr>
+            <tr><td><b>Chain / relay</b></td><td>A → B → C</td><td><i>N</i>−1</td><td>Ordered and simple</td><td>Latency is the sum; errors compound; not parallel</td><td>Sequential refinement only</td></tr>
+            <tr><td><b>Complete graph / debate</b></td><td>Every agent ↔ every other</td><td><i>N</i>(<i>N</i>−1)</td><td>Maximal critique and evidence crossing</td><td>O(<i>N</i>²) cost; conformity; correlated error</td><td>Small, high-stakes panels</td></tr>
+            <tr><td><b>Ring / round-robin</b></td><td>Each agent → next</td><td><i>N</i></td><td>Deterministic turn-taking</td><td>Slow; order-sensitive; one blocked node stalls the cycle</td><td>Debate ordering, invariance tests</td></tr>
+            <tr><td><b>Mesh / peer-to-peer</b></td><td>Arbitrary peer edges</td><td>O(<i>E</i>) for <i>E</i> edges</td><td>Resilient, no hub</td><td>Hard observability and accounting; partitions</td><td>Simulation, unreliable networks, gossip</td></tr>
+            <tr><td><b>Learned graph</b></td><td>Edges chosen or optimized</td><td>Task-dependent</td><td>Topology becomes an objective</td><td>Search cost; overfitting; benchmark gaming</td><td>Research on orchestration (GPTSwarm, AFlow)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two rows deserve special attention. The <b>star</b> and its hierarchical variant are the default because they make accounting, rate limiting, and provenance tractable; the cost is a hub that becomes both a bottleneck and a single point of failure. The <b>complete graph</b> is the topology the debate literature implicitly assumes, and it is the one whose message count makes 500 agents impossible: 500 × 499 = 249,500 directed deliveries per round, against 1,000 for a star. The <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html#synchronization">500-agents synchronization section</a> reaches the same default: exchange compact evidence at explicit milestones, not every thought with every peer.</p>
+
+      <p>The <b>blackboard</b> is the quiet one. It looks decentralized because workers do not message each other, but the shared store is a hub with its own consistency problem: a false or stale artifact can be read by every later worker, and “append-only” prevents overwrites without preventing misinformation. The <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html#collective">collective-hallucination review</a> catalogues the consequence as emergent shared belief and context fragmentation.</p>
+
+      <h2 id="arithmetic">4. Message arithmetic, latency, and the merge</h2>
+      <p>The simplest reason topology matters is that the number of deliveries grows at different rates. For <i>N</i> workers, a round of all-to-all updates is <i>N</i>(<i>N</i>−1) directed deliveries; a star is 2<i>N</i>; a 20-group hierarchy with 25 workers per group is 500 upward submissions plus 20 group summaries = 520 upward submissions, before acknowledgments and broadcasts. These are different communication contracts, not equal-work throughput measurements.</p>
+
+      <div class="banner"><strong>Illustrative arithmetic, not a network benchmark:</strong> at 500 workers, a complete graph is 249,500 directed deliveries per round; a star is 1,000; a 20-group hierarchy is 520 upward submissions. The counts say nothing about token cost by themselves, but they bound the coordination surface an operator has to trace.</div>
+
+      <p>Latency follows a different shape:</p>
+      <ul>
+        <li><b>Star:</b> roughly the slowest worker plus the hub's reduction and dispatch time. The hub's context and rate limits become the ceiling.</li>
+        <li><b>Hierarchy:</b> roughly the slowest group plus one or two reduction levels. Local parallelism is preserved, but a slow group delays its branch.</li>
+        <li><b>Chain:</b> the sum of stage latencies, not the maximum. A five-stage relay has the latency profile of five handoffs and the cost profile of five full contexts.</li>
+        <li><b>Complete graph:</b> the slowest agent plus the number of consensus rounds. Message cost grows quadratically even when wall-clock time looks acceptable at small <i>N</i>.</li>
+        <li><b>Blackboard:</b> the slowest write plus the read and merge time. Freshness is a design choice; late evidence can invalidate an early synthesis.</li>
+      </ul>
+
+      <p>The <b>merge</b> is where topology becomes a system. A distributed-systems merge is a fold with predictable cost. An agent-system merge is usually a language model reading <i>N</i> outputs, which means the reducer inherits the failure modes of an agent: it can be distracted by the middle of its input, accept a confident wrong answer, or silently drop a finding that only one worker reported. A topology that is cheap to fan out but expensive to reduce is not cheap. This is the argument in the <a href="/blog/posts/2026-10-30-timeline-review-500-agents-parallel.html#merge">parallel-agents timeline review</a>: if the merge is O(<i>N</i>) in human attention, the effective speedup is bounded by reading speed, not concurrency.</p>
+
+      <p>The engineering consequence is a preference for <b>mechanical merges</b> — a sort, a count, a filter, a schema check, a vote with a stated rule — over a prose synthesis that hides its evidence. The merge rule is part of the topology because it determines which edges actually carry information into the final answer.</p>
+
+      <h2 id="error">5. Topology and error propagation</h2>
+      <p>Topology is not only a cost decision. In the contagion framing used by the <a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html#math">collective-hallucination review</a>, a false claim spreads with <i>R</i><sub>0</sub> = β·<i>k</i>/γ: β is the adoption probability per exposure, <i>k</i> is the number of peers a worker effectively reads, and γ is the correction rate. Topology enters through <i>k</i> and through the correction path.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Topology</th><th><i>k</i> (peers effectively read)</th><th>Correction path</th><th>Expected pressure on <i>R</i><sub>0</sub></th></tr></thead>
+          <tbody>
+            <tr><td><b>Star / coordinator</b></td><td>1 for each worker; <i>N</i> for the hub</td><td>Worker → hub → workers</td><td>Hub adoption dominates; correction is fast only if the hub verifies rather than relays</td></tr>
+            <tr><td><b>Chain / relay</b></td><td>1 (the previous stage)</td><td>One hop per stage</td><td>Slow correction; errors compound with depth and are hard to localize</td></tr>
+            <tr><td><b>Complete graph / debate</b></td><td><i>N</i>−1</td><td>Any peer can contradict</td><td>High exposure and high correction; can still lock in a confident consensus</td></tr>
+            <tr><td><b>Debate with judge</b></td><td><i>N</i>−1 plus the judge</td><td>Judge is the final edge</td><td>Depends on judge independence; a same-family judge raises β and can launder a shared error</td></tr>
+            <tr><td><b>Blackboard / shared store</b></td><td>Readership of the artifact</td><td>Re-read and revision</td><td>Persistent false claims; correction requires explicit invalidation, not just a later correct write</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>These are qualitative predictions to pre-register, not measured values. Their purpose is to make <i>k</i> and the correction path explicit before the run, so that the <i>R</i><sub>0</sub> comparison is between architectures rather than between slogans.</p>
+
+      <p>There is a second, more basic arithmetic. If agents share a model, a prompt family, and a retrieval corpus, their errors are correlated, and the effective number of independent voters collapses:</p>
+      <pre style="background:#102a43;color:#e6f2fa;border-radius:10px;padding:16px 20px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace">N_eff  ≈  N / (1 + (N − 1)·ρ)</pre>
+      <p>With ρ = 0.5 and N = 100, N_eff ≈ 2.0: a hundred agents behave like two. Topology cannot fix a shared prior; it can only change how many times the shared error is exposed and whether an independent evidence edge exists. That is why the useful diversity knobs are different retrieval, different model families, and different evidence partitions — not different personas reading the same context.</p>
+
+      <h2 id="parallel">6. Topology and parallel execution</h2>
+      <p>The 500-agents brief frames the operational problem as synchronization: freeze the brief, assign ownership, keep evidence append-only, check freshness at commit, and define completion explicitly. Each of those choices implies a topology, even when the topology is not drawn:</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Synchronization policy</th><th>Implied topology</th><th>What it optimizes</th><th>What it risks</th></tr></thead>
+          <tbody>
+            <tr><td><b>Strict round barrier</b></td><td>Star or shallow hierarchy with a barrier at each round</td><td>Consistent snapshots and simple dependency semantics</td><td>One slow or failed worker delays the whole round</td></tr>
+            <tr><td><b>Asynchronous evidence stream</b></td><td>Blackboard with reducers building provisional views</td><td>Early availability and throughput</td><td>Late evidence invalidates an early synthesis; final release still needs a coverage gate</td></tr>
+            <tr><td><b>Hybrid local groups plus milestones</b></td><td>Two-level hierarchy (groups → root)</td><td>Less global coordination; local reductions</td><td>Local summaries omit minority evidence; unresolved objections get compressed away</td></tr>
+            <tr><td><b>All-to-all debate</b></td><td>Complete graph, usually with a judge</td><td>Maximal critique at small <i>N</i></td><td>Quadratic cost, conformity, and a judge that shares the generator's family</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>For a 500-worker fleet, the practical default is a star or a shallow hierarchy, with all-to-all reserved for small, high-stakes panels. The <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html#design">reference design</a> already separates planning, execution, evidence handling, and synthesis; topology is the layer that says which of those stages can see which other stage's outputs.</p>
+
+      <p>Two failure modes are specifically topological:</p>
+      <ul>
+        <li><b>Hub capture.</b> In a star, the coordinator reads every worker output. Its context becomes the real bottleneck, and its errors become global. A hierarchy reduces this by local reduction, at the cost of summary loss.</li>
+        <li><b>Stale-edge writes.</b> In any graph with leases, a worker that loses its lease can still return a late artifact. The topology needs a fencing token or snapshot check at the merge edge, not just a prompt instruction. The 500-agents brief's <a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html#synchronization">synchronization contract</a> is the operational version of this point.</li>
+      </ul>
+
+      <p>Amdahl's law and the Universal Scalability Law explain why the speedup curve bends even when the topology is clean: the serial fraction and the coherency cost grow with coordination. The <a href="/blog/posts/2026-10-30-timeline-review-500-agents-parallel.html#figure">parallel-agents timeline</a> draws the shape — speedup saturates, efficiency falls, and the merge becomes the system.</p>
+
+      <h2 id="evidence">7. What the previous posts establish — and what they leave open</h2>
+      <p>This is the part that a single post cannot establish alone. The topology question is distributed across four surveys and four timelines, and each contributes a different piece.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Previous post</th><th>What it contributes</th><th>Topology gap it leaves</th></tr></thead>
+          <tbody>
+            <tr><td><a href="/blog/posts/2026-10-10-swarm-intelligence-multi-agent-ai.html">Swarm intelligence survey</a></td><td>Classical swarms, LLM frameworks, debate, GPTSwarm as an optimizable graph, populations, and safety.</td><td>Topology is treated as a learnable object, but the common graphs are not compared side by side.</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-16-use-500-agents-in-parallel.html">500 agents in parallel</a></td><td>Fan-out/fan-in, synchronization policies, leases, budgets, compact workers, and the serial-versus-parallel cost model.</td><td>Topology is implicit in the synchronization choices; the message graph is not the unit of analysis.</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-20-hallucination-in-the-swarm.html">Hallucination in the swarm</a></td><td>Correlated error, contagion <i>R</i><sub>0</sub>, effective sample size, canary traps, and a proposed test battery.</td><td>It asks for <i>R</i><sub>0</sub> per topology but does not tabulate the topologies or their correction paths.</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-10-context-engineering-model-specialization-agents.html">Small models, short contexts</a></td><td>Model routing, context isolation, Chain-of-Agents, and Anthropic's lead-plus-subagents system.</td><td>The architecture is a hierarchy with a blackboard, but the topology is not separated from model and context choices.</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-30-timeline-review-swarm-intelligence.html">Swarm timeline</a></td><td>Two waves of metaphor-driven coordination and the first wave's baseline correction.</td><td>It records the waves but not the topology thread that runs through them.</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-30-timeline-review-500-agents-parallel.html">Parallel-agents timeline</a></td><td>Distributed-systems precursors, speedup saturation, and the merge as the bottleneck.</td><td>It covers fan-out and merge but not the alternative graphs (ring, mesh, blackboard, complete).</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-30-timeline-review-hallucination-swarm.html">Hallucination timeline</a></td><td>Five phases in the understanding of collective confabulation and the collapse of the independence assumption.</td><td>It measures correlation and contagion but not the graph that carries them.</td></tr>
+            <tr><td><a href="/blog/posts/2026-10-30-timeline-review-context-engineering.html">Context-engineering timeline</a></td><td>Retrieval, routing, compaction, and sub-agents as a cost-allocation story.</td><td>It treats sub-agents as a context technique rather than a topology choice.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The synthesis is straightforward: the survey tradition supplies the vocabulary, the parallel tradition supplies the scheduling and cost model, the hallucination tradition supplies the error arithmetic, and the context tradition supplies the empirical example. What is missing is a single artifact that records the graph. That is the gap this post is trying to make visible.</p>
+
+      <h2 id="timeline">8. Timeline, 1959–2026</h2>
+      <p>The history has two threads that are often told separately: a <b>coordination thread</b> (how agents share state and assign work) and an <b>optimization thread</b> (how populations search). The LLM wave inherits both, then adds a third: a learned graph. The timeline marks the topology contribution of each period rather than every publication.</p>
+
+      <ul class="tm-tl">
+        <li class="tm-era">1959–1991 · <span>coordination without a controller</span> · contribution: shared state, bidding, local rules</li>
+        <li class="tm-item"><span class="tm-y">1959</span><b>Stigmergy</b> — termite construction explained by traces left in the environment; coordination without direct communication, and an ancestor of the modern shared-memory agent system.</li>
+        <li class="tm-item"><span class="tm-y">1970s–80s</span><b>Blackboard systems</b> — agents coordinate by reading and writing a shared workspace rather than messaging each other; an early explicit shared-state topology, and the ancestor of the modern artifact store.</li>
+        <li class="tm-item"><span class="tm-y">1980</span><b>Contract net</b> — a manager announces a task, contractors bid, and the manager awards it; a market-shaped topology with explicit manager and contractor roles.</li>
+        <li class="tm-item"><span class="tm-y">1986–87</span><b>Boids</b> — three local rules (separation, alignment, cohesion) produce flocking; the demonstration that global order needs no global controller.</li>
+        <li class="tm-item"><span class="tm-y">1991</span><b>Ant colony optimization</b> — pheromone trails as a distributed memory that solves shortest-path problems; the first swarm algorithm with a real optimization target.</li>
+
+        <li class="tm-era">1992–2003 · <span>swarms as optimizers</span> · contribution: cheap, derivative-free search</li>
+        <li class="tm-item"><span class="tm-y">1995</span><b>Particle swarm optimization</b> — a population of candidate solutions moved by personal and social bests; two update rules and a decade of applications.</li>
+        <li class="tm-item"><span class="tm-y">1999–2003</span><b>Swarm intelligence formalized</b> — the field gets a name, a textbook, and a canon; convergence analysis begins, mostly for simplified variants.</li>
+        <li class="tm-item"><span class="tm-y">2005</span><b>Artificial bee colony</b> — the metaphor-first design pattern is established: pick an animal behaviour, map it to an update rule, name the algorithm.</li>
+
+        <li class="tm-era">2004–2015 · <span>parallel workers and the metaphor correction</span> · contribution: fan-out/fan-in and baseline discipline</li>
+        <li class="tm-item"><span class="tm-y">2004</span><b>MapReduce</b> — fan-out, shuffle, fan-in; the canonical many-worker pattern and the reason “map then reduce” is the default shape of parallel agent work.</li>
+        <li class="tm-item"><span class="tm-y">2006–14</span><b>Metaphor proliferation</b> — firefly, cuckoo, bat, wolf, krill, and dozens more; each published with comparisons to older metaphors rather than to strong general-purpose baselines.</li>
+        <li class="tm-item crit"><span class="tm-y">2015</span><b>“The metaphor exposed”</b> — a direct critique that many nature-inspired methods are repackaged local search with extra parameters, and that the naming obscures rather than describes the mechanism.</li>
+        <li class="tm-item crit"><span class="tm-y">2015–18</span><b>Benchmark hygiene</b> — the field converges on tuning budgets, statistical tests across many runs, and comparisons to well-tuned classical baselines; publication volume falls, usefulness does not.</li>
+
+        <li class="tm-era">2016–2022 · <span>multi-agent RL and population search</span> · contribution: measurable emergence</li>
+        <li class="tm-item"><span class="tm-y">2017–19</span><b>Emergence in MARL</b> — competition and environment shaping produce tool use and niche construction in simple simulated worlds; the interesting result is that the behaviour is fragile and hard to transfer.</li>
+        <li class="tm-item"><span class="tm-y">2020–22</span><b>Population-based training and collective search</b> — swarms become an engineering pattern for hyperparameter and policy search rather than a biological metaphor.</li>
+
+        <li class="tm-era">2023–2026 · <span>societies of language agents</span> · contribution: coordination in natural language</li>
+        <li class="tm-item agent"><span class="tm-y">2023</span><b>Generative agents, CAMEL, AutoGen, MetaGPT</b> — memory, reflection, role-play, and message passing become frameworks; “society” is implemented as a conversation with a scheduler.</li>
+        <li class="tm-item agent"><span class="tm-y">2023</span><b>Multi-agent debate</b> — the first swarm-adjacent method with a clear metric (factual accuracy) and a clear baseline (the same model alone).</li>
+        <li class="tm-item agent"><span class="tm-y">2024</span><b>Optimizable agent graphs</b> — GPTSwarm and AFlow treat the topology as the thing to search; the swarm becomes an object of optimization rather than a metaphor.</li>
+        <li class="tm-item agent"><span class="tm-y">2025</span><b>Orchestrator–worker at production scale</b> — a lead agent, parallel subagents, isolated contexts, and a shared filesystem; the hierarchy-plus-blackboard pattern becomes the default for breadth-first research.</li>
+        <li class="tm-item crit"><span class="tm-y">2025</span><b>Failure taxonomies and collective bias</b> — agents that never verify, converge on unvalidated plans, and harden arbitrary conventions into norms.</li>
+        <li class="tm-item"><span class="tm-y">2026</span><b>Topology-aware evaluation</b> — this review's proposal: report the message graph, measure <i>R</i><sub>0</sub> per topology, and separate wiring from model and compute. The measurement is available; the standard is not.</li>
+      </ul>
+
+      <h2 id="position">9. Where 2026 sits</h2>
+      <ul>
+        <li><b>Topology is still mostly implicit.</b> Papers name a “multi-agent system” or a “society” and describe the roles, but rarely publish the adjacency list, message count, or correction path.</li>
+        <li><b>The default architecture is a star or a shallow hierarchy.</b> That is not a failure of imagination; it is what makes accounting, rate limits, provenance, and the merge tractable at scale.</li>
+        <li><b>All-to-all is a small-panel tool.</b> The quadratic message count is acceptable for five debaters and impossible for five hundred workers; treating it as a general swarm design is a category error.</li>
+        <li><b>Blackboards are under-examined.</b> Shared memory is the most common persistence mechanism in agent systems and the least measured for stale-read and false-claim propagation.</li>
+        <li><b>Learned graphs are promising but easy to game.</b> If the topology is optimized against a benchmark, the benchmark becomes a topology prior; the objective needs a held-out task and a compute-matched baseline.</li>
+        <li><b>The measurable variables are available.</b> Message count, <i>k</i>, correction latency, <i>R</i><sub>0</sub>, <i>N</i><sub>eff</sub>, merge cost, and coverage are all cheap to record. The field's gap is reporting discipline, not instrumentation.</li>
+      </ul>
+
+      <h2 id="checklist">10. Reporting checklist</h2>
+      <p>If a study claims a multi-agent advantage, the topology should be checkable without reading the code. The minimum set:</p>
+      <ol>
+        <li><b>Draw the message graph.</b> Nodes are agents, tools, and stores; label evidence edges and control edges separately.</li>
+        <li><b>Count the messages.</b> Report deliveries per round and per accepted result, excluding and including retries.</li>
+        <li><b>Name the correction path.</b> Who can contradict whom, and how many hops does a correction take?</li>
+        <li><b>Report <i>k</i> and <i>R</i><sub>0</sub> per topology.</b> A single <i>R</i><sub>0</sub> for a mixed graph is not interpretable.</li>
+        <li><b>Report the merge rule.</b> Mechanical (sort, count, filter, schema check, vote) or model-generated prose? What is the cost per accepted result?</li>
+        <li><b>Report the baseline.</b> One strong agent at the same token budget and, where possible, the same wall-clock budget.</li>
+        <li><b>Report coverage.</b> Which partitions were accepted, missing, failed, cancelled, or superseded? A response-count quorum is not complete coverage.</li>
+      </ol>
+
+      <p>This is deliberately unglamorous. It is also the difference between a result and an anecdote: a topology that is not recorded cannot be compared, and a comparison that does not hold the model, budget, and merge fixed is a comparison of products, not mechanisms.</p>
+
+      <h2 id="sources">11. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>IND</em> = industry report.</p>
+
+      <h3>Coordination and topology</h3>
+      <ul>
+        <li>Grassé, La reconstruction du nid et les coordinations interindividuelles (stigmergy; 1959) — <em>PR</em></li>
+        <li>Erman, Hayes-Roth, Lesser &amp; Reddy, <a href="https://doi.org/10.1145/356810.356816">The Hearsay-II Speech-Understanding System</a> (blackboard architecture; <i>ACM Computing Surveys</i> 1980) — <em>PR</em></li>
+        <li>Smith, <a href="https://doi.org/10.1109/TC.1980.1675516">The Contract Net Protocol: High-Level Communication and Control in a Distributed Problem Solver</a> (<i>IEEE Transactions on Computers</i> 1980) — <em>PR</em></li>
+        <li>Reynolds, <a href="https://doi.org/10.1145/37402.37406">Flocks, herds and schools: A distributed behavioral model</a> (SIGGRAPH 1987) — <em>PR</em></li>
+        <li>Dorigo, Optimization by ant colonies (1992) — <em>PR</em></li>
+        <li>Kennedy &amp; Eberhart, <a href="https://doi.org/10.1109/ICNN.1995.488968">Particle swarm optimization</a> (1995) — <em>PR</em></li>
+        <li>Bonabeau, Dorigo &amp; Theraulaz, <i>Swarm Intelligence: From Natural to Artificial Systems</i> (1999) — <em>PR</em></li>
+        <li>Karaboga, An idea based on honey bee swarm for numerical optimization (2005) — <em>PP</em></li>
+        <li>Sörensen, Metaheuristics — the metaphor exposed (<i>International Transactions in Operational Research</i> 2015) — <em>PR</em></li>
+      </ul>
+
+      <h3>Parallel systems and orchestration</h3>
+      <ul>
+        <li>Amdahl, Validity of the single processor approach to achieving large scale computing capabilities (1967) — <em>PR</em></li>
+        <li>Gunther, <i>A Simple Theory of Universal Scalability</i> (1993) — <em>PR</em></li>
+        <li>Dean &amp; Ghemawat, <a href="https://doi.org/10.1145/1327452.1327492">MapReduce: Simplified Data Processing on Large Clusters</a> (OSDI 2004; CACM 2008) — <em>PR</em></li>
+        <li>Wu et al., <a href="https://arxiv.org/abs/2308.08155">AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation</a> (2023) — <em>PP</em></li>
+        <li>Hong et al., <a href="https://arxiv.org/abs/2308.00352">MetaGPT: Meta Programming for Multi-Agent Collaborative Framework</a> (2023) — <em>PP</em></li>
+        <li>Zhuge et al., <a href="https://arxiv.org/abs/2402.16823">GPTSwarm: Language Agents as Optimizable Graphs</a> (ICML 2024) — <em>PR</em></li>
+        <li>Zhang et al., <a href="https://arxiv.org/abs/2410.10762">AFlow: Automating Agentic Workflow Generation</a> (2024) — <em>PP</em></li>
+        <li>Anthropic, <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How we built our multi-agent research system</a> (2025) — <em>IND</em></li>
+        <li>Cognition, <a href="https://cognition.ai/blog/dont-build-multi-agents">Don't Build Multi-Agents</a> (2025) — <em>IND</em></li>
+      </ul>
+
+      <h3>Error, populations, and evaluation</h3>
+      <ul>
+        <li>Park et al., <a href="https://arxiv.org/abs/2304.03442">Generative Agents: Interactive Simulacra of Human Behavior</a> (UIST 2023) — <em>PR</em></li>
+        <li>Du et al., <a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a> (2023) — <em>PP</em></li>
+        <li>Ashery et al., <a href="https://www.science.org/doi/10.1126/sciadv.adu9368">Emergent social conventions and collective bias in populations of LLM agents</a> (<i>Science Advances</i> 2025) — <em>PR</em></li>
+        <li>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a> (2025) — <em>PP</em></li>
+        <li>Kapoor et al., <a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a> (2024) — <em>PP</em></li>
+        <li>Altera.AL et al., <a href="https://arxiv.org/abs/2411.00114">Project Sid: Many-agent simulations toward AI civilization</a> (2024) — <em>PP</em></li>
+        <li>Liu et al., <a href="https://arxiv.org/abs/2307.03172">Lost in the Middle: How Language Models Use Long Contexts</a> (2023/24) — <em>PR</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The most useful thing about network topology is that it turns a vague claim into a checkable one. “A swarm of agents” becomes a graph with <i>N</i> nodes, <i>E</i> edges, a message count, an exposure count, a correction path, and a merge rule. Those quantities are cheap to record and hard to fake. They also explain why the same architecture can look brilliant on a breadth-first task and useless on a tightly coupled one.</p>
+
+      <p>The historical lesson is the same one the first swarm wave learned about baselines: <b>state the mechanism, not the metaphor.</b> A star is not less “swarm-like” than a mesh; it is a different experiment with a different bill. The field does not need another animal name. It needs the graph, the count, and the merge.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

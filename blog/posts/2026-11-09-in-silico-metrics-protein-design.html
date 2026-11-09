@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What to measure on a designed protein: an in silico validation stack — scAI Index</title>
+  <meta name="description" content="A practical, source-linked guide to in silico metrics for protein design: pLDDT, pTM, ipTM, PAE, interface scores, ddG, solubility, developability, specificity, free-energy methods, designability and novelty; a tiered decision funnel with thresholds, hardware requirements per 1,000 designs, and a campaign timeline.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .pd-funnel { margin: 16px 0 8px; display: grid; gap: 6px; }
+    .pd-funnel div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 8px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); font-size: 13px; }
+    .pd-funnel b { font-variant-numeric: tabular-nums; }
+    .pd-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .pd-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 50%, #f6d9a8); }
+    .pd-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .pd-era:first-child { margin-top: 2px; }
+    .pd-era span { color: var(--text); }
+    .pd-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .pd-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .pd-item.crit::before { border-color: #718096; }
+    .pd-item.agent::before { border-color: var(--amber); }
+    .pd-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    pre.pd-code { background: #102a43; color: #e6f2fa; border-radius: 10px; padding: 16px 20px; overflow: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @media (max-width: 520px) { .pd-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#question">1. What the question asks</a>
+          <a href="#four">2. Four questions</a>
+          <a href="#stack">3. The stack at a glance</a>
+          <a href="#popular">4. Popular metrics</a>
+          <a href="#breaks">5. Where they break</a>
+          <a href="#advanced">6. Advanced metrics</a>
+          <a href="#funnel">7. Decision funnel</a>
+          <a href="#hardware">8. Hardware</a>
+          <a href="#timeline">9. Timeline</a>
+          <a href="#checklist">10. Reporting checklist</a>
+          <a href="#failures">11. Failure modes</a>
+          <a href="#sources">12. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-11-09</span>
+      </div>
+      <h1>What to measure on a designed protein: an in silico validation stack</h1>
+
+      <p>The <a href="/blog/posts/2026-09-30-target-to-drug-toolkit.html">target-to-drug toolkit</a> covered how a target becomes a candidate: structure prediction, docking, affinity models, generative design. It stopped at the point where a design campaign starts producing proteins. This post picks up there and asks a narrower, more operational question: <b>once a model hands you a designed protein, what do you compute before you spend money on it?</b></p>
+
+      <p>“Designed participants” is the right framing. A campaign is a tournament with thousands of entrants, and every metric is a gate, a ranking, or a calibration check. The practical job is not to find the one best score. It is to build an ordered stack of cheap and expensive tests so that the designs that reach the bench have the best chance of being real, and so that the record of what passed is honest enough to learn from.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is a synthesis and a field guide, not a new benchmark. <strong>No design campaign was run and no model was trained for this post.</strong> Thresholds are community heuristics with exceptions, not regulatory cutoffs. Throughput, hardware, and cost figures are illustrative arithmetic for planning, not measurements on a specific cluster. Publications are labeled <em>PR</em> (peer-reviewed), <em>PP</em> (preprint), or <em>IND</em> (industry report).</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> in silico metrics are most useful as a <b>funnel with declared thresholds and declared costs</b>, not as a leaderboard. A metric earns its place if it changes the order of candidates, predicts a wet-lab outcome, or catches a class of failure the previous gate cannot see. Everything else is decoration — and decoration becomes dangerous when it is optimized directly.</div>
+
+      <h2 id="question">1. What the question asks — and what it does not</h2>
+      <p>“In silico metrics for a designed protein” usually mixes four different objects, and separating them is most of the work:</p>
+      <ul>
+        <li><b>The design as a molecule.</b> Is it a physically plausible, stable, soluble protein at all?</li>
+        <li><b>The design as a function.</b> Does it bind the intended target, catalyse the intended reaction, or fold into the intended topology?</li>
+        <li><b>The design as a product.</b> Can it be expressed, purified, formulated, and dosed without liabilities?</li>
+        <li><b>The design process as a model.</b> Does the predictor agree with experiment, and at what cost per validated design?</li>
+      </ul>
+      <p>Most published “in silico validation” reports answer only the first two. Most programmes fail on the third. And most methodological disputes — pLDDT versus ΔΔG, docking versus free energy — are actually disputes about which of the four a score is allowed to speak to.</p>
+
+      <p>The second clarification is about <b>what a metric is for</b>. A metric can be a <i>filter</i> (pass/fail, cheap, high recall), a <i>rank</i> (ordering within the survivors, correlated with a continuous outcome), or a <i>calibration</i> (a probability that can be compared to observed hit rates). The same number can be excellent at one job and useless at another. pLDDT is a decent filter, a mediocre rank, and a poorly calibrated probability. Docking is a filter, a weak rank, and not a probability at all.</p>
+
+      <h2 id="four">2. Four questions, in the order they should be asked</h2>
+      <p>Before listing tools, here is the order that prevents the most expensive mistakes. Each step is cheaper than the next, and each has a different failure mode.</p>
+      <ol>
+        <li><b>Is it a protein?</b> Sequence sanity: composition, low-complexity regions, forbidden motifs, free cysteines, signal peptides, transmembrane segments where none were intended. Cost: milliseconds. Failure caught: constructs that are wrong before any model sees them.</li>
+        <li><b>Does it fold, and does it fold the way it was designed to?</b> Structure prediction plus a self-consistency check: refold with an independent predictor, compare to the design model. Cost: seconds to minutes per design on a GPU. Failure caught: hallucinated backbones, sequences that do not encode the intended fold.</li>
+        <li><b>Does it do the job?</b> Interface quality for binders, active-site geometry for enzymes, pose and affinity proxies for ligands. Cost: minutes to GPU-days per design. Failure caught: well-folded proteins that do not bind or catalyse.</li>
+        <li><b>Can it be made and used?</b> Solubility, aggregation, expression host compatibility, PTM liabilities, developability flags, immunogenicity risk. Cost: minutes, but the interpretation is the least reliable. Failure caught: designs that are correct and unmanufacturable.</li>
+      </ol>
+      <p>The order matters because the expensive questions are only meaningful on candidates that survived the cheap ones. Running 100 ns of MD on a sequence with a misplaced cysteine is not rigour; it is expensive noise.</p>
+
+      <h2 id="stack">3. The stack at a glance</h2>
+      <p>The table maps each layer to representative metrics, the question it answers, and the cost class. “Cost class” is logarithmic: <b>ms</b> = sequence arithmetic, <b>s–min</b> = one GPU forward pass, <b>CPU-h</b> = physics scoring, <b>GPU-day</b> = sampling or free energy.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Layer</th><th>Representative metrics</th><th>Question answered</th><th>Cost class</th><th>Failure it catches</th></tr></thead>
+          <tbody>
+            <tr><td><b>Sequence sanity</b></td><td>Length, composition, low-complexity fraction, Cys count, N-glyc motifs (NxS/T), deamidation (NG/NS), oxidation (M, W), isomerization (DG), N-terminal pyroglutamate (Q/E), RGD and other motifs</td><td>Is this a manufacturable protein at all?</td><td>ms</td><td>Construct-level errors and obvious liabilities</td></tr>
+            <tr><td><b>Fold confidence</b></td><td>pLDDT, pTM, PAE, PDE, ESMFold/ESM-2 likelihood, secondary-structure agreement</td><td>Does the model believe this structure?</td><td>s–min</td><td>Disordered or hallucinated designs</td></tr>
+            <tr><td><b>Designability</b></td><td>Refolding RMSD with an orthogonal predictor, self-consistency, sequence recovery, ProteinMPNN score</td><td>Does the sequence encode the intended fold?</td><td>s–min</td><td>Backbones that only one model likes</td></tr>
+            <tr><td><b>Interface</b></td><td>ipTM, interface PAE, ipSAE, buried SASA, shape complementarity, H-bonds, buried unsatisfied polar atoms, Rosetta/FoldX interface ΔG</td><td>Is the intended complex plausible?</td><td>s–CPU-h</td><td>Well-folded monomers that do not bind</td></tr>
+            <tr><td><b>Affinity</b></td><td>Docking score, ΔG estimates, MM/GBSA, absolute binding free energy (ABFE/FEP), learned affinity models</td><td>How strong, and is the ranking trustworthy?</td><td>CPU-h–GPU-day</td><td>Binders too weak to be useful</td></tr>
+            <tr><td><b>Specificity</b></td><td>Off-target scan against the proteome, paralog panel, selectivity index, epitope conservation</td><td>Does it bind the wrong thing?</td><td>CPU-h</td><td>Cross-reactivity and toxic poly-specificity</td></tr>
+            <tr><td><b>Biophysics</b></td><td>ΔG folding, ΔΔG on mutation, pI, net charge at pH 7.4, GRAVY, hydrophobic patch SASA, solubility, aggregation, disorder</td><td>Is it stable and soluble?</td><td>CPU-h</td><td>Aggregating or unstable designs</td></tr>
+            <tr><td><b>Developability</b></td><td>TAP/PSP flags, liability counts, expression prediction, viscosity proxies, immunogenicity (MHC binding, human-ness)</td><td>Can it be developed?</td><td>min</td><td>Late-stage attrition</td></tr>
+            <tr><td><b>Dynamics</b></td><td>RMSF, PCA, distance distributions, pocket volume, hydrogen-bond occupancy, cryptic pockets</td><td>Does it stay put and stay closed?</td><td>GPU-day</td><td>Preorganization failures invisible in a single static structure</td></tr>
+            <tr><td><b>Process</b></td><td>Pass rate per gate, in silico success rate, precision@k, enrichment, calibration error, novelty, diversity, cost per validated design</td><td>Is the campaign itself working?</td><td>arithmetic</td><td>Goodharting and silent overfitting</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Read the table as a budget, not a checklist. A campaign that applies all ten layers to all designs has not built a funnel; it has built a queue. The next three sections take the layers apart.</p>
+
+      <h2 id="popular">4. The popular metrics, and what each one actually tests</h2>
+      <p>These are the numbers almost every 2023–2026 design paper reports. They are popular because they are fast, standardized, and usually available in one command. Each is useful; each is narrower than its name suggests.</p>
+
+      <h3>4.1 Structure confidence: pLDDT, pTM, PAE, PDE</h3>
+      <ul>
+        <li><b>pLDDT</b> is a per-residue confidence in the local environment, on a 0–100 scale. It is trained against experimental structures, so it measures agreement with the model's learned notion of a protein, not thermodynamic stability. Above ~90 is “confident” by convention; 70–90 is often a real but flexible domain; below 70 is frequently disorder or a bad model. For <i>designed</i> proteins, high pLDDT is necessary and not sufficient, because the design may lie outside the training distribution in exactly the way the model cannot detect.</li>
+        <li><b>pTM</b> is a global topological similarity score derived from the predicted structure and is less sensitive to local detail than pLDDT. It rewards compact, well-defined folds and penalizes ambiguity between domains. It is a useful filter for “is this one coherent fold?” and a poor measure of interface quality.</li>
+        <li><b>PAE</b> (predicted aligned error) is the better interface diagnostic. It estimates the error in relative position between residue pairs, so interface residues with low PAE support a confident relative orientation. Inspect the interface block, not just the global mean.</li>
+        <li><b>PDE</b> (predicted distance error) is the distance-based sibling of PAE. It is more interpretable for contact-level questions and is reported by some models alongside PAE.</li>
+      </ul>
+      <p>The practical rule: <b>pLDDT for “is this residue well modelled”, PAE for “is this pair of residues well placed relative to each other”, pTM for “is this one fold”.</b> None of the three is a binding affinity.</p>
+
+      <h3>4.2 Interface metrics: the ones that decide binder campaigns</h3>
+      <ul>
+        <li><b>ipTM</b> extends pTM to the interface and became the default binder filter after AlphaFold-Multimer. It is chain-length sensitive and can reward large, greasy interfaces; treat a high ipTM as a necessary condition, not a hit.</li>
+        <li><b>Interface PAE</b> (mean PAE over contacting residue pairs, sometimes called <i>interface PAE</i> or <i>PAE_interaction</i>) is often more discriminative than ipTM for designed binders. It is the score to plot against experimental binding when you have a labelled set.</li>
+        <li><b>ipSAE</b> is a 2025 reformulation that converts PAE into a TM-like interface score and removes some of ipTM's length bias. It is still a preprint-stage metric, but it is the most interesting attempt to fix the score everyone already uses.</li>
+        <li><b>Buried SASA / interface area</b> answers “how much surface is actually shared?”. Small binders commonly bury several hundred to ~2,000 Å²; a tiny interface with a great ipTM is a red flag, not a win.</li>
+        <li><b>Shape complementarity (sc)</b> measures geometric fit between the two surfaces. Values around 0.5–0.7 are typical of real interfaces; above ~0.7 is excellent, but sc is easy to over-optimize and says nothing about chemistry.</li>
+        <li><b>Hydrogen bonds, salt bridges, and buried unsatisfied polar atoms</b> are the chemistry check. A large buried interface with many unsatisfied donors and acceptors is a desolvation penalty waiting to happen. Rosetta's buried-unsatisfied counts remain the cheapest useful version of this test.</li>
+        <li><b>Interface ΔG</b> from Rosetta or FoldX is a ranking proxy. It correlates with experiment weakly enough that it should never be the only reason to order a gene.</li>
+      </ul>
+
+      <h3>4.3 Sequence metrics: naturalness, likelihood, and recovery</h3>
+      <ul>
+        <li><b>ProteinMPNN score / log-likelihood</b> measures how probable the sequence is under an inverse-folding model conditioned on the backbone. It is an excellent designability filter and a biased one, because the same family of models is often used to generate the sequence.</li>
+        <li><b>ESM-2 / ESM-3 pseudo-perplexity or likelihood ratio</b> asks whether a protein language model finds the sequence plausible. It is a useful, cheap, orthogonal check — orthogonal only if the generator was not trained on the same objective and data.</li>
+        <li><b>Sequence recovery</b> against natural homologues is a sanity check, not a goal. Designed proteins are supposed to differ from natural ones; high recovery can mean the design is a natural protein with extra steps, and low recovery can mean the sequence is unnatural in a bad way.</li>
+        <li><b>Amino-acid composition and low-complexity fraction</b> catch poly-Q, poly-G, and runaway hydrophobic stretches before they become expression failures.</li>
+      </ul>
+
+      <h3>4.4 Biophysics and developability</h3>
+      <ul>
+        <li><b>ΔG folding</b> (Rosetta, FoldX) and <b>ΔΔG on mutation</b> (FoldX, Rosetta cartesian ddG, ThermoMPNN, PROSTATA, ACDC-NN) estimate stability margins. Their absolute values are unreliable; their rankings within a close series are sometimes useful. Report the protocol, because none of these numbers are comparable across implementations.</li>
+        <li><b>pI, net charge at pH 7.4, GRAVY, hydrophobic-patch SASA</b> are cheap predictors of solubility and purification behaviour. They are heuristics, and they are the heuristics that most often explain why a beautiful design does not express.</li>
+        <li><b>Solubility</b> (CamSol, SoluProt, Protein-Sol) and <b>aggregation</b> (TANGO, Zyggregator, Aggrescan3D) are trained mostly on natural proteins and recombinant expression data. Useful as relative scores within a campaign, weak as absolute predictions.</li>
+        <li><b>Disorder</b> (IUPred3, metapredict) should be run on every design: a designed binder with a disordered tail may still work, but the tail will confuse SEC, crystallography, and every structural metric.</li>
+        <li><b>Developability</b> metrics from therapeutic antibodies — TAP, PSP, PSH, PNC, CIC — are meaningful for antibody-like formats and only partly transferable to mini-binders, DARPins, and de novo folds. Use them as liability counters, not as pass/fail verdicts.</li>
+        <li><b>Immunogenicity</b> is the least reliable in silico layer. MHC class I/II binding prediction (NetMHCpan, MHCflurry) is necessary and not sufficient; de novo folds have no human exposure history, so “human-ness” scores are extrapolation.</li>
+      </ul>
+
+      <h2 id="breaks">5. Where the popular metrics break</h2>
+      <p>Six failure modes account for most of the disappointment. They are worth stating explicitly because each one has a cheap mitigation.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Failure mode</th><th>Mechanism</th><th>Symptom</th><th>Mitigation</th></tr></thead>
+          <tbody>
+            <tr><td><b>Confidence inflation</b></td><td>Structure models are trained on natural proteins; a designed backbone can be confidently wrong</td><td>pLDDT &gt; 90, no experimental hit</td><td>Orthogonal predictor, refolding RMSD, negative controls</td></tr>
+            <tr><td><b>Self-consistency circularity</b></td><td>Same model family generates and validates the design</td><td>Beautiful in silico success, poor bench hit rate</td><td>Hold out one model; validate with a different architecture and, ideally, a different lab</td></tr>
+            <tr><td><b>Score-function bias</b></td><td>Rosetta-optimized designs score well in Rosetta</td><td>Great ΔG, poor expression or stability</td><td>Cross-check with a non-Rosetta method; treat ΔG as ordinal</td></tr>
+            <tr><td><b>Docking ≠ affinity</b></td><td>Docking optimizes a pose score, not a free energy</td><td>Good docking score, micromolar or no binding</td><td>Use docking for poses and filters; use FEP/ABFE or experiment for ranking</td></tr>
+            <tr><td><b>Distribution shift</b></td><td>Solubility, aggregation, and immunogenicity models trained on natural proteins</td><td>Predictions cluster and fail to separate designs</td><td>Recalibrate on campaign data; report uncertainty, not just the score</td></tr>
+            <tr><td><b>Goodharting</b></td><td>A metric becomes the objective and stops measuring the thing</td><td>Metric improves while bench hit rate does not</td><td>Pre-register thresholds; hold out a validation set; track bench outcomes per gate</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two of these deserve emphasis because they are structural, not fixable by a better model. <b>Self-consistency</b> is the most common validation in the design literature: generate a backbone, design a sequence, refold with AlphaFold, and declare success if the refold matches the backbone. That test is real — it catches sequences that do not encode the fold — but it is also a test the generator was implicitly optimized for. It answers “is this designable?” and not “is this protein real?”. The <b>bench hit rate</b> is the only metric that answers the second question.</p>
+
+      <p><b>Docking</b> has the same shape. Vina, Gnina, and DiffDock are good at proposing poses and at enriching actives in a large library. They are weak at ranking a handful of close analogues, which is exactly the job a design campaign asks of them. The fix is not a better docking score; it is a different method class once the candidate set is small.</p>
+
+      <pre class="pd-code">in silico success rate  =  designs passing every gate / designs submitted
+precision@k             =  experimentally validated designs in top k / k
+enrichment              =  precision@k / baseline hit rate
+calibration error (ECE) =  Σ_bins (n_b / N) · |hit_rate_b − mean_predicted_prob_b|
+cost per validated hit  =  total compute + wet-lab cost / validated designs</pre>
+
+      <p>These four are enough to compare campaigns without arguing about which pLDDT threshold is correct. They also expose the most common accounting trick in the field: reporting a high pass rate without reporting the denominator.</p>
+
+      <h2 id="advanced">6. The advanced metrics: where the field is moving</h2>
+      <p>“Advanced” here means metrics that are more expensive, more mechanistic, or more recent — not automatically better. Each is included because it catches something the popular stack misses.</p>
+
+      <h3>6.1 Interface quality beyond ipTM</h3>
+      <ul>
+        <li><b>Interface PAE and ipSAE as primary, ipTM as secondary.</b> Report both, plus the interface size and the number of buried unsatisfied polar atoms, so that a high score cannot be earned by a large greasy patch.</li>
+        <li><b>Contact molecular surface (CMS)</b> and related contact-weighted areas measure the chemically relevant contact surface rather than raw burial. They are more robust than buried SASA when the interface is small or water-mediated.</li>
+        <li><b>Water-mediated networks.</b> Explicit waters in MD or in a solvated interface model can reveal that a polar interface is bridged rather than direct. This changes the design conclusion, and it is invisible to a vacuum interface score.</li>
+        <li><b>Ensemble interface scores.</b> Average interface PAE and sc over multiple seeds and multiple models. A single-seed high score is a draw from a distribution, and the distribution is often wide.</li>
+      </ul>
+
+      <h3>6.2 Designability, novelty, diversity, and the held-out check</h3>
+      <ul>
+        <li><b>Orthogonal refolding.</b> Refold with a model from a different family than the one used for design (for example, generate with RFdiffusion, filter with ProteinMPNN, refold with ESMFold and Boltz/Chai), and require agreement between the two refolds. Disagreement is information.</li>
+        <li><b>Self-consistency RMSD</b> between the design model and the refold, usually with a 2 Å threshold for “designable”, plus secondary-structure agreement and per-interface RMSD for complexes.</li>
+        <li><b>Novelty</b> measured two ways: maximum sequence identity to the PDB (and to a dated snapshot, to avoid leakage), and maximum TM-score or Foldseek structural similarity. A design that is 90% identical to a natural protein is a resurfacing exercise, which may be fine — but it should be labelled as such.</li>
+        <li><b>Diversity</b> measured by clustering at a fixed identity threshold (for example 40%) and reporting the number of unique clusters, not the number of designs. Ten thousand designs from three scaffolds are three ideas.</li>
+        <li><b>Held-out calibration set.</b> Keep a target, a scaffold family, or a date slice entirely out of the design loop and measure how the metrics perform there. This is the closest in silico analogue to a blind test.</li>
+      </ul>
+
+      <h3>6.3 Free energy and dynamics</h3>
+      <ul>
+        <li><b>Absolute binding free energy (ABFE)</b> and <b>relative FEP</b> are the most physically grounded in silico affinity estimates available at scale. They are also expensive, protocol-sensitive, and only trustworthy after a convergence check. Use them on tens of candidates, not thousands.</li>
+        <li><b>MM/GBSA or MM/PBSA</b> sits between docking and FEP in cost and in reliability. Its rankings are sensitive to the snapshot ensemble and to the dielectric model; report the protocol and a convergence check, not a single number.</li>
+        <li><b>MD preorganization.</b> For designed enzymes and binders, the question is whether the active site or interface stays in the intended geometry without the ligand. Distances between catalytic residues, RMSF of the binding loop, hydrogen-bond occupancy, and pocket volume over time are the metrics. A design that only adopts the target geometry when the ligand is present is a strained design.</li>
+        <li><b>Cryptic pockets and conformational selection.</b> Pocket detection (fpocket, SiteMap) on MD snapshots can find a druggable cavity that the static structure hides. The metric is the fraction of the ensemble in which the pocket is open, not a single detection.</li>
+        <li><b>Ensemble prediction</b> — MSA subsampling, AF-Cluster, or multiple-seed predictions — estimates conformational heterogeneity. For designed proteins this is still research-grade, but it is the right direction: a single structure is a point estimate of a distribution.</li>
+      </ul>
+
+      <h3>6.4 Specificity and off-target risk</h3>
+      <ul>
+        <li><b>Proteome-scale off-target scan.</b> Foldseek or a fast structure search against the human proteome (and the relevant pathogen or tissue proteome) for each designed binder, with hits ranked by structural and sequence similarity.</li>
+        <li><b>Paralog panel.</b> For a target with close homologues, predict binding to the paralogues and report a <b>selectivity index</b> (target score minus best off-target score). A binder that cannot distinguish a paralogue is a liability even if it binds the target well.</li>
+        <li><b>Epitope conservation.</b> If the intended epitope is conserved across the off-target set, specificity is structurally unlikely. This is a cheap sequence check that catches a class of failures no docking run will flag.</li>
+        <li><b>Poly-specificity counters</b> from developability (PSR, PSH) as a coarse in silico proxy for the kind of non-specific sticking that shows up in SPR and ELISA.</li>
+      </ul>
+
+      <h3>6.5 Enzyme-specific metrics</h3>
+      <ul>
+        <li><b>Catalytic residue geometry.</b> RMSD of the catalytic residues to the design model, metal coordination distances, and the presence of the oxyanion hole. These are the enzyme equivalents of interface chemistry, and they are non-negotiable.</li>
+        <li><b>Ligand and transition-state pose RMSD.</b> Dock the substrate and a transition-state analogue; the pose must place the scissile bond and the catalytic atoms in the intended arrangement. A good global docking score with a flipped substrate is a failure.</li>
+        <li><b>Pocket volume and shape.</b> fpocket or CASTp on the design and on MD snapshots; a pocket that collapses in the apo ensemble is not a pocket.</li>
+        <li><b>Substrate scope.</b> Dock a panel of candidate substrates and report the predicted reactivity profile. This is a ranking problem, and it is where docking is genuinely useful.</li>
+        <li><b>k<sub>cat</sub> and kinetic prediction.</b> Learned models (DLKcat, UniKP, CatPred, and successors) predict turnover from sequence and substrate. They are improving quickly, they are trained on sparse data, and they should be treated as priors rather than predictions.</li>
+        <li><b>Reaction energetics.</b> QM cluster or QM/MM estimates of the rate-limiting step, when the mechanism is known. Expensive, but the only in silico route to a mechanistic claim rather than a shape claim.</li>
+      </ul>
+
+      <h3>6.6 Process metrics that keep the campaign honest</h3>
+      <ul>
+        <li><b>Per-gate pass rate</b> and the <b>rank correlation between adjacent gates</b>. If two gates rank candidates nearly identically, one of them is redundant.</li>
+        <li><b>Calibration against experiment.</b> Bin designs by predicted confidence and plot observed hit rate per bin. A monotone curve is worth more than a high AUC, because it tells you what a threshold means.</li>
+        <li><b>Cost per validated design</b>, split into generation, filtering, physics, and wet lab. This is the number that decides whether a campaign is a platform or a hobby.</li>
+        <li><b>Reproducibility envelope.</b> Re-run the top 50 designs with different seeds and a different model version. The fraction that survives is a direct measure of metric noise.</li>
+      </ul>
+
+      <h2 id="funnel">7. A tiered decision funnel with declared thresholds</h2>
+      <p>The thresholds below are heuristics for a typical de novo binder or mini-protein campaign. They are not universal; a small peptide or an antibody will need different numbers, and every campaign should state its own. The value of the table is the <b>ordering</b> and the <b>survivor counts</b>, not the specific cutoffs.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Tier</th><th>Gate</th><th>Example threshold</th><th>Survivors from 10,000 designs</th><th>Cost class</th></tr></thead>
+          <tbody>
+            <tr><td><b>T0</b></td><td>Sequence sanity</td><td>No forbidden motifs, Cys ≤ 4, no long low-complexity stretch, no unintended N-glyc</td><td>~8,000</td><td>ms</td></tr>
+            <tr><td><b>T1</b></td><td>Inverse folding</td><td>ProteinMPNN score within campaign distribution; ESM likelihood above the 20th percentile</td><td>~6,000</td><td>s</td></tr>
+            <tr><td><b>T1</b></td><td>Fold confidence</td><td>pLDDT &gt; 80 (monomer), pTM &gt; 0.7</td><td>~4,000</td><td>s–min</td></tr>
+            <tr><td><b>T2</b></td><td>Designability</td><td>Refold RMSD &lt; 2 Å to the design model, with two independent predictors</td><td>~1,500</td><td>min</td></tr>
+            <tr><td><b>T2</b></td><td>Interface</td><td>ipTM &gt; 0.6, interface PAE &lt; 10 Å, buried SASA &gt; 600 Å², sc &gt; 0.5</td><td>~400</td><td>min–CPU-h</td></tr>
+            <tr><td><b>T2</b></td><td>Interface chemistry</td><td>Buried unsatisfied polar atoms ≤ 2 per 100 Å²; no clash; ΔG interface below campaign median</td><td>~200</td><td>CPU-h</td></tr>
+            <tr><td><b>T3</b></td><td>Stability and solubility</td><td>ΔΔG not destabilizing, solubility above campaign median, no aggregation hotspot</td><td>~100</td><td>CPU-h</td></tr>
+            <tr><td><b>T3</b></td><td>Specificity</td><td>No proteome off-target above the target score; paralogue selectivity index &gt; 0</td><td>~60</td><td>CPU-h</td></tr>
+            <tr><td><b>T4</b></td><td>MD preorganization</td><td>Interface or active-site geometry stable over 3 × 100 ns; pocket stays open</td><td>~25</td><td>GPU-day</td></tr>
+            <tr><td><b>T4</b></td><td>Free energy / affinity</td><td>ABFE or FEP within the useful range; ranking agrees with cheaper scores</td><td>~10–20</td><td>GPU-day</td></tr>
+            <tr><td><b>Bench</b></td><td>Synthesis and assay</td><td>Order 24–96 genes; measure binding, stability, expression</td><td>24–96 ordered</td><td>weeks</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pd-funnel">
+        <div><b>10,000</b> generated backbones/sequences → <b>4,000</b> confident folds → <b>1,500</b> designable → <b>400</b> plausible interfaces → <b>100</b> stable and soluble → <b>60</b> specific → <b>25</b> dynamic → <b>24–96</b> ordered</div>
+      </div>
+
+      <p>The funnel is deliberately aggressive at the top and conservative at the bottom. The top is where compute is cheap and errors are cheap to discard; the bottom is where each candidate costs real money. A campaign that inverts this — deep physics on everything, shallow filtering on the shortlist — spends its budget on the wrong end.</p>
+
+      <p>Two accounting rules make the funnel comparable across campaigns. First, <b>report the denominator at every gate</b>, including the number of designs that failed for technical reasons (failed folding job, missing MSA, timeout). Second, <b>keep a random sample of rejected designs</b> and, when possible, assay a handful. A filter that rejects a future hit is a false negative, and false negatives are invisible unless you look for them.</p>
+
+      <h2 id="hardware">8. Hardware requirements</h2>
+      <p>The stack is heterogeneous: sequence models want one GPU, structure models want VRAM and an MSA database, physics wants cores, and free-energy methods want GPU-days. The table is a planning sketch for <b>1,000 designs</b> at typical sizes (80–150 residues for binders, up to ~400 for larger assemblies). Multiply by 5 if you fold five seeds per design, which you should for the shortlist.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Stage</th><th>Representative tools</th><th>Compute</th><th>Memory / disk</th><th>Illustrative throughput</th><th>1,000 designs</th></tr></thead>
+          <tbody>
+            <tr><td><b>Generation</b></td><td>RFdiffusion, RFdiffusion2, ProteinMPNN, LigandMPNN</td><td>1 GPU (24–48 GB)</td><td>64 GB RAM; 50–200 GB disk</td><td>Seconds per design on an A100-class GPU</td><td>~5–20 GPU-hours</td></tr>
+            <tr><td><b>Folding</b></td><td>ColabFold/AF2, ESMFold, AlphaFold3, Boltz-2, Chai-1</td><td>1–8 GPUs (24–80 GB)</td><td>64–256 GB RAM; 1–2 TB SSD for full MSA databases</td><td>~1 s (ESMFold, short) to ~1–2 min (AF3/Boltz with MSA)</td><td>~20–100 GPU-hours</td></tr>
+            <tr><td><b>Inverse folding / scoring</b></td><td>ProteinMPNN, ESM-2/ESM-3, ESM-IF</td><td>1 GPU or 16 CPU cores</td><td>32–64 GB RAM</td><td>Hundreds to thousands of sequences per GPU-hour</td><td>&lt; 5 GPU-hours</td></tr>
+            <tr><td><b>Interface and stability</b></td><td>Rosetta, FoldX, ThermoMPNN</td><td>16–64 CPU cores</td><td>32–128 GB RAM</td><td>~1–5 min per design for ddG; cartesian ddG slower</td><td>~50–200 CPU-hours</td></tr>
+            <tr><td><b>Docking</b></td><td>AutoDock Vina, Gnina, DiffDock</td><td>32–128 CPU cores or 1 GPU</td><td>16–64 GB RAM</td><td>Seconds to minutes per ligand</td><td>Hours to a day</td></tr>
+            <tr><td><b>MD</b></td><td>GROMACS, OpenMM, AMBER</td><td>1–8 GPUs (A100/H100/4090)</td><td>64–128 GB RAM; 1–10 GB per trajectory</td><td>~50–100 ns/day for 50–100k atoms</td><td>20–50 designs × 3 × 100 ns ≈ 60–150 GPU-days</td></tr>
+            <tr><td><b>Free energy</b></td><td>OpenFE, GROMACS, Schrödinger FEP+</td><td>8–32 GPUs</td><td>128 GB RAM; high I/O</td><td>~1–5 GPU-days per transformation</td><td>Tens of candidates only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Practical notes that matter more than the table:</p>
+      <ul>
+        <li><b>VRAM is the binding constraint for structure prediction.</b> A 400-residue chain with a deep MSA can exceed 24 GB; long complexes need 40–80 GB or aggressive chunking. ESMFold is the cheap fallback for monomer screening, but it is a different model family and should be treated as such.</li>
+        <li><b>MSA databases are the hidden cost.</b> A full AlphaFold/Boltz setup wants roughly 1–2 TB of fast local storage and a matching RAM budget. A network filesystem turns a 30-second fold into a 3-minute fold.</li>
+        <li><b>GPU-days do not parallelize linearly.</b> MD and FEP jobs are usually limited by the number of concurrent GPU slots, not by the number of candidates. Plan the queue, not just the total.</li>
+        <li><b>Cost order of magnitude.</b> At roughly $1–3 per A100-GPU-hour, the Tier 0–2 funnel for 10,000 designs is on the order of hundreds to a few thousand dollars; the MD/FEP tier is on the order of thousands to tens of thousands. The wet-lab order dominates the total.</li>
+        <li><b>A workstation is enough for the popular stack.</b> One 24–48 GB GPU, 128 GB RAM, and 4 TB of NVMe runs MPNN, ESMFold, ColabFold for short chains, Rosetta, and short MD. The cluster is for MSA-heavy folding, long MD, and FEP.</li>
+      </ul>
+
+      <h2 id="timeline">9. Timeline: per campaign, and per field</h2>
+      <p>Two timelines are useful. The first is operational: how long a campaign takes when the funnel is ordered correctly. The second is historical: how the metric stack itself evolved, because the current defaults are path-dependent.</p>
+
+      <h3>9.1 A 12-week campaign</h3>
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead><tr><th>Week</th><th>Activity</th><th>Gate / output</th><th>Compute</th></tr></thead>
+          <tbody>
+            <tr><td><b>0</b></td><td>Target prep, MSA, reference structures, negative controls, pre-registered thresholds</td><td>Frozen target definition and scoring script</td><td>CPU-hours</td></tr>
+            <tr><td><b>1</b></td><td>Scaffold generation and sequence design</td><td>10,000–50,000 raw designs</td><td>GPU-hours</td></tr>
+            <tr><td><b>2</b></td><td>T0–T1: sequence sanity, inverse folding, folding</td><td>~4,000 confident, designable candidates</td><td>GPU-hours to ~1 GPU-day</td></tr>
+            <tr><td><b>3</b></td><td>T2: interface, chemistry, stability, specificity</td><td>~100–400 shortlisted</td><td>CPU-hours to CPU-days</td></tr>
+            <tr><td><b>4</b></td><td>T3–T4: MD, free energy, final ranking, gene design</td><td>24–96 ordered</td><td>GPU-days</td></tr>
+            <tr><td><b>5–6</b></td><td>Synthesis and cloning</td><td>Expression constructs</td><td>wet lab</td></tr>
+            <tr><td><b>7–9</b></td><td>Expression, purification, binding and stability assays</td><td>Hit list with measured affinities</td><td>wet lab</td></tr>
+            <tr><td><b>10–11</b></td><td>Structural follow-up (cryo-EM, crystallography, or HDX) for top hits</td><td>Structure–function confirmation</td><td>wet lab</td></tr>
+            <tr><td><b>12</b></td><td>Recalibrate metrics, update thresholds, design round two</td><td>Calibrated funnel; new designs</td><td>mixed</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The compute work is concentrated in weeks 1–4; the wet lab is the long pole. That asymmetry is the reason the funnel should be optimized for <b>information per week</b>, not for the number of designs. A smaller, better-filtered set that returns results in week 9 is worth more than a larger set that returns in week 14.</p>
+
+      <h3>9.2 How the metrics got here</h3>
+      <ul class="pd-tl">
+        <li class="pd-era"><span>Before structure prediction</span></li>
+        <li class="pd-item crit"><span class="pd-y">1963</span> Ramachandran plot — the first per-residue geometric validity check; still a filter in every structure-validation report.</li>
+        <li class="pd-item crit"><span class="pd-y">1974</span> Chou–Fasman secondary-structure propensity — sequence-based structure heuristics, the ancestor of today's propensity scores.</li>
+        <li class="pd-item crit"><span class="pd-y">1993</span> Shape complementarity (Lawrence &amp; Colman) — interface geometry becomes a number.</li>
+        <li class="pd-item"><span class="pd-y">1997</span> Rosetta ab initio — physics-based scoring and fragment assembly; ΔG and ddG enter the design loop.</li>
+        <li class="pd-era"><span>De novo design becomes real</span></li>
+        <li class="pd-item agent"><span class="pd-y">2003</span> Top7 — the first de novo protein with a novel fold, validated experimentally; “design then express” becomes a credible pipeline.</li>
+        <li class="pd-item"><span class="pd-y">2005</span> FoldX — fast empirical ΔΔG, the workhorse of stability triage.</li>
+        <li class="pd-item"><span class="pd-y">2011</span> RosettaRemodel and the mini-binder era — interface design with explicit hydrogen-bond and buried-unsatisfied checks.</li>
+        <li class="pd-era"><span>Deep learning changes the estimator</span></li>
+        <li class="pd-item"><span class="pd-y">2020–21</span> AlphaFold2 and RoseTTAFold — pLDDT, PAE, and pTM become the default structural metrics; ColabFold makes them routine.</li>
+        <li class="pd-item agent"><span class="pd-y">2022</span> ProteinMPNN and ESMFold — inverse folding at scale, and a fast monomer predictor that changes the economics of screening.</li>
+        <li class="pd-item agent"><span class="pd-y">2023</span> RFdiffusion and ProteinGym — diffusion-based design and a standardized deep-mutational-scan benchmark for the predictors used to rank designs.</li>
+        <li class="pd-item"><span class="pd-y">2024</span> AlphaFold3 and Chai-1 — complex and ligand-aware prediction; ipTM and interface PAE become the binder default.</li>
+        <li class="pd-item"><span class="pd-y">2025</span> Boltz-2, RFdiffusion2, ipSAE — open affinity prediction, enzyme-scaffold design, and a length-bias correction for interface scores.</li>
+        <li class="pd-item agent"><span class="pd-y">2026</span> Consolidation — the frontier is no longer a single score but calibration: ensemble agreement, orthogonal refolding, specificity scans, and cost per validated design.</li>
+      </ul>
+
+      <h2 id="checklist">10. A reporting checklist</h2>
+      <p>If a design paper or an internal report answers these twelve items, its numbers are comparable to someone else's. If it does not, the numbers are anecdote.</p>
+      <ol>
+        <li><b>Target definition</b>: sequence, isoform, construct boundaries, and the date of the structure or model used.</li>
+        <li><b>MSA provenance</b>: database version, date, depth, and whether any homologues of the designed protein were excluded.</li>
+        <li><b>Model and version</b>: exact weights, commit, and inference settings for every predictor.</li>
+        <li><b>Seeds and sampling</b>: number of seeds, temperature, and whether the reported score is a max, mean, or median.</li>
+        <li><b>Gate order and thresholds</b>: the funnel as executed, including any thresholds changed mid-campaign.</li>
+        <li><b>Denominators</b>: designs entering and leaving every gate, including technical failures.</li>
+        <li><b>Negative controls</b>: scrambled sequences, natural homologues, known binders, and a random baseline through the same funnel.</li>
+        <li><b>Novelty definition</b>: sequence identity and structural similarity cutoffs, against a dated database snapshot.</li>
+        <li><b>Diversity</b>: clustering threshold and number of unique clusters, not just design count.</li>
+        <li><b>Orthogonal validation</b>: which predictor was held out, and the agreement between predictors.</li>
+        <li><b>Calibration</b>: predicted confidence versus observed hit rate, with bin counts.</li>
+        <li><b>Cost and outcome</b>: compute cost per gate, cost per validated design, and the experimental result for the same designs.</li>
+      </ol>
+
+      <h2 id="failures">11. Failure modes to watch for</h2>
+      <ul>
+        <li><b>Optimizing the metric instead of the protein.</b> Every score in this post has been gamed by a generative model at some point. The defence is a held-out metric and a bench result, not a better score.</li>
+        <li><b>Treating pLDDT as stability.</b> It is confidence in a structure, not a free energy. A rigid-looking design can be marginally stable or unexpressible.</li>
+        <li><b>Treating docking as affinity.</b> Docking poses are hypotheses; docking scores are not binding free energies. Use them to eliminate poses, not to rank close analogues.</li>
+        <li><b>Ignoring the expression host.</b> PTM liabilities, codon usage, toxicity, and folding capacity are host-specific. A design that is clean in silico can be unexpressible in <i>E. coli</i>.</li>
+        <li><b>Using antibody developability metrics on non-antibody formats.</b> TAP and PSP were trained on antibodies; their flags are informative for antibody-like molecules and extrapolations elsewhere.</li>
+        <li><b>Assuming immunogenicity is predictable.</b> MHC binding is a necessary screen, not a sufficient one. De novo folds have no clinical history, and “human-ness” is not a mechanism.</li>
+        <li><b>Forgetting the false negatives.</b> A filter that rejects a good design is invisible unless you assay a sample of rejects. Report the reject audit.</li>
+        <li><b>Comparing scores across papers.</b> pLDDT from different model versions, ΔG from different force fields, and ipTM from different MSA settings are not the same quantity. Compare within a protocol.</li>
+      </ul>
+
+      <h2 id="sources">12. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>IND</em> = industry report.</p>
+
+      <h3>Structure prediction and confidence</h3>
+      <ul>
+        <li>Jumper et al., <a href="https://doi.org/10.1038/s41586-021-03819-2">Highly accurate protein structure prediction with AlphaFold</a> (<i>Nature</i> 2021) — <em>PR</em></li>
+        <li>Abramson et al., <a href="https://doi.org/10.1038/s41586-024-07487-w">Accurate structure prediction of biomolecular interactions with AlphaFold 3</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Lin et al., <a href="https://doi.org/10.1126/science.ade2574">Evolutionary-scale prediction of atomic-level protein structure with a language model</a> (<i>Science</i> 2023) — <em>PR</em></li>
+        <li>Mirdita et al., <a href="https://doi.org/10.1038/s41592-022-01488-1">ColabFold: making protein folding accessible to all</a> (<i>Nature Methods</i> 2022) — <em>PR</em></li>
+        <li>Chai Discovery, <a href="https://doi.org/10.1101/2024.10.10.617658">Chai-1: Decoding the molecular interactions of life</a> (2024) — <em>PP</em></li>
+        <li>Passaro et al., <a href="https://doi.org/10.1101/2025.02.05.636580">Boltz-2: Towards Accurate and Efficient Binding Affinity Prediction</a> (2025) — <em>PP</em></li>
+      </ul>
+
+      <h3>Design methods and designability</h3>
+      <ul>
+        <li>Kuhlman et al., <a href="https://doi.org/10.1126/science.1089427">Design of a novel globular protein fold with atomic-level accuracy</a> (<i>Science</i> 2003) — <em>PR</em></li>
+        <li>Dauparas et al., <a href="https://doi.org/10.1126/science.add2187">Robust deep learning–based protein sequence design using ProteinMPNN</a> (<i>Science</i> 2022) — <em>PR</em></li>
+        <li>Watson et al., <a href="https://doi.org/10.1038/s41586-023-06415-8">De novo design of protein structure and function with RFdiffusion</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+        <li>Ahern et al., <a href="https://doi.org/10.1101/2025.04.17.649043">Atom-level enzyme active site scaffolding using RFdiffusion2</a> (2025) — <em>PP</em></li>
+        <li>Notin et al., <a href="https://doi.org/10.1101/2023.09.20.558508">ProteinGym: Large-Scale Benchmarks for Protein Design and Fitness Prediction</a> (2023) — <em>PP</em></li>
+      </ul>
+
+      <h3>Interfaces, affinity, and specificity</h3>
+      <ul>
+        <li>Lawrence &amp; Colman, <a href="https://doi.org/10.1016/S0022-2836(05)80360-2">Shape complementarity at protein/protein interfaces</a> (<i>JMB</i> 1993) — <em>PR</em></li>
+        <li>Schymkowitz et al., <a href="https://doi.org/10.1093/nar/gki387">The FoldX web server</a> (<i>NAR</i> 2005) — <em>PR</em></li>
+        <li>Eberhardt et al., <a href="https://doi.org/10.1021/acs.jcim.1c00203">AutoDock Vina 1.2.0</a> (<i>JCIM</i> 2021) — <em>PR</em></li>
+        <li>McNutt et al., <a href="https://doi.org/10.1021/acs.jcim.3c00216">GNINA 1.0</a> (<i>JCIM</i> 2023) — <em>PR</em></li>
+        <li>Dunbrack, <a href="https://doi.org/10.1101/2025.02.10.637595">ipSAE: rethinking ipTM for protein–protein interaction prediction</a> (2025) — <em>PP</em></li>
+        <li>Raybould et al., <a href="https://doi.org/10.1073/pnas.1902477116">Therapeutic Antibody Profiler (TAP)</a> (<i>PNAS</i> 2019) — <em>PR</em></li>
+        <li>van Kempen et al., <a href="https://doi.org/10.7554/eLife.92692">Foldseek: fast and accurate protein structure search</a> (<i>eLife</i> 2024) — <em>PR</em></li>
+      </ul>
+
+      <h3>Enzymes, dynamics, and free energy</h3>
+      <ul>
+        <li>Li et al., <a href="https://doi.org/10.1038/s41467-022-34249-x">DLKcat: deep learning–enabled k<sub>cat</sub> prediction</a> (<i>Nature Communications</i> 2022) — <em>PR</em></li>
+        <li>Yu et al., <a href="https://doi.org/10.1038/s41467-023-41899-y">UniKP: unified kinetic parameter prediction</a> (<i>Nature Communications</i> 2023) — <em>PR</em></li>
+        <li>Boorla &amp; Maranas, <a href="https://doi.org/10.1038/s41467-024-53490-0">CatPred: catalysed reaction and kinetic parameter prediction</a> (<i>Nature Communications</i> 2024) — <em>PR</em></li>
+        <li>Wayment-Steele et al., <a href="https://doi.org/10.1038/s41586-024-07138-0">Predicting multiple conformations via sequence clustering and AlphaFold2</a> (<i>Nature</i> 2024) — <em>PR</em></li>
+        <li>Abel et al., <a href="https://doi.org/10.1021/acs.jctc.6c00816">OpenFE: automated free-energy calculations</a> (<i>JCIM</i> 2025) — <em>PR</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The in silico metric stack is not a hierarchy of truth. It is a sequence of bets, each cheaper than the next, each with a known blind spot. The popular metrics — pLDDT, pTM, ipTM, PAE, ProteinMPNN score, Rosetta ΔG — are popular because they are fast and they catch real failure modes. The advanced metrics — interface PAE, orthogonal refolding, ensemble agreement, ABFE, specificity scans, catalytic geometry — earn their cost when the cheap gates have already removed the easy failures.</p>
+
+      <p>The one metric that ties the stack together is <b>calibration against the bench</b>. A campaign that records which designs passed which gate, assays a sample of rejects, and reports hit rate per predicted-confidence bin is a campaign that improves. A campaign that reports only its best score is a press release. The difference is not compute; it is bookkeeping.</p>
+
+      <p>None of this replaces the experimental question. A designed protein is a hypothesis, and every score in this post is a statement about the hypothesis's plausibility, not its truth. The useful discipline is to make the statements explicit, ordered, and cheap — then spend the money on the ones that survive.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>

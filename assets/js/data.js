@@ -1151,6 +1151,24 @@ window.SCAI_DATA = {
   // ---- Blog posts (title + link; full posts live in blog/posts/) ----
   posts: [
     {
+      date: "2026-11-09", tag: "Research", title: "Signal or noise: how to tell a real perturbation effect from a measurement artefact",
+      desc: "An investigation of how single-cell perturbation screens separate signal from noise: the five quantities, the variance arithmetic and effective sample size, five positive controls, four nulls, ten artefacts that masquerade as effects, effect-size metrics, the reproducibility ceiling and shared-control inflation, a gated decision procedure, a worked example, nine failure modes, a 1935–2026 timeline of when each guard arrived, and a fourteen-item reporting checklist.",
+      url: "/blog/posts/2026-11-09-signal-or-noise-perturbation-effects.html",
+      home: true
+    },
+    {
+      date: "2026-11-09", tag: "Research", title: "What to measure on a designed protein: an in silico validation stack",
+      desc: "A field guide to in silico metrics for protein design — pLDDT, pTM, ipTM, PAE, ipSAE, interface chemistry, ddG, solubility, developability, specificity, designability, novelty, MD preorganization, and free-energy methods; a tiered decision funnel with thresholds, hardware requirements per 1,000 designs, a 12-week campaign timeline, a 1963–2026 metric timeline, and a reporting checklist.",
+      url: "/blog/posts/2026-11-09-in-silico-metrics-protein-design.html",
+      home: true
+    },
+    {
+      date: "2026-11-09", tag: "Research", title: "Network topology for multi-agent systems: from blackboards to agent swarms",
+      desc: "An investigation of network topology in multi-agent and parallel-agent systems — star, hierarchy, mesh, ring, chain, blackboard, complete graph, and learned graphs; message arithmetic, error propagation, synchronization and merge cost; what the swarm, 500-agents, hallucination, and context-engineering posts establish; a 1959–2026 timeline; and a reporting checklist.",
+      url: "/blog/posts/2026-11-09-network-topology-multi-agent-systems.html",
+      home: true
+    },
+    {
       date: "2026-10-30", tag: "Research", title: "Rules, mined: rule-based ML, agents as rule miners, and the maintenance problem",
       desc: "How rule-based machine learning relates to AI agents: a taxonomy of rules, the two rule traditions, the arithmetic of rule mining (multiplicity, support decay, lift, coverage stacking, stability, rule debt), seven agent roles, a closed loop with prompts and rule cards, solver-backed rule use, rules from agent traces, guardrails as rules, text-to-rule compilation, the single-cell case, nine failure modes, the evidence, and eight concrete potentials.",
       url: "/blog/posts/2026-10-30-rules-mined-agents-and-rule-based-ml.html",

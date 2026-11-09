@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal or noise: how to tell a real perturbation effect from a measurement artefact — scAI Index</title>
+  <meta name="description" content="An investigation of how to distinguish a real perturbation effect from technical noise, cell-state variation and analysis artefacts in single-cell perturbation screens: the variance arithmetic, five positive controls, the four nulls, ten confounders, effect-size metrics, the reproducibility ceiling, control-splitting bias, a gated decision procedure, a worked example, nine failure modes, a 1935–2026 timeline of when each guard became available versus routine, and a reporting checklist.">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .sn-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .sn-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; font-size: 11.5px; color: var(--muted); }
+    .sn-key { display: inline-flex; align-items: center; gap: 6px; }
+    .sn-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+    .sn-sw.line { height: 3px; width: 18px; border-radius: 2px; }
+    .sn-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .sn-plot { display: block; width: 100%; min-width: 620px; height: auto; }
+    .sn-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .sn-eq { margin: 12px 0; padding: 12px 14px; background: #fff; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.7; color: #2d3748; overflow-x: auto; }
+    .sn-verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 16px 0 22px; }
+    .sn-v { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: #fff; font-size: 13px; }
+    .sn-v b { display: block; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+    .sn-v.real { border-color: #b7e4c7; background: #f0fbf5; }
+    .sn-v.real b { color: #276749; }
+    .sn-v.noise { border-color: #f6d9a8; background: #fffaef; }
+    .sn-v.noise b { color: #7c5300; }
+    .sn-v.open { border-color: #cbd5e0; background: #f8fafc; }
+    .sn-v.open b { color: #475569; }
+    .gt-fig { margin: 14px 0 22px; padding: 14px 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .gt-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; font-size: 11.5px; color: var(--muted); }
+    .gt-key { display: inline-flex; align-items: center; gap: 6px; }
+    .gt-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+    .gt-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .gt-plot { display: block; width: 100%; min-width: 660px; height: auto; }
+    .gt-cap { margin: 8px 2px 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .gt-tl { position: relative; margin: 18px 0 6px; padding: 0 0 0 22px; list-style: none; }
+    .gt-tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #c6def4, #b7e4c7 45%, #f6d9a8); }
+    .gt-era { margin: 20px 0 9px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.055em; text-transform: uppercase; color: var(--muted); }
+    .gt-era:first-child { margin-top: 2px; }
+    .gt-era span { color: var(--text); }
+    .gt-item { position: relative; margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: #2d3748; }
+    .gt-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+    .gt-item.assay::before { border-color: #2f855a; }
+    .gt-item.stat::before { border-color: #b7791f; }
+    .gt-item.crisis::before { border-color: #c53030; }
+    .gt-y { display: inline-block; min-width: 62px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+    @media (max-width: 520px) { .gt-y { min-width: 0; margin-right: 6px; } }
+  </style>
+</head>
+<body data-page="blog">
+  <nav>
+    <div class="inner">
+      <a class="brand" href="../../index.html">scAI<span> Index</span></a>
+      <div class="links">
+        <a href="../../leaderboard.html" data-page="leaderboard">Leaderboard</a>
+        <a href="../../models.html" data-page="models">Models</a>
+        <a href="../../research.html" data-page="research">Research Guide</a>
+        <a href="../../blog/" data-page="blog">Blog</a>
+        <a href="../../references.html" data-page="references">References</a>
+        <a href="../../contribute.html" data-page="contribute">Contribute</a>
+        <a href="../../about.html" data-page="about">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page-shell">
+    <aside class="section-sidebar">
+      <details class="section-index" open>
+        <summary>On this page</summary>
+        <nav aria-label="Report sections">
+          <a href="#why">1. Why this is the question</a>
+          <a href="#vocab">2. Five quantities, not two</a>
+          <a href="#variance">3. The variance arithmetic</a>
+          <a href="#controls">4. Five positive controls</a>
+          <a href="#nulls">5. The four nulls</a>
+          <a href="#masquerade">6. What masquerades</a>
+          <a href="#effect">7. Reading an effect size</a>
+          <a href="#ceiling">8. The reproducibility ceiling</a>
+          <a href="#models">9. Judging the models</a>
+          <a href="#gate">10. A gated procedure</a>
+          <a href="#worked">11. Worked example</a>
+          <a href="#failures">12. Nine failure modes</a>
+          <a href="#timeline">13. Timeline, 1935–2026</a>
+          <a href="#timeline-record">13.1 The record</a>
+          <a href="#timeline-lag">13.2 The lag arithmetic</a>
+          <a href="#timeline-crises">13.3 Two noise crises</a>
+          <a href="#timeline-predict">13.4 Three predictions</a>
+          <a href="#checklist">14. Reporting checklist</a>
+          <a href="#sources">15. Sources</a>
+          <a href="#closing">Closing thoughts</a>
+        </nav>
+      </details>
+    </aside>
+
+    <main class="page-main">
+    <article class="post-body">
+      <div class="byline" style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span class="tag">Research</span><span class="date" style="color:var(--muted);font-size:12.5px">2026-11-09</span>
+      </div>
+      <h1>Signal or noise: how to tell a real perturbation effect from a measurement artefact</h1>
+
+      <p>The <a href="/blog/posts/2026-09-08-perturbation-virtual-cell-guide.html">stage-1 guide</a> ranked perturbation models and argued that embeddings should be evaluated without mistaking systematic variation for biology. It left the harder question implicit: when a screen reports that knocking down gene <i>X</i> changes a programme, <b>how would anyone know whether that is the perturbation, the noise, or the analysis?</b> This post is about that question, and about the uncomfortable fact that the answer is usually "undetermined" rather than "real" or "fake".</p>
+
+      <p>The field has spent a decade building instruments that can perturb 10,000 genes and read 100,000 cells. It has spent much less time on the arithmetic that decides whether a difference of two such measurements is bigger than the difference the instrument produces on its own. That gap is now measurable, because 2024–2026 produced the papers that audit it: benchmark critiques that find deep models losing to linear baselines, a reanalysis showing that shared control cells inflate prediction scores, a report that a common RNA-extraction artefact inflates knockdown measurements across CRISPR systems, and a statistical model showing that most real effects in perturbation atlases are too small to be detected one gene at a time.</p>
+
+      <div class="guide-policy"><strong>Scope note:</strong> this is a synthesis and a procedure, not a new benchmark. <strong>No screen was re-analysed and no method was run for this post.</strong> Every number labelled "illustrative" is arithmetic I performed on assumptions stated in place; it is a sanity check, not a measurement. Publications are labelled <em>PR</em> (peer-reviewed), <em>PP</em> (preprint), or <em>RES</em> (resource/software paper). Claims are attributed to the paper that made them, and <a href="#timeline">§13</a> dates the guards described here rather than restating them.</div>
+
+      <div class="guide-callout"><strong>Central claim:</strong> a perturbation effect is not a property of a gene. It is a <b>difference between two estimates</b>, each of which carries technical error, cell-state variation, donor and batch structure, and a selection process that decides which cells count as perturbed. An effect is real when it survives <em>four separate nulls</em> — a technical null, a biological null, a guide null, and an analysis null — and the field's most common error is not believing a false effect; it is <b>failing to state which nulls were tested</b>, so that a real but small effect and a large artefact are reported in the same language.</div>
+
+      <h2 id="why">1. Why this is the question</h2>
+      <p>Two errors are available, and they cost different things.</p>
+
+      <p><b>A false effect</b> costs a validation campaign: a knockout mouse, a western blot, six months, and a retraction if the phenotype does not replicate. <b>A missed effect</b> costs a hypothesis, and it is invisible, which makes it the more common failure in practice. The published literature is selected on the first error — a screen that found nothing is not a paper — and the result is a corpus in which effect sizes are biased upward by exactly the amount that the detection threshold is biased downward.</p>
+
+      <p>This is not a criticism of any particular study. It is a structural property of screens, familiar from high-throughput screening statistics twenty years ago: when 20,000 reagents are tested, the ones that pass are, on average, the ones whose noise happened to be large. The fix that the HTS community adopted — plate-level correction, replicated wells, Z′-style separation metrics, confirmation in a second assay — is the same fix that single-cell screens now need, at a different unit of observation. The <a href="#timeline">timeline in §13</a> shows how consistently the guard arrives after the modality: 3–4 years for a recomputation, 5–12 for new cells, and sixty years for replication, which was available before any screen existed.</p>
+
+      <p>There is also a newer reason to care. Models are now trained to predict these effects, and their scores are computed against the same noisy measurements. If the measurement is not separated into signal and noise, a model can score well by learning the noise, and a paper can show an "improvement" that is really a change in how control cells were reused. The 2026 evidence ( <a href="#ceiling">§8</a>, <a href="#models">§9</a> ) is that this is happening.</p>
+
+      <h2 id="vocab">2. Five quantities, not two</h2>
+      <p>"Signal versus noise" is a binary that hides the interesting cases. Five quantities are separable, and they behave differently under replication.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Quantity</th><th>What it is</th><th>Replicates with…</th><th>Typical size</th><th>Mistaken for</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Technical error</b></td>
+              <td>Library size, sampling, ambient RNA, doublets, barcode swapping, batch and plate position, sequencing depth.</td>
+              <td>a re-run of the same library</td>
+              <td>large per cell; shrinks with depth and QC</td>
+              <td>a real effect, especially for highly expressed genes</td>
+            </tr>
+            <tr>
+              <td><b>Cell-state variation</b></td>
+              <td>Position in the cell cycle, metabolic state, differentiation, activation. Present in controls and perturbed cells alike.</td>
+              <td>a new donor or a new time point</td>
+              <td>often the largest axis of variation</td>
+              <td>a perturbation-specific programme</td>
+            </tr>
+            <tr>
+              <td><b>Culture / growth effect</b></td>
+              <td>Viability, confluence, proliferation rate. A perturbation that slows growth changes thousands of genes.</td>
+              <td>a dose or time course</td>
+              <td>very large; dominates essential-gene screens</td>
+              <td>a specific transcriptional regulator</td>
+            </tr>
+            <tr>
+              <td><b>On-target effect</b></td>
+              <td>The transcriptional consequence of reducing the intended gene product.</td>
+              <td>an independent guide, an orthogonal modality</td>
+              <td>small: a typical perturbation moves tens of genes</td>
+              <td>nothing — this is the thing</td>
+            </tr>
+            <tr>
+              <td><b>Off-target effect</b></td>
+              <td>Guide-specific consequences not mediated by the intended gene: seed effects, cutting at other loci, guide-RNA abundance artefacts.</td>
+              <td>a second guide to the same gene (it should <i>not</i> replicate)</td>
+              <td>can exceed the on-target effect</td>
+              <td>the on-target effect, when only one guide is used</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two consequences follow immediately, and both are routinely ignored.</p>
+
+      <p><b>First, biological variation is not noise.</b> A donor difference, a cell-state shift, or a growth-rate change is real biology; it is simply not the biology the experiment claims to isolate. Calling it noise invites the wrong fix (more cells). The right fix is a design that separates it (more donors, cell-cycle covariates, a viability readout).</p>
+
+      <p><b>Second, the on-target effect is usually the smallest of the five.</b> This is the single most important quantitative fact in the field, and it is now measured rather than asserted: a transcriptome-wide model of differential expression in perturbation atlases estimates that <b>a typical gene perturbation affects about 45 genes, while a typical essential gene affects over 500</b> <a href="https://doi.org/10.1038/s41588-025-02169-3">(TRADE, <i>Nat Genet</i> 2025, <em>PR</em>)</a>. When the typical signal is a few dozen genes out of 20,000, and the typical growth or cell-state confound is thousands, the prior probability that a large observed effect is specific is low.</p>
+
+      <h2 id="variance">3. The variance arithmetic</h2>
+      <p>Every perturbation effect is estimated as a contrast. Write the observed expression of a gene in cell <i>i</i> as</p>
+
+      <div class="sn-eq">y<sub>i</sub> = μ + d<sub>donor(i)</sub> + b<sub>batch(i)</sub> + s<sub>state(i)</sub> + β·1[perturbed] + g<sub>guide(i)</sub> + ε<sub>i</sub></div>
+
+      <p>and the estimate of β is a difference of means whose standard error depends on which of those terms are shared within the groups being compared. The failure mode is always the same: <b>treating cells as independent replicates when they are grouped.</b></p>
+
+      <p>The correction is a design effect. If cells within a group (a donor, a well, a transfection batch) correlate with intraclass correlation ρ, then <i>n</i> cells carry the information of</p>
+
+      <div class="sn-eq">n<sub>eff</sub> = n / (1 + (n − 1)·ρ)</div>
+
+      <p>independent observations. The ceiling is 1/ρ: no number of cells fixes a donor-level confound. Figure 1 plots this for four values of ρ, and the numbers are worth stating because they are not intuitive.</p>
+
+      <div class="sn-fig">
+        <div class="sn-legend">
+          <span class="sn-key"><span class="sn-sw line" style="background:#3182ce"></span>ρ = 0.001 (technical split)</span>
+          <span class="sn-key"><span class="sn-sw line" style="background:#2f855a"></span>ρ = 0.01 (same donor, different well)</span>
+          <span class="sn-key"><span class="sn-sw line" style="background:#b7791f"></span>ρ = 0.05 (same donor, different plate)</span>
+          <span class="sn-key"><span class="sn-sw line" style="background:#94a3b8"></span>ρ = 0.20 (same donor, different day)</span>
+        </div>
+        <div class="sn-scroll">
+        <svg class="sn-plot" viewBox="0 0 720 300" role="img" aria-labelledby="sn-t sn-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="sn-t">Effective sample size as a function of cells per arm, for four intraclass correlations</title>
+          <desc id="sn-d">Four curves showing that effective sample size rises with cells per arm but saturates at one over rho: 1,000 for rho 0.001, 100 for 0.01, 20 for 0.05 and 5 for 0.20. At rho 0.05, two hundred cells provide the information of about twenty independent observations.</desc>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="64" y1="224" x2="660" y2="224" />
+            <line x1="64" y1="186" x2="660" y2="186" />
+            <line x1="64" y1="148" x2="660" y2="148" />
+            <line x1="64" y1="110" x2="660" y2="110" />
+            <line x1="64" y1="72" x2="660" y2="72" />
+            <line x1="213" y1="34" x2="213" y2="262" />
+            <line x1="362" y1="34" x2="362" y2="262" />
+            <line x1="511" y1="34" x2="511" y2="262" />
+          </g>
+
+          <line x1="64" y1="262" x2="660" y2="262" stroke="#cbd5e0" />
+          <line x1="64" y1="34" x2="64" y2="262" stroke="#cbd5e0" />
+
+          <line x1="64" y1="186" x2="660" y2="186" stroke="#b7791f" stroke-width="1.1" stroke-dasharray="5 4" opacity="0.55" />
+          <line x1="64" y1="243" x2="660" y2="243" stroke="#94a3b8" stroke-width="1.1" stroke-dasharray="5 4" opacity="0.7" />
+
+          <polyline fill="none" stroke="#3182ce" stroke-width="2.2" points="67.0,258.2 81.9,239.3 99.8,216.9 117.6,194.7 135.5,172.9 153.4,151.2 171.3,129.8 189.2,108.7 207.0,87.8 224.9,67.1 242.8,46.7" />
+          <polyline fill="none" stroke="#2f855a" stroke-width="2.2" points="67.0,258.2 81.9,240.3 99.8,220.9 117.6,203.5 135.5,187.9 153.4,173.6 171.3,160.7 189.2,148.8 207.0,137.9 224.9,127.9 242.8,118.6 260.7,110.0 278.6,102.0 296.4,94.5 314.3,87.6 332.2,81.0 350.1,74.9 368.0,69.2 385.8,63.7 403.7,58.6 421.6,53.8 439.5,49.2 457.4,44.9" />
+          <polyline fill="none" stroke="#b7791f" stroke-width="2.2" points="67.0,258.2 81.9,243.8 99.8,232.6 117.6,225.0 135.5,219.6 153.4,215.5 171.3,212.3 189.2,209.7 207.0,207.6 224.9,205.8 242.8,204.3 260.7,203.0 278.6,201.9 296.4,200.9 314.3,200.0 332.2,199.2 350.1,198.6 368.0,197.9 385.8,197.4 403.7,196.9 421.6,196.4 439.5,196.0 457.4,195.6 475.2,195.2 493.1,194.9 511.0,194.5 528.9,194.3 546.8,194.0 564.6,193.7 582.5,193.5 600.4,193.3 618.3,193.0 636.2,192.8 654.0,192.7" />
+          <polyline fill="none" stroke="#94a3b8" stroke-width="2.2" points="67.0,258.2 81.9,250.6 99.8,247.8 117.6,246.5 135.5,245.7 153.4,245.2 171.3,244.9 189.2,244.7 207.0,244.5 224.9,244.3 242.8,244.2 260.7,244.1 278.6,244.0 296.4,243.9 314.3,243.9 332.2,243.8 350.1,243.8 368.0,243.7 385.8,243.7 403.7,243.6 421.6,243.6 439.5,243.6 457.4,243.6 475.2,243.5 493.1,243.5 511.0,243.5 528.9,243.5 546.8,243.5 564.6,243.4 582.5,243.4 600.4,243.4 618.3,243.4 636.2,243.4 654.0,243.4" />
+
+          <text x="252" y="50" font-size="10.5" fill="#3182ce" font-weight="700">ρ = 0.001</text>
+          <text x="464" y="48" font-size="10.5" fill="#2f855a" font-weight="700">ρ = 0.01</text>
+          <text x="592" y="179" font-size="10.5" fill="#b7791f" font-weight="700" text-anchor="middle">ρ = 0.05 · ceiling 20</text>
+          <text x="592" y="238" font-size="10.5" fill="#94a3b8" font-weight="700" text-anchor="middle">ρ = 0.20 · ceiling 5</text>
+
+          <g font-size="10.5" fill="#64748b" text-anchor="end">
+            <text x="56" y="266">0</text>
+            <text x="56" y="228">10</text>
+            <text x="56" y="190">20</text>
+            <text x="56" y="152">30</text>
+            <text x="56" y="114">40</text>
+            <text x="56" y="76">50</text>
+            <text x="56" y="38">60</text>
+          </g>
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="64" y="280">0</text>
+            <text x="213" y="280">50</text>
+            <text x="362" y="280">100</text>
+            <text x="511" y="280">150</text>
+            <text x="660" y="280">200</text>
+          </g>
+          <text x="362" y="296" font-size="10.5" fill="#64748b" text-anchor="middle">cells per arm</text>
+          <text x="20" y="148" font-size="10.5" fill="#64748b" text-anchor="middle" transform="rotate(-90 20 148)">effective n</text>
+        </svg>
+        </div>
+        <p class="sn-cap"><b>Figure 1. Cells stop buying power at 1/ρ.</b> Illustrative arithmetic from n<sub>eff</sub> = n / (1 + (n − 1)ρ), not a measurement. At ρ = 0.05, 200 cells provide the information of about 20 independent observations; at ρ = 0.20 they provide about 5. The practical reading: <b>the number that governs power is the number of independent batches, not the number of cells</b>, and once ρ is known the cell count needed for a target precision is computable before the experiment rather than argued about afterwards.</p>
+      </div>
+
+      <p>Three numbers make the practical cost legible. Take a per-cell standard deviation of 1.0 log unit, 100 cells per arm, and a two-sided test at 80% power, so the minimum detectable effect (MDE) is about 2.8·SE.</p>
+
+      <ul>
+        <li><b>Nominal (cells as replicates):</b> SE = 1.0·√(2/100) = 0.141, so MDE ≈ <b>0.40 log<sub>2</sub></b>.</li>
+        <li><b>With ρ = 0.05:</b> design effect = 1 + 99×0.05 = 5.95, so SE = 0.141·√5.95 = 0.344, and MDE ≈ <b>0.96 log<sub>2</sub></b>.</li>
+        <li><b>With two donors and ρ = 0.05 at the donor level:</b> the honest unit count is 2, and no per-cell arithmetic rescues it. Donor-level replication is the binding constraint, not sequencing depth.</li>
+      </ul>
+
+      <p>The gap between 0.40 and 0.96 is the entire difference between "this perturbation does nothing" and "this perturbation does something we cannot see". A typical on-target effect of a few dozen genes rarely clears 1 log<sub>2</sub> in any single gene; that is precisely why the transcriptome-wide model in §2 is needed, and why per-gene significance alone systematically under-reports real effects.</p>
+
+      <div class="banner"><strong>The arithmetic, stated as a rule:</strong> compute n<sub>eff</sub> before the screen. If the answer is smaller than the number of conditions you plan to test, the design cannot answer the question at the per-gene level, and the analysis should be planned as an aggregate (transcriptome-wide, pathway-level, or distance-based) from the start rather than downgraded after the fact.</div>
+
+      <h2 id="controls">4. Five positive controls</h2>
+      <p>A null result is only interpretable if the assay can produce a positive. The five controls below are not interchangeable; each rules out a different alternative, and a claim inherits only the controls it actually ran.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Control</th><th>What it rules out</th><th>What it cannot rule out</th><th>Typical failure</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Replicate arm</b> (same guide, independent well/donor)</td>
+              <td>That the effect is a one-off technical fluctuation.</td>
+              <td>Guide-specific off-target effects; batch confounding.</td>
+              <td>A "replicate" that is a sequencing re-run of the same library, which shares every technical artefact.</td>
+            </tr>
+            <tr>
+              <td><b>Second guide</b> to the same gene</td>
+              <td>Guide-specific off-target effects and seed effects.</td>
+              <td>That both guides are ineffective (a shared false negative), or that they cut the same unexpected locus.</td>
+              <td>Reporting the average of two guides when one has 5% knockdown; the average hides both the artefact and the biology.</td>
+            </tr>
+            <tr>
+              <td><b>Orthogonal modality</b> (CRISPRi vs knockout, or RNAi vs CRISPR)</td>
+              <td>That the effect is an artefact of one perturbation mechanism (e.g., DNA damage from cutting).</td>
+              <td>That the two modalities share a confound such as reduced proliferation.</td>
+              <td>Comparing a knockout to a knockdown without matching knockdown efficiency, then attributing the difference to biology.</td>
+            </tr>
+            <tr>
+              <td><b>Dose / efficiency gradient</b></td>
+              <td>That the effect is unrelated to the intended target: the effect should track knockdown efficiency.</td>
+              <td>That a strong growth phenotype is producing the transcriptional change.</td>
+              <td>Measuring efficiency by RT-qPCR at the target site — see the artefact in §6, which inflates measured knockdown for every CRISPR system tested.</td>
+            </tr>
+            <tr>
+              <td><b>Rescue / epistasis</b> (re-express a resistant allele, or test a paralogue)</td>
+              <td>That the effect is mediated by the intended gene product.</td>
+              <td>Off-target effects of the rescue construct itself.</td>
+              <td>Rescuing with an overexpressed cDNA, which produces a stronger phenotype than the endogenous locus ever would.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Note what is missing from this list: statistical significance. Significance against a null of "no difference" is a statement about the precision of the estimate, not about whether the estimate is the intended quantity. The five controls are about <b>construct validity</b>; the tests in <a href="#nulls">§5</a> are about precision. A paper that reports the second without the first has measured something precisely, not necessarily the perturbation.</p>
+
+      <h2 id="nulls">5. The four nulls</h2>
+      <p>Every claim about an effect is implicitly a comparison against a null. There are four usable nulls in single-cell perturbation work, and they answer different questions.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Null</th><th>How it is built</th><th>What it controls</th><th>Where it fails</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>N1 · Technical</b></td>
+              <td>Non-targeting controls (NTCs) in the same library; or a permutation of guide labels within a batch.</td>
+              <td>Library size, ambient RNA, sequencing depth, baseline expression.</td>
+              <td>NTCs are not "no perturbation": they carry the transduction, selection and guide-RNA load. A screen with 30 NTC cells has no usable tail.</td>
+            </tr>
+            <tr>
+              <td><b>N2 · Biological</b></td>
+              <td>A second donor, a second cell line, or a second differentiation batch.</td>
+              <td>Donor-specific expression, genetic background, culture history.</td>
+              <td>If the second donor is a technical split of the same culture, it is N1 wearing a different name.</td>
+            </tr>
+            <tr>
+              <td><b>N3 · Guide</b></td>
+              <td>Other guides to the same gene, and guides to genes with no expected relationship.</td>
+              <td>Off-target and seed effects, guide abundance, local chromatin context.</td>
+              <td>Requires ≥2 effective guides per gene; most screens have one, or have several with unknown efficiency.</td>
+            </tr>
+            <tr>
+              <td><b>N4 · Analysis</b></td>
+              <td>Conditional resampling of guide assignment given sequencing depth; control splitting; held-out perturbations.</td>
+              <td>Confounding between detection probability and expression; reuse of control cells in a metric; leakage in a train/test split.</td>
+              <td>The null is only as good as its working model. A mis-specified detection model produces confident, well-calibrated-looking nonsense.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><b>The N4 problem is the most technical and the least reported.</b> In a single-cell CRISPR screen, sequencing depth affects both how much of a gene is counted <em>and</em> the probability that the guide is detected at all. Cells with more reads are more likely to be assigned a guide, so a naive comparison of perturbed versus unperturbed cells confounds expression with detection. SCEPTRE addresses this by resampling the perturbation labels according to a per-cell working model of detection probability, which restores calibration and recovers regulatory relationships supported by orthogonal evidence <a href="https://doi.org/10.1186/s13059-021-02545-2">(<i>Genome Biol</i> 2021, <em>PR</em>)</a>. The low-MOI extension is more damning: the first comprehensive benchmark of association testing for low-multiplicity data found that <b>existing methods produce excess false positives</b>, traced to sparsity, confounding, and model misspecification <a href="https://doi.org/10.1186/s13059-024-03254-2">(<i>Genome Biol</i> 2024, <em>PR</em>)</a>.</p>
+
+      <p>The corresponding fix for differential expression is older and blunter: <b>aggregate to the biological replicate before testing</b>. Methods that ignore variation between replicates are biased and prone to false discoveries, and the most widely used single-cell tests can "discover" hundreds of differentially expressed genes in the absence of any biological difference <a href="https://doi.org/10.1038/s41467-021-25960-2">(Squair et al., <i>Nat Commun</i> 2021, <em>PR</em>)</a>; a balanced comparison across simulation settings and real data reaches the same conclusion in favour of pseudobulk <a href="https://doi.org/10.1038/s41467-022-35519-4">(Murphy &amp; Skene, <i>Nat Commun</i> 2022, <em>PR</em>)</a>. Pseudobulk is not a better statistic than a mixed model. It is a statistic whose unit of replication matches the claim being made, which is the only property that matters here.</p>
+
+      <h2 id="masquerade">6. What masquerades</h2>
+      <p>Ten artefacts account for most of the false effects I have seen described. Each has a specific mechanism, a specific signature, and a specific check. None of them is exotic; all of them appear in published work.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Artefact</th><th>Mechanism</th><th>Signature in the data</th><th>Check</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Pseudoreplication</b></td>
+              <td>Cells treated as independent when they share a donor, well, or transfection.</td>
+              <td>Tiny p-values that shrink to nothing when aggregated; huge n and no replication.</td>
+              <td>Recompute with n<sub>eff</sub>; require a donor-level estimate.</td>
+            </tr>
+            <tr>
+              <td><b>Ambient RNA</b></td>
+              <td>Free transcripts from lysed cells enter droplets; a highly expressed gene in one population appears in all.</td>
+              <td>Effects concentrated in high-expression genes; correlation with the soup profile; gene-level effects that track the most abundant neighbour.</td>
+              <td>SoupX/decontX-style correction and a sensitivity analysis with corrected counts <a href="https://doi.org/10.1093/gigascience/giaaa151">(<i>GigaScience</i> 2020, <em>RES</em>)</a>.</td>
+            </tr>
+            <tr>
+              <td><b>Doublets and multiplets</b></td>
+              <td>Two cells in one droplet; often one perturbed, one not; or two different guides.</td>
+              <td>Intermediate transcriptomes; guide counts of exactly 2; effect sizes diluted by the unperturbed partner.</td>
+              <td>Doublet detection and multiplet-aware assignment <a href="https://doi.org/10.1016/j.cels.2018.11.005">(Scrublet, <em>Cell Syst</em> 2019, <em>RES</em>)</a>; note that multiplet analysis can recover signal rather than discard it (<a href="#effect">§7</a>).</td>
+            </tr>
+            <tr>
+              <td><b>Guide-detection confounding</b></td>
+              <td>Deep cells are more likely to be assigned a guide, and deep cells look different.</td>
+              <td>Systematic shift in library size between perturbed and control cells.</td>
+              <td>Conditional resampling (SCEPTRE) or depth matching before testing.</td>
+            </tr>
+            <tr>
+              <td><b>Barcode swapping / index hopping</b></td>
+              <td>Barcodes reassigned between libraries during sequencing; guides appear in the wrong sample.</td>
+              <td>Guides shared across libraries at a low rate; cross-sample effects that mirror each other.</td>
+              <td>Swapping-aware demultiplexing <a href="https://doi.org/10.1038/s41467-018-05083-x">(<i>Nat Commun</i> 2018, <em>PR</em>)</a>; hashing-based sample assignment <a href="https://doi.org/10.1186/s13059-018-1603-1">(<i>Genome Biol</i> 2018, <em>PR</em>)</a>.</td>
+            </tr>
+            <tr>
+              <td><b>Growth / viability confound</b></td>
+              <td>A perturbation that slows proliferation shifts the cell-cycle distribution, which moves thousands of genes.</td>
+              <td>Effects correlated with a proliferation score; enrichment of cell-cycle terms; dose-dependence on confluence.</td>
+              <td>Regress out a proliferation score, and report the effect before and after; inspect viability by an independent readout.</td>
+            </tr>
+            <tr>
+              <td><b>Cell-state selection</b></td>
+              <td>Perturbed cells that survive selection are a biased subset of the original population.</td>
+              <td>Shift in cluster composition rather than expression within clusters; effect disappears when conditioning on cluster.</td>
+              <td>Composition-aware analysis; report effects within matched states, not only in aggregate.</td>
+            </tr>
+            <tr>
+              <td><b>Non-responder dilution</b></td>
+              <td>Only a fraction of cells receive an effective perturbation; the mean effect is divided by that fraction.</td>
+              <td>Bimodal effect distribution; a subpopulation with a large shift and a majority unchanged.</td>
+              <td>Mixture modelling to separate perturbed from escaping cells <a href="https://doi.org/10.1038/s41588-021-00778-2">(mixscape, <i>Nat Genet</i> 2021, <em>PR</em>)</a>, and reporting the responder fraction alongside the mean.</td>
+            </tr>
+            <tr>
+              <td><b>Expression filter omitted</b></td>
+              <td>Perturbing a gene that is not expressed in the model system produces no effect — reported as "no phenotype".</td>
+              <td>Null effects concentrated in low-expression genes; effect size correlates with baseline expression.</td>
+              <td>Report baseline expression per target; state the detection floor explicitly.</td>
+            </tr>
+            <tr>
+              <td><b>Measurement artefact in the validation</b></td>
+              <td>Guide RNAs copurify during RNA extraction and inhibit RT-qPCR for amplicons spanning the guide site, inflating apparent knockdown.</td>
+              <td>Knockdown measured only at the target site; unusually high efficiency across all guides; discordance with protein-level readouts.</td>
+              <td>Use a strand-displacing reverse transcriptase, and confirm with an orthogonal method <a href="https://doi.org/10.1038/s41587-026-03291-1">(<i>Nat Biotechnol</i> 2026, <em>PR</em>)</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two of these deserve emphasis because they attack different sides of the claim. <b>Non-responder dilution</b> produces false negatives that look like weak biology: if 15% of cells respond strongly and 85% do not, the pseudobulk mean is a real but small effect, and a per-gene test may call it null. The correct report is "a 15% responder fraction with a 1.8 log<sub>2</sub> shift", not "a 0.27 log<sub>2</sub> effect". <b>The RT-qPCR artefact</b> produces false positives at the level of the <em>control</em>: the experiment's evidence that the perturbation worked is itself biased upward, which is worse, because every downstream interpretation inherits it.</p>
+
+      <p>One more class does not fit the table because it is not an artefact of measurement but of interpretation: <b>the "global vs specific" ambiguity</b>. A perturbation that changes 3,000 genes has an effect; whether that effect is a specific programme or a stress response is a different question, and it is answered by comparing against a panel of perturbations of known non-specific effect — translation inhibitors, mitochondrial poisons, general growth arrest — rather than against untreated cells alone.</p>
+
+      <h2 id="effect">7. Reading an effect size</h2>
+      <p>Three quantities are in common use, and they answer different questions.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Quantity</th><th>Definition</th><th>Answers</th><th>Fails when</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Per-gene log fold-change</b></td>
+              <td>Mean expression difference between perturbed and control, usually shrunk.</td>
+              <td>"How much did this gene move, in this gene's own units?"</td>
+              <td>The effect is distributed across many genes, each below threshold; or the responder fraction is small.</td>
+            </tr>
+            <tr>
+              <td><b>E-distance (energy statistic)</b></td>
+              <td>A distributional distance between the two cell sets, with a permutation null.</td>
+              <td>"Is the perturbed population different at all, and by how much?"</td>
+              <td>It is a scalar: it cannot say which genes moved, and it is sensitive to the number of cells compared.</td>
+            </tr>
+            <tr>
+              <td><b>Transcriptome-wide impact</b></td>
+              <td>An estimate of the total number of truly affected genes, modelling the distribution of true effects and their estimation error.</td>
+              <td>"How large is this perturbation's footprint, including effects too small to detect individually?"</td>
+              <td>It assumes the effect distribution is exchangeable across genes within a perturbation class.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The first two are standard; the third is the most useful recent addition. scPerturb harmonized 44 perturbation datasets and introduced energy statistics for quantifying effects and testing them, with design recommendations on cell counts and read depth <a href="https://doi.org/10.1038/s41592-023-02144-y">(<i>Nat Methods</i> 2024, <em>RES</em>)</a>. TRADE then addressed the complementary problem: if most per-gene effects are too small to detect, estimate the distribution of true effects rather than testing each gene, and read off the aggregate footprint. The finding that a typical perturbation affects ~45 genes while an essential gene affects &gt;500 <a href="https://doi.org/10.1038/s41588-025-02169-3">(<em>PR</em>)</a> reframes the noise problem: <b>the signal is not absent, it is distributed.</b></p>
+
+      <p>Three practical readings follow.</p>
+
+      <ul>
+        <li><b>Report the footprint and the direction separately.</b> "This perturbation moves 300 genes, with 40 coherent in one pathway" is a stronger and more honest claim than "300 genes are significant", because the first has a specificity statement inside it.</li>
+        <li><b>Report the responder fraction.</b> A mean effect of 0.3 log<sub>2</sub> is a different object depending on whether 100% of cells moved 0.3 or 15% moved 2.0.</li>
+        <li><b>Do not compare E-distances across datasets.</b> The statistic depends on cell numbers, depth, and the control distribution. It is a within-dataset comparison, and cross-dataset tables built from it are usually comparing measurement conditions.</li>
+      </ul>
+
+      <p>A fourth reading comes from the RNAi era, and it is the most useful precedent available. Four genome-wide screens for host factors required by influenza implicated a combined 614 genes, but pairwise overlap between the lists was <b>3–15% (average 6.7%)</b>, while the enriched functional <i>categories</i> overlapped at about <b>19%</b> <a href="https://doi.org/10.1371/journal.pcbi.1003235">(Hao et al., <i>PLoS Comput Biol</i> 2013, <em>PR</em>)</a>. The per-gene list was not reproducible; the programme was — across a reagent class with known off-target problems, which makes the comparison conservative. That is the empirical case for reporting at pathway level with a specificity control, and the empirical warning that a per-gene hit list is not a result.</p>
+
+      <p>There is also a subset of screens where the effect is not transcriptional at all, and the same logic applies with different readouts: imaging-based profiles, surface protein panels, and guide-enrichment (dropout) screens all have their own nulls. Cell Painting, for example, was designed as a cheap morphological readout that is not redundant with transcriptomics <a href="https://doi.org/10.1038/nprot.2016.105">(<i>Nat Protoc</i> 2016, <em>PR</em>)</a>; its artefacts are plate-position and staining-batch effects, controlled by the same randomization logic and by per-plate correction statistics developed in HTS a decade earlier.</p>
+
+      <h2 id="ceiling">8. The reproducibility ceiling</h2>
+      <p>The most checkable statement in this post is also the least used.</p>
+
+      <p>If two independent arms of the same perturbation correlate at <i>r</i> across genes, then no model can predict one arm from anything that does not share its noise better than the other arm does. For a correlation metric, the ceiling is <b>r</b>; for an R² metric, the ceiling is <b>r²</b>. This is not a heuristic. It follows from the fact that the other replicate is the best available estimator of the signal, so a predictor scoring above it is either using information it should not have or is being scored by a metric that shares noise between prediction and truth.</p>
+
+      <div class="sn-eq">ceiling(corr) = r<sub>replicate</sub> &nbsp;&nbsp;·&nbsp;&nbsp; ceiling(R²) = r<sub>replicate</sub>²
+example: r = 0.62 → a reported Pearson of 0.71 is not an improvement, it is a leak</div>
+
+      <p>The 2026 literature shows both halves of this failure. On the metric side, a reanalysis demonstrates that correlation and cosine-similarity scores computed against a <b>shared control population</b> are systematically inflated: the same controls define both the truth and the prediction, so even non-informative methods score well, particularly when control cells are few, and a simple control-splitting procedure removes the inflation and substantially reduces apparent performance <a href="https://doi.org/10.64898/2026.05.07.723486">(spurious correlation, <em>PP</em>)</a>. A related analysis derives how control error propagates into predictions and finds that switching to independent-control scoring <b>changed the rank of 40 of 52 configuration–dataset entries</b> <a href="https://doi.org/10.64898/2026.10.05.756906">(split-control criterion, <em>PP</em>)</a>. Ranking instability of that size is not a subtle statistical caveat; it means the benchmark table is measuring the evaluation design.</p>
+
+      <p>On the ceiling side, the practical procedure is three lines of code and one experiment:</p>
+      <ol>
+        <li>Split the screen into two independent arms (different guides, wells, or donors) for a subset of perturbations.</li>
+        <li>Compute the per-gene correlation between arms for each perturbation; take the median as <i>r</i>.</li>
+        <li>Report every model score against that ceiling, and treat any score above it as a bug until proven otherwise.</li>
+      </ol>
+
+      <p>This is the perturbation version of a noise ceiling familiar from systems neuroscience, and its absence from most virtual-cell papers is conspicuous. Two consequences are worth stating plainly: <b>a benchmark without a ceiling cannot distinguish a good model from a lenient metric</b>, and <b>a ceiling below 0.7 makes "predicting perturbation effects" a euphemism for predicting replicate noise</b> in that dataset.</p>
+
+      <h2 id="models">9. Judging the models</h2>
+      <p>Model evaluation is the same question asked of a predictor instead of a screen: is the difference real, and is it the intended difference? Four results from 2024–2026 define the current position.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Result</th><th>What was compared</th><th>Finding</th><th>Implication</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Simple baselines</b> <a href="https://doi.org/10.1038/s41592-025-02772-6">(<i>Nat Methods</i> 2025, <em>PR</em>)</a></td>
+              <td>Five single-cell foundation models and two deep models vs deliberately simple baselines, single and double perturbations.</td>
+              <td>None of the complex models outperformed the baselines.</td>
+              <td>Architecture is not where the signal is; the task formulation and the split matter more.</td>
+            </tr>
+            <tr>
+              <td><b>Foundation-model embeddings</b> <a href="https://doi.org/10.1101/2024.10.02.616248">(PertEval-scFM, <em>PP</em>)</a></td>
+              <td>Zero-shot scFM embeddings vs baselines for perturbation-effect prediction.</td>
+              <td>No consistent improvement, especially under distribution shift.</td>
+              <td>An embedding that helps annotation does not automatically help perturbation prediction.</td>
+            </tr>
+            <tr>
+              <td><b>Out-of-distribution splits</b> <a href="https://doi.org/10.64898/2026.10.16.759604">(EL-PERTURB, <em>PP</em>)</a></td>
+              <td>20 models, six architecture classes, stratified OOD splits on essential-gene and genome-wide screens.</td>
+              <td>Performance degrades substantially OOD; architectural complexity, including scFM embeddings, confers no reliable advantage.</td>
+              <td>Random splits were hiding the failure mode; the benchmark's split is the model's real specification.</td>
+            </tr>
+            <tr>
+              <td><b>Mechanism fidelity</b> <a href="https://doi.org/10.64898/2026.08.19.745729">(scDrugPerturb-Bench, <em>PP</em>)</a></td>
+              <td>12 models, 3 baselines, 10 splits, 181 datasets, 423 annotated response cases, 2.5M cells; expression similarity vs a mechanism-fidelity score.</td>
+              <td>Expression similarity is weakly aligned with mechanism fidelity and selects different configurations.</td>
+              <td>High expression similarity does not mean the drug-response signature was preserved.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>A fifth result is the sharpest, because it is about the method rather than the model. A systematic cross-method, cross-dataset evaluation of eight in-silico perturbation methods found that <b>six of eight fail to produce detectable transcription-factor-to-pathway signal</b>; that two widely used methods produced <b>significantly anti-correlated</b> gene rankings (ρ = −0.811); and that one method's predicted perturbation directions agreed with experimental CRISPRi Perturb-seq directions at 40.9%, indistinguishable from chance <a href="https://doi.org/10.64898/2026.08.11.744106">(method choice, <em>PP</em>)</a>. There is also a documented dispute over the implementation of one widely used network-inference method <a href="https://doi.org/10.1101/2024.10.16.618746">(CellOracle critique, <em>PP</em>)</a>, and an evaluation showing that latent representations differ substantially in how faithfully they reconstruct gene expression after perturbation <a href="https://doi.org/10.64898/2026.06.15.731445">(ReconEval, <em>PP</em>)</a>.</p>
+
+      <p>The reading I take is not "in-silico perturbation is useless". It is that <b>the field has been scoring a different quantity than it claims</b>: expression similarity on random splits, computed with shared controls, against no ceiling. Three fixes follow directly from this post's arithmetic: report the replicate ceiling; score with independent controls; split by perturbation and by context, not by cell.</p>
+
+      <h2 id="gate">10. A gated procedure</h2>
+      <p>The following is the procedure I would apply to any screen claim, in order, with an explicit stop at each gate. It is deliberately sequential: later gates cannot rescue an earlier failure, because a well-powered estimate of a confounded quantity is still confounded.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Gate</th><th>Question</th><th>Pass</th><th>If it fails</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>G0 · Design</b></td>
+              <td>Are there ≥2 donors, ≥2 guides per gene, ≥100 non-targeting cells, and a stated expression floor?</td>
+              <td>All present, and n<sub>eff</sub> computed before analysis.</td>
+              <td>The claim is descriptive only; do not use the word "effect".</td>
+            </tr>
+            <tr>
+              <td><b>G1 · Guide concordance</b></td>
+              <td>Do the guides to the same gene agree in direction and magnitude?</td>
+              <td>≥2 guides with concordant, non-trivial effects.</td>
+              <td>Report as guide-specific; do not average. Check knockdown efficiency before calling it off-target.</td>
+            </tr>
+            <tr>
+              <td><b>G2 · On-target evidence</b></td>
+              <td>Is the target actually reduced, by an orthogonal method, and does the effect track the reduction?</td>
+              <td>Protein or 3′-biased RNA measurement plus a dose/efficiency gradient.</td>
+              <td>Undetermined. An unmeasured knockdown is not a null result.</td>
+            </tr>
+            <tr>
+              <td><b>G3 · Statistical null</b></td>
+              <td>Is the effect larger than N1–N3, aggregated to the replicate unit?</td>
+              <td>Pseudobulk or mixed model with donor as the unit; FDR across perturbations as well as genes.</td>
+              <td>Report the estimate and the MDE; "underpowered" is a finding.</td>
+            </tr>
+            <tr>
+              <td><b>G4 · Robustness</b></td>
+              <td>Does it survive donor holdout, batch covariates, ambient/doublet correction, and cell-state conditioning?</td>
+              <td>Same sign and roughly same size in all sensitivity analyses.</td>
+              <td>Downgrade to "context-dependent"; state which context.</td>
+            </tr>
+            <tr>
+              <td><b>G5 · Specificity</b></td>
+              <td>Is the effect distinguishable from a generic stress/growth response, and absent for a non-expressed target?</td>
+              <td>Comparison against a panel of non-specific perturbations; no effect for the negative target.</td>
+              <td>Call it a global effect, not a regulatory one.</td>
+            </tr>
+            <tr>
+              <td><b>G6 · Replication</b></td>
+              <td>Does an independent screen, cell line, or modality reproduce it?</td>
+              <td>Concordant direction with an effect size inside the combined confidence interval.</td>
+              <td>Leave the claim open; do not promote it to a mechanism.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sn-verdict">
+        <div class="sn-v real"><b>Effect</b>G0–G4 pass, G5 shows specificity, and G6 reproduces in at least one independent setting.</div>
+        <div class="sn-v noise"><b>Artefact</b>Fails G1 with measured knockdown, or disappears under G4, or reverses under G2's orthogonal measurement.</div>
+        <div class="sn-v open"><b>Undetermined</b>Passes G1–G3 but has one donor, one modality, or no specificity panel. <em>This is the modal outcome, and it should be reported as such.</em></div>
+      </div>
+
+      <p>The third box is the one the literature does not have a format for. Most screens produce claims that are neither established nor refuted: they are single-context observations with a p-value. A field that reported them as "undetermined, with these three checks outstanding" would publish fewer mechanisms and more useful data.</p>
+
+      <h2 id="worked">11. Worked example</h2>
+      <p>An illustrative case, with numbers chosen to be typical rather than real: CRISPRi knockdown of a transcription factor in a cancer line, three guides, two donors, 4,800 cells, 100 cells per guide and 1,200 non-targeting cells. The screen reports that guide A produces a 0.62 log<sub>2</sub> change in a target programme.</p>
+
+      <p><b>Gate G1 (guide concordance).</b> Guides B and C produce 0.11 and 0.08 log<sub>2</sub>. One guide out of three is not a perturbation effect; it is a guide. The immediately available interpretations are (a) A is the only effective guide, (b) A has an off-target effect, (c) the gene's knockdown is heterogeneous for biological reasons. The data cannot distinguish them yet.</p>
+
+      <p><b>Gate G2 (on-target evidence).</b> Measured by RT-qPCR at the target site, efficiencies are A 78%, B 22%, C 15%. The measured effect tracks the measured knockdown, which looks like support for (a) — but the RT-qPCR measurement is itself the assay that a 2026 report shows is biased upward when the amplicon spans the guide-binding site, across all CRISPR systems tested <a href="https://doi.org/10.1038/s41587-026-03291-1">(<em>PR</em>)</a>. Re-measured with a strand-displacing reverse transcriptase and a 3′ amplicon, A is 41%, B 9%, C 6%: still a gradient, still consistent with (a), and now the effect size per unit knockdown is twice what it appeared.</p>
+
+      <p><b>Gate G3 (statistical null).</b> Aggregate to donor pseudobulk. With two donors, the honest unit count is 2. With a donor-level SD of 0.6 log<sub>2</sub>, the minimum detectable effect is 2.8 × 0.6 × √(2/2) = <b>1.68 log<sub>2</sub></b>. The observed 0.62 is below it. A cell-level test would have returned p &lt; 10<sup>−4</sup>; the donor-level test cannot return anything.</p>
+
+      <p><b>The verdict.</b> Not artefact, not effect: <b>undetermined, with two specific reasons</b> — one effective guide, and two donors. The useful next experiment is not more cells. It is a second guide with a matched knockdown efficiency, a third donor, and a protein-level readout. That is a two-week experiment, and it is the one the data actually demand.</p>
+
+      <p>Now run the same arithmetic on the model that claims to predict this effect. If the screen's replicate arms correlate at r = 0.55, the ceiling for any predictor is 0.55 (correlation) or 0.30 (R²). A published model reporting 0.68 on this dataset is above the ceiling; the first check is not the architecture but whether the prediction and the truth were scored against the same control cells.</p>
+
+      <h2 id="failures">12. Nine failure modes</h2>
+      <p>A compact list, because the gates above are easy to agree with and easy to skip.</p>
+
+      <ol>
+        <li><b>Pseudoreplication.</b> Cells as replicates. The single most common error, and the one that survives peer review most reliably because n is large and p is small.</li>
+        <li><b>Control reuse in the metric.</b> The same cells define the truth and the prediction. Inflates every correlation-based score, worst when controls are few.</li>
+        <li><b>One guide, no efficiency measurement.</b> An off-target effect reported as a mechanism; an ineffective guide reported as a null.</li>
+        <li><b>Knockdown measured only at the target site.</b> The measurement artefact of §6 propagates into every interpretation of dose and direction.</li>
+        <li><b>Growth read as regulation.</b> A proliferation shift produces a large, reproducible, entirely non-specific effect.</li>
+        <li><b>Ambient RNA read as expression.</b> Effects concentrated in high-abundance genes, especially in low-RNA droplets.</li>
+        <li><b>Multiplet misassignment.</b> Cells with two guides analysed as singletons, diluting and mixing effects.</li>
+        <li><b>Expression floor omitted.</b> Perturbing an unexpressed gene and reporting no phenotype as biology.</li>
+        <li><b>"Replication" that shares a library.</b> Two sequencing runs of one library are one observation, however many cells they contain.</li>
+      </ol>
+
+      <h2 id="timeline">13. Timeline, 1935–2026: the guards arrived late</h2>
+
+      <p>Every guard in this post existed before the screens that needed it, and arrived late anyway. Replication was quantitative by 1943, randomization by 1935, orthogonal reagents by 2003, pseudobulk by 2017. A date line separates "unavailable" from "unadopted", and only the second is a criticism of the field.</p>
+
+      <p>Three questions are easier with dates. <b>Is the delay real, or is this procedure just modern?</b> If the four nulls were unavailable until recently, earlier screens were doing the best they could. If they were available for decades, the interesting question is why the reporting format never made room for them. <b>Which guards arrive first?</b> If metric-level guards systematically arrive after data-level guards, that is a mechanism, not an accident: nobody is rewarded for auditing a metric and everyone is rewarded for adding a modality. <b>What does a noise crisis look like before it is resolved?</b> RNAi had one between 2003 and 2006, in enough detail to serve as a template; virtual-cell prediction is having one now.</p>
+
+      <div class="guide-callout"><strong>Finding:</strong> the gap between "this guard exists" and "this guard is routine" is <b>3–4 years for purely computational guards, 5–12 years for guards that need new cells or a new reagent, and 12 years for the one guard that required redefining what a control is</b>. The gradient is not difficulty. A guard gets adopted when a paper cannot be published without it, and that happens when a reviewer or a benchmark makes its absence visible. No guard in this record was adopted because the arithmetic was compelling; the arithmetic was compelling the whole time.</div>
+
+      <div class="gt-fig">
+        <div class="gt-legend">
+          <span class="gt-key"><span class="gt-sw" style="background:#d6e7f8"></span>available at all</span>
+          <span class="gt-key"><span class="gt-sw" style="background:#3182ce"></span>routine in mainstream screens</span>
+          <span class="gt-key"><span class="gt-sw" style="background:#fff;border:1.4px dashed #3182ce"></span>arriving, no consensus</span>
+        </div>
+        <div class="gt-scroll">
+        <svg class="gt-plot" viewBox="0 0 760 400" role="img" aria-labelledby="gt-t gt-d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+          <title id="gt-t">Timeline, 1935–2026: when each guard against false perturbation effects became available and when it became routine</title>
+          <desc id="gt-d">Eleven rows. Replication arms available from 1943 and routine from 2001; randomization from 1935, routine 2001; plate-position correction 2003 to 2012; non-targeting nulls 2001 to 2013; orthogonal reagents 2003 to 2015; orthogonal modalities 2014 to 2019; donor replication 2016 to 2022; pseudobulk inference 2017 to 2021; guide-detection-aware nulls 2021 to 2024; held-out splits 2023 to 2026; control splitting and noise ceilings from 2026, not yet routine.</desc>
+
+          <text x="150" y="34" font-size="10.5" fill="#64748b">first credible instance — editorial assessment, not adoption</text>
+          <text x="666" y="50" font-size="9.5" fill="#94a3b8" text-anchor="end">now (2026)</text>
+
+          <g stroke="#eef2f6" stroke-width="1">
+            <line x1="178.4" y1="56" x2="178.4" y2="326" />
+            <line x1="291.8" y1="56" x2="291.8" y2="326" />
+            <line x1="405.2" y1="56" x2="405.2" y2="326" />
+            <line x1="518.6" y1="56" x2="518.6" y2="326" />
+            <line x1="632.0" y1="56" x2="632.0" y2="326" />
+          </g>
+
+          <rect x="195.4" y="70" width="470.6" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="195.4" y="70" width="328.9" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="150.0" y="94" width="516.0" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="150.0" y="94" width="374.2" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="535.6" y="118" width="130.4" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="535.6" y="118" width="51.0" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="524.2" y="142" width="141.8" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="524.2" y="142" width="68.0" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="535.6" y="166" width="130.4" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="535.6" y="166" width="68.0" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="597.9" y="190" width="68.0" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="597.9" y="190" width="28.4" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="609.3" y="214" width="56.7" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="609.3" y="214" width="34.0" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="614.9" y="238" width="51.0" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="614.9" y="238" width="22.7" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="637.6" y="262" width="28.4" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="637.6" y="262" width="17.0" height="12" rx="3" fill="#3182ce" opacity="0.85" />
+
+          <rect x="649.0" y="286" width="17.0" height="12" rx="3" fill="#d6e7f8" />
+          <rect x="649.0" y="286" width="17.0" height="12" rx="3" fill="#3182ce" opacity="0.8" />
+
+          <circle cx="666" cy="316" r="5.5" fill="#fff" stroke="#3182ce" stroke-width="1.6" stroke-dasharray="3 2" />
+
+          <line x1="666" y1="56" x2="666" y2="326" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 4" opacity="0.8" />
+
+          <line x1="150" y1="326" x2="700" y2="326" stroke="#cbd5e0" />
+
+          <g font-size="11.5" fill="#2d3748" text-anchor="end">
+            <text x="142" y="80">Replication arms</text>
+            <text x="142" y="104">Randomization</text>
+            <text x="142" y="128">Plate-position fix</text>
+            <text x="142" y="152">Non-targeting null</text>
+            <text x="142" y="176">Orthogonal reagent</text>
+            <text x="142" y="200">Orthogonal modality</text>
+            <text x="142" y="224">Donor replication</text>
+            <text x="142" y="248">Pseudobulk</text>
+            <text x="142" y="272">Guide-aware null</text>
+            <text x="142" y="296">Held-out split</text>
+            <text x="142" y="320">Control splitting</text>
+          </g>
+
+          <g font-size="10.5" fill="#64748b" text-anchor="middle">
+            <text x="178.4" y="342">1940</text>
+            <text x="291.8" y="342">1960</text>
+            <text x="405.2" y="342">1980</text>
+            <text x="518.6" y="342">2000</text>
+            <text x="632.0" y="342">2020</text>
+          </g>
+          <text x="666" y="342" font-size="10.5" fill="#64748b" text-anchor="middle">2026</text>
+          <text x="150" y="362" font-size="10.5" fill="#94a3b8">the first two rows are adoption gaps, not invention gaps: both guards predate the screens by half a century</text>
+
+          <g font-size="9.5" fill="#64748b">
+            <text x="672" y="79">2001</text>
+            <text x="672" y="103">2001</text>
+            <text x="672" y="127">2012</text>
+            <text x="672" y="151">2013</text>
+            <text x="672" y="175">2015</text>
+            <text x="672" y="199">2019</text>
+            <text x="672" y="223">2022</text>
+            <text x="672" y="247">2021</text>
+            <text x="672" y="271">2024</text>
+            <text x="672" y="295">2026</text>
+            <text x="672" y="320">—</text>
+          </g>
+          <text x="672" y="62" font-size="9" fill="#94a3b8">routine</text>
+        </svg>
+        </div>
+        <p class="gt-cap"><b>Figure 2. Guards arrive after the modality, and metric-level guards arrive last.</b> Light bars: the earliest date at which the check could be performed at all. Solid bars: the date it appears in mainstream screen protocols — peer-reviewed screens, benchmark papers, and the methods sections of the papers that define the standard. The numbers at right are the routine dates. The last row is a hollow marker because control splitting and noise ceilings are a 2026 development with no agreed protocol; it is the only guard here that addresses the <em>metric</em> rather than the experiment, and the only one whose absence invalidates published comparisons rather than individual screens.</p>
+      </div>
+
+      <p>Read the figure by comparing left edges with right edges, and rows with each other. The two oldest rows are almost entirely solid: replication and randomization predate any screen, so their sixty-year delay is pure adoption. The middle rows cluster between 2001 and 2015, where guards were invented in response to specific artefacts. The bottom rows are compressed into five years, and they are the ones that could have been implemented at any time — pseudobulk, held-out splits, and control splitting require nothing but an analysis decision.</p>
+
+      <h3 id="timeline-record">13.1 The record</h3>
+
+      <ul class="gt-tl">
+        <li class="gt-era">1935–1997 · <span>the control becomes a statistic</span></li>
+        <li class="gt-item stat"><span class="gt-y">1935</span><b>Fisher, <i>The Design of Experiments</i></b> — randomization and blocking; the null as something designed rather than computed after the fact.</li>
+        <li class="gt-item stat"><span class="gt-y">1943</span><b>Luria &amp; Delbrück, fluctuation test</b> — variance across replicate cultures becomes evidence about mechanism. The first experiment where noise is the signal, and the ancestor of every replicate-versus-noise argument here.</li>
+        <li class="gt-item stat"><span class="gt-y">1950</span><b>Novick &amp; Szilard</b> — the same distribution under continuous culture; replication becomes a quantitative tool rather than a gesture.</li>
+        <li class="gt-item"><span class="gt-y">1961</span><b>Jacob &amp; Monod</b> — the inducer as a perturbation with a dose; already a perturbation → programme claim with a dose–response argument.</li>
+        <li class="gt-item stat"><span class="gt-y">1984</span><b>Hurlbert, pseudoreplication</b> — named in ecology, ignored in molecular biology for thirty-seven years, and still the most common single error in single-cell screens.</li>
+        <li class="gt-item assay"><span class="gt-y">1987</span><b>Gene targeting in mouse ES cells</b> — the perturbation becomes a designed, heritable genotype, and therefore replicable in a second animal.</li>
+
+        <li class="gt-era">1998–2005 · <span>RNAi, and the first noise crisis</span></li>
+        <li class="gt-item assay"><span class="gt-y">1998</span><b>Fire &amp; Mello, dsRNA interference</b> — a perturbation applicable to any gene by choosing a sequence.</li>
+        <li class="gt-item stat"><span class="gt-y">1999</span><b>Z′ factor</b> — assay quality separated from effect validity: the first guard aimed at the instrument, and the ancestor of "can this assay see a difference at all".</li>
+        <li class="gt-item assay"><span class="gt-y">2001</span><b>siRNA in mammalian cells</b> — the perturbation becomes purchasable, and genome-wide screens follow within two years.</li>
+        <li class="gt-item crisis"><span class="gt-y">2003</span><b>Off-target regulation demonstrated</b> — expression profiling shows an siRNA changing genes other than its target. The assumption of reagent specificity ends here.</li>
+        <li class="gt-item stat"><span class="gt-y">2003</span><b>B-score</b> — plate-position artefacts corrected statistically; the first routine guard against instrument geometry rather than biology.</li>
+        <li class="gt-item stat"><span class="gt-y">2006</span><b>Seed rule and false-positive guidance</b> — off-targets predicted from 3′ UTR seed matches, and a community statement that a hit requires orthogonal confirmation. Both are recommendations, not requirements.</li>
+
+        <li class="gt-era">2006–2013 · <span>signatures and screening statistics</span></li>
+        <li class="gt-item"><span class="gt-y">2006</span><b>Connectivity Map</b> — 164 compounds and the idea of a transcriptional signature as a perturbation fingerprint; perturbation space becomes an object you can interpolate in, which is the precondition for every later prediction claim.</li>
+        <li class="gt-item stat"><span class="gt-y">2007</span><b>SSMD and hit-selection statistics</b> — false negatives and false positives balanced at the level of the screen rather than the well.</li>
+        <li class="gt-item stat"><span class="gt-y">2009</span><b>HTS statistics for RNAi</b> — normalization, plate effects, and hit calling in one workflow; the guard written as a procedure rather than a caution.</li>
+        <li class="gt-item crisis"><span class="gt-y">2013</span><b>Independent screens do not agree</b> — four genome-wide RNAi studies of influenza replication implicate 614 host genes with pairwise overlap of <b>3–15%</b> (average 6.7%), while enriched <i>categories</i> overlap at ~19%. The failure was never a lack of biology; it was that a per-gene hit list is not a reproducible statistic.</li>
+
+        <li class="gt-era">2013–2018 · <span>CRISPR, single cells, guide-level nulls</span></li>
+        <li class="gt-item assay"><span class="gt-y">2013–14</span><b>Genome-scale knockout screens</b> — dropout and enrichment become the readout, and essentiality maps appear within two years.</li>
+        <li class="gt-item assay"><span class="gt-y">2014</span><b>CRISPRi and CRISPRa</b> — repression and activation give a dose-like control and a second direction of effect, which is what makes orthogonal-modality validation possible at all.</li>
+        <li class="gt-item stat"><span class="gt-y">2014</span><b>MAGeCK</b> — guide abundance gets a model: the first guard against treating a sequencing artefact as a phenotype.</li>
+        <li class="gt-item assay"><span class="gt-y">2016</span><b>Perturb-seq, multiplexed screens, Cell Painting</b> — the unit of observation becomes (cell, perturbation, transcriptome); guide assignment becomes a statistical problem; and a morphological readout offers orthogonality that costs an image rather than a library.</li>
+        <li class="gt-item stat"><span class="gt-y">2016</span><b>BAGEL and gold-standard nulls</b> — essentiality called against a curated reference set rather than an internal control: the first known-answer benchmark in this lineage.</li>
+        <li class="gt-item"><span class="gt-y">2017–18</span><b>L1000 and sample identity</b> — a million profiles make perturbation space trainable, and hashing plus swap detection make sample identity verifiable. The noise problem becomes a modelling problem at the moment the data become large enough to model.</li>
+
+        <li class="gt-era">2019–2022 · <span>the responder problem and pseudobulk</span></li>
+        <li class="gt-item"><span class="gt-y">2019</span><b>scGen and genetic-interaction manifolds</b> — perturbation response becomes a learned mapping; prediction models arrive before null models.</li>
+        <li class="gt-item stat"><span class="gt-y">2020</span><b>Dropout model retired</b> — droplet data are shown not to be zero-inflated; the "dropout" that justified a decade of imputation was mostly Poisson sampling. A noise model was withdrawn, and with it a family of false effects.</li>
+        <li class="gt-item stat"><span class="gt-y">2021</span><b>mixscape, Augur, SCEPTRE</b> — three nulls in one year: which cells responded, which cell types respond, and whether an association survives detection bias. For the first time the four nulls of §5 exist as named procedures.</li>
+        <li class="gt-item crisis"><span class="gt-y">2021</span><b>Pseudoreplication measured</b> — the most widely used single-cell tests are shown to find hundreds of differentially expressed genes with no biological difference. The error named in 1984 is quantified for single-cell data, thirty-seven years later.</li>
+        <li class="gt-item stat"><span class="gt-y">2022</span><b>Genome-scale Perturb-seq and pseudobulk settled</b> — effect sizes at scale reveal the proliferation axis as the dominant direction of variation; separately, a balanced comparison puts the aggregation question to rest, four years after the methods existed.</li>
+
+        <li class="gt-era">2023–2026 · <span>the benchmark reckoning</span></li>
+        <li class="gt-item"><span class="gt-y">2023</span><b>CellOracle</b> — in-silico perturbation becomes a <i>Nature</i> paper, and the network-inference step becomes the load-bearing assumption; a critique of the implementation follows in 2024, the field's first public argument about whether an in-silico perturbation is well-defined.</li>
+        <li class="gt-item stat"><span class="gt-y">2024</span><b>scPerturb, the low-MOI audit, and the baseline result</b> — E-statistics standardize effect size; existing low-MOI association tests are shown to produce excess false positives; and deep perturbation models fail to beat simple linear baselines. The first benchmark result about the field rather than a model.</li>
+        <li class="gt-item crisis"><span class="gt-y">2025</span><b>Distributed signal, and scale</b> — the distribution of true effects is estimated (a typical perturbation moves ~45 genes, an essential gene &gt;500), while Tahoe-100M, State, and the Virtual Cell Challenge make zero-shot generalization the scored task. Scale and evaluation arrive in the same year, which is new.</li>
+        <li class="gt-item crisis"><span class="gt-y">2026</span><b>The metric audits</b> — shared-control correlation inflation reorders benchmark tables; splitting the control changes the rank of 40 of 52 entries; eight in-silico methods disagree to the point of anti-correlation; mechanism fidelity is weakly aligned with expression similarity. Four independent audits, one conclusion: the scores were measuring the evaluation design.</li>
+        <li class="gt-item crisis"><span class="gt-y">2026</span><b>The measurement audit</b> — a common RT-qPCR protocol is shown to inflate measured knockdown across all CRISPR systems tested. The positive control itself was biased, in the one place nobody audits.</li>
+        <li class="gt-item stat"><span class="gt-y">2026</span><b>Multiplet recovery and guide assignment</b> — discarded multiplets are shown to carry usable signal (cost down up to 81%, information loss within 1.5× of technical replicates), and guide assignment becomes a calibrated test. The guard and the yield argument arrive together, which is how adoption actually happens.</li>
+      </ul>
+
+      <h3 id="timeline-lag">13.2 The lag arithmetic</h3>
+      <p>The two edges of the figure can be subtracted. The result is uncomfortable in a specific way: the longest lags belong to guards that cost a second experiment or a new definition, and the shortest belong to guards that cost a line of code.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th>Guard</th><th>Available</th><th>Routine</th><th>Gap</th><th>Why the gap</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Randomization / blocking</b></td><td>1935</td><td>2001</td><td>66</td><td>No screen existed to randomize; once one did, the guard was a methods-section sentence rather than a practice.</td></tr>
+            <tr><td><b>Replication arms</b></td><td>1943</td><td>2001</td><td>58</td><td>Replication was a virtue, not a field in a table. It became routine when HTS made well-to-well comparison the unit.</td></tr>
+            <tr><td><b>Plate-position correction</b></td><td>2003</td><td>2012</td><td>9</td><td>Needed software and a normalization workflow, both of which arrived with the HTS statistics literature.</td></tr>
+            <tr><td><b>Non-targeting null</b></td><td>2001</td><td>2013</td><td>12</td><td>Non-targeting reagents were treated as untreated cells for a decade; the distinction mattered only once guide assignment became statistical.</td></tr>
+            <tr><td><b>Orthogonal reagent</b></td><td>2003</td><td>2015</td><td>12</td><td>Costs a second screen. Adopted when reviewers began asking, which was after CRISPR libraries made a second guide cheap.</td></tr>
+            <tr><td><b>Orthogonal modality</b></td><td>2014</td><td>2019</td><td>5</td><td>The reagents existed in 2014; the comparison became standard when CRISPRi and knockout disagreed publicly.</td></tr>
+            <tr><td><b>Donor replication</b></td><td>2016</td><td>2022</td><td>6</td><td>Costs donors and time; adopted when pseudobulk made the donor the unit of analysis and therefore the unit of criticism.</td></tr>
+            <tr><td><b>Pseudobulk inference</b></td><td>2017</td><td>2021</td><td>4</td><td>Purely computational. The delay was a demonstration that the alternative was wrong, not a tooling problem.</td></tr>
+            <tr><td><b>Guide-detection-aware null</b></td><td>2021</td><td>2024</td><td>3</td><td>Computational, but needs a working model of detection; adopted once the low-MOI benchmark showed naive tests were miscalibrated.</td></tr>
+            <tr><td><b>Perturbation-held-out split</b></td><td>2023</td><td>2026</td><td>3</td><td>Computational. Adopted when the Virtual Cell Challenge made zero-shot generalization the scored task.</td></tr>
+            <tr><td><b>Control splitting / noise ceiling</b></td><td>2026</td><td>—</td><td>—</td><td>Metric-level. No consensus protocol, no reviewer expectation, and it invalidates published comparisons, which is the strongest incentive not to adopt it.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two summaries are worth extracting. <b>The median lag for guards invented after 2000 is about 5.5 years</b>, and the split is by what the guard costs to add: 3–4 years for recomputations, 5–12 for new cells or reagents, 12 for the one that required redefining a control. <b>The two old guards are the outliers, and they are the ones still most often skipped.</b> A guard that costs nothing to write down but requires a cultural slot — "we replicated this" is a sentence, not a table — takes decades. That is the strongest evidence for this post's claim that the problem is the reporting format: randomization and replication were not unknown, they were unspeakable in the genre.</p>
+
+      <p>A third pattern appears only in the last four rows: <b>computational guards are adopted when a benchmark makes the failure visible, not when the argument is made.</b> Pseudobulk became routine after a paper showed the false-discovery rate; held-out splits became routine when a competition scored them; guide-aware nulls became routine when a benchmark found excess false positives. In each case the method and the argument already existed, and adoption followed a table a reviewer could point at.</p>
+
+      <h3 id="timeline-crises">13.3 Two noise crises, compared</h3>
+      <p>RNAi had a specificity crisis between 2003 and 2006. Single-cell perturbation prediction is having one now. The comparison separates what a crisis fixes from what it merely documents.</p>
+
+      <div class="tblwrap">
+        <table class="guide-table">
+          <thead>
+            <tr><th></th><th>RNAi, 2003–2006</th><th>Virtual cells, 2024–2026</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>What was wrong</b></td>
+              <td>The reagent: siRNAs silenced genes other than the target at a rate that made single-reagent hits unreliable.</td>
+              <td>The score: correlation against shared controls, random splits, and no replicate ceiling made non-informative models look competent.</td>
+            </tr>
+            <tr>
+              <td><b>How it surfaced</b></td>
+              <td>Expression profiling of a "specific" reagent — a measurement that should have shown one gene and showed dozens.</td>
+              <td>Reanalysis, baseline comparisons, and control splitting — measurements that should have shown a model advantage and showed none.</td>
+            </tr>
+            <tr>
+              <td><b>Finding to fix</b></td>
+              <td>3 years: seed rule, library redesign, orthogonal confirmation.</td>
+              <td>2 years and counting: control splitting, held-out splits, mechanism-fidelity scoring, public challenges.</td>
+            </tr>
+            <tr>
+              <td><b>What the fix changed</b></td>
+              <td>The reagent — a physical change that made the artefact rarer, checkable, and therefore reportable.</td>
+              <td>The metric — a protocol change that makes the artefact visible without removing it; nothing physical prevents a shared-control score.</td>
+            </tr>
+            <tr>
+              <td><b>What did not get fixed</b></td>
+              <td>Screens kept being published with single reagents for another five years; the community's standard moved faster than its papers.</td>
+              <td>Nothing yet. The audits are preprints, the benchmarks are new, and no journal requires a split-control score.</td>
+            </tr>
+            <tr>
+              <td><b>Who pays for the fix</b></td>
+              <td>Reagent vendors and library designers; a chemistry redesign, amortized across the field.</td>
+              <td>Nobody has an incentive: a metric fix has no vendor, no product, and no natural owner.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The asymmetry is the point. <b>An artefact in a reagent can be fixed by making a better reagent, and someone sells that.</b> An artefact in a metric can only be fixed by agreeing to score differently, and the parties who benefit from the current score have no reason to agree. That is why the last row of the guard chart is the one to bet against — not because control splitting is hard, but because it has no constituency.</p>
+
+      <p>A second difference is quieter. The RNAi fix was a rule applied <em>before</em> the experiment: check the seed, use two reagents, confirm orthogonally. The virtual-cell fix is a rule applied <em>after</em> it: report the ceiling, split the controls, hold out the perturbation. Pre-experiment rules are adopted by protocol; post-experiment rules are adopted by embarrassment. The RNAi crisis took three years because the protocol changed. This one will take longer unless a benchmark makes the old score unusable.</p>
+
+      <h3 id="timeline-predict">13.4 Three predictions</h3>
+      <p>Each follows from a pattern above rather than from a preference, and each is falsifiable within three years.</p>
+
+      <ol>
+        <li><b>By 2028, a major benchmark will require a replicate ceiling and an independent-control score, and the resulting reordering will exceed the year-over-year model gains.</b> The basis is the RNAi precedent and the 2026 rank instability (40 of 52 entries). Checkable by comparing rank correlation before and after the protocol change against the rank correlation between two model generations.</li>
+        <li><b>The next capability claim that survives audit will come from a new measurement modality, not a new architecture.</b> Every jump in this record that held up was enabled by an assay — siRNA, pooled CRISPR, Perturb-seq, optical pooling, cell hashing — and every architecture claim that was audited failed to beat a baseline. The first check on any 2027–2029 improvement will be whether it introduced a readout.</li>
+        <li><b>Pseudoreplication will remain the most common error in the 2026–2028 literature despite being the cheapest guard to apply.</b> The basis is the fifty-eight-year lag of replication and the fact that its cost is a reporting slot rather than a reagent. Falsification: sample 100 perturbation papers from 2027 and count how many report a donor-level estimate; if more than half do, the prediction fails.</li>
+      </ol>
+
+      <h2 id="checklist">14. Reporting checklist</h2>
+      <p>If a screen claims a perturbation effect, these fourteen items should be answerable from the paper. They are ordered so that the first five decide whether the rest matter.</p>
+
+      <ol>
+        <li><b>Replication unit.</b> Donors, wells, or cells — and how many of the first.</li>
+        <li><b>n<sub>eff</sub> and the design effect.</b> The intraclass correlation used, or an estimate of it.</li>
+        <li><b>Minimum detectable effect.</b> At the claimed replication unit, for the claimed test.</li>
+        <li><b>Guides per gene</b>, with per-guide effect sizes rather than a pooled average.</li>
+        <li><b>Knockdown measurement</b> — method, amplicon position, and an orthogonal confirmation.</li>
+        <li><b>Control definition.</b> Non-targeting, safe-harbour, or untreated; how many cells; which library.</li>
+        <li><b>Null model.</b> Which of N1–N4 was used, and what the working model was for N4.</li>
+        <li><b>QC sensitivity.</b> Effect estimates before and after ambient-RNA correction and doublet removal.</li>
+        <li><b>Cell-state handling.</b> Proliferation score, cluster composition, and effects conditioned on state.</li>
+        <li><b>Responder fraction.</b> The proportion of cells classified as perturbed, and the criterion used.</li>
+        <li><b>Footprint.</b> Transcriptome-wide impact or an equivalent aggregate, alongside per-gene results.</li>
+        <li><b>Multiplicity.</b> FDR across genes <em>and</em> across perturbations; the number of tests in each family.</li>
+        <li><b>Replicate ceiling</b> for any model comparison, with the split used to estimate it.</li>
+        <li><b>Verdict.</b> One of: effect, artefact, undetermined — with the outstanding gates named.</li>
+      </ol>
+
+      <p>Items 1–3 and 13 are the ones that change conclusions. The rest improve credibility; those four decide whether a number means anything.</p>
+
+      <h2 id="sources">15. Sources</h2>
+      <p>Labels: <em>PR</em> = peer-reviewed, <em>PP</em> = preprint, <em>RES</em> = resource or software paper. Dates are first publication.</p>
+
+      <h3>Design, replication, and the historical record</h3>
+      <ul>
+        <li>Fisher, <i>The Design of Experiments</i> (1935) — <em>PR</em></li>
+        <li>Luria &amp; Delbrück, <a href="https://doi.org/10.1093/genetics/28.6.491">Mutations of bacteria from virus sensitivity to virus resistance</a> (<i>Genetics</i> 1943) — <em>PR</em></li>
+        <li>Novick &amp; Szilard, <a href="https://doi.org/10.1073/pnas.36.12.708">Experiments with the chemostat on spontaneous mutations of bacteria</a> (<i>PNAS</i> 1950) — <em>PR</em></li>
+        <li>Jacob &amp; Monod, <a href="https://doi.org/10.1016/s0022-2836(61)80072-7">Genetic regulatory mechanisms in the synthesis of proteins</a> (<i>J Mol Biol</i> 1961) — <em>PR</em></li>
+        <li>Hurlbert, Pseudoreplication and the design of ecological field experiments (<i>Ecological Monographs</i> 1984) — <em>PR</em></li>
+        <li>Thomas &amp; Capecchi, <a href="https://doi.org/10.1016/0092-8674(87)90646-5">Site-directed mutagenesis by gene targeting in mouse embryo-derived stem cells</a> (<i>Cell</i> 1987) — <em>PR</em></li>
+        <li>Fire et al., <a href="https://doi.org/10.1038/35888">Potent and specific genetic interference by double-stranded RNA in <i>C. elegans</i></a> (<i>Nature</i> 1998) — <em>PR</em></li>
+        <li>Elbashir et al., <a href="https://doi.org/10.1038/35078107">Duplexes of 21-nucleotide RNAs mediate RNA interference in cultured mammalian cells</a> (<i>Nature</i> 2001) — <em>PR</em></li>
+        <li>Lamb et al., <a href="https://doi.org/10.1126/science.1132939">The Connectivity Map: using gene-expression signatures to connect small molecules, genes, and disease</a> (<i>Science</i> 2006) — <em>PR</em></li>
+        <li>Zhang, <a href="https://doi.org/10.1177/1087057107300645">A new method with flexible and balanced control of false negatives and false positives for hit selection in RNAi screens</a> (<i>J Biomol Screen</i> 2007) — <em>PR</em></li>
+        <li>Shalem et al., <a href="https://doi.org/10.1126/science.1247005">Genome-scale CRISPR-Cas9 knockout screening in human cells</a> (<i>Science</i> 2014) — <em>PR</em></li>
+        <li>Wang et al., <a href="https://doi.org/10.1126/science.1246981">Genetic screens in human cells using the CRISPR-Cas9 system</a> (<i>Science</i> 2014) — <em>PR</em></li>
+        <li>Gilbert et al., <a href="https://doi.org/10.1016/j.cell.2014.09.029">Genome-scale CRISPR-mediated control of gene repression and activation</a> (<i>Cell</i> 2014) — <em>PR</em></li>
+        <li>Li et al., <a href="https://doi.org/10.1186/s13059-014-0554-4">MAGeCK enables robust identification of essential genes from genome-scale CRISPR/Cas9 knockout screens</a> (<i>Genome Biol</i> 2014) — <em>RES</em></li>
+        <li>Hart et al., <a href="https://doi.org/10.1186/s12859-016-1015-8">BAGEL: a computational framework for identifying essential genes from pooled library screens</a> (<i>BMC Bioinformatics</i> 2016) — <em>RES</em></li>
+        <li>Bray et al., <a href="https://doi.org/10.1038/nprot.2016.105">Cell Painting, a high-content image-based assay for morphological profiling using multiplexed fluorescent dyes</a> (<i>Nat Protoc</i> 2016) — <em>PR</em></li>
+        <li>Subramanian et al., <a href="https://doi.org/10.1016/j.cell.2017.10.049">A next generation Connectivity Map: L1000 platform and the first 1,000,000 profiles</a> (<i>Cell</i> 2017) — <em>RES</em></li>
+        <li>Kamimoto et al., <a href="https://doi.org/10.1038/s41586-022-05688-9">Dissecting cell identity via network inference and in silico gene perturbation</a> (<i>Nature</i> 2023) — <em>PR</em></li>
+      </ul>
+
+      <h3>Perturbation measurements and their artefacts</h3>
+      <ul>
+        <li>Dixit et al., <a href="https://doi.org/10.1016/j.cell.2016.11.038">Perturb-Seq: dissecting molecular circuits with scalable single-cell RNA profiling of pooled genetic screens</a> (<i>Cell</i> 2016) — <em>PR</em></li>
+        <li>Adamson et al., <a href="https://doi.org/10.1016/j.cell.2016.11.048">A multiplexed single-cell CRISPR screening platform enables systematic dissection of the unfolded protein response</a> (<i>Cell</i> 2016) — <em>PR</em></li>
+        <li>Replogle et al., <a href="https://doi.org/10.1016/j.cell.2022.05.013">Mapping information-rich genotype-phenotype landscapes with genome-scale Perturb-seq</a> (<i>Cell</i> 2022) — <em>PR</em></li>
+        <li>Papalexi et al., <a href="https://doi.org/10.1038/s41588-021-00778-2">Characterizing the molecular regulation of inhibitory immune checkpoints with multimodal single-cell screens</a> (mixscape; <i>Nat Genet</i> 2021) — <em>PR</em></li>
+        <li>Frangieh et al., <a href="https://doi.org/10.1038/s41588-021-00779-1">Multimodal pooled Perturb-CITE-seq screens in patient models define mechanisms of cancer immune evasion</a> (<i>Nat Genet</i> 2021) — <em>PR</em></li>
+        <li>Norman et al., <a href="https://doi.org/10.1126/science.aax4438">Exploring genetic interaction manifolds constructed from rich single-cell phenotypes</a> (<i>Science</i> 2019) — <em>PR</em></li>
+        <li>Young &amp; Behjati, <a href="https://doi.org/10.1093/gigascience/giaa151">SoupX removes ambient RNA contamination from droplet-based single-cell RNA sequencing data</a> (<i>GigaScience</i> 2020) — <em>RES</em></li>
+        <li>Wolock, Lopez &amp; Klein, <a href="https://doi.org/10.1016/j.cels.2018.11.005">Scrublet: computational identification of cell doublets in single-cell transcriptomic data</a> (<i>Cell Syst</i> 2019) — <em>RES</em></li>
+        <li>Stoeckius et al., <a href="https://doi.org/10.1186/s13059-018-1603-1">Cell Hashing with barcoded antibodies enables multiplexing and doublet detection for single cell genomics</a> (<i>Genome Biol</i> 2018) — <em>PR</em></li>
+        <li>Griffiths et al., <a href="https://doi.org/10.1038/s41467-018-05083-x">Detection and removal of barcode swapping in single-cell RNA-seq data</a> (<i>Nat Commun</i> 2018) — <em>PR</em></li>
+        <li>Svensson, <a href="https://doi.org/10.1038/s41587-019-0379-5">Droplet scRNA-seq is not zero-inflated</a> (<i>Nat Biotechnol</i> 2020) — <em>PR</em></li>
+        <li>Lotfollahi et al., <a href="https://doi.org/10.1038/s41592-019-0494-8">scGen predicts single-cell perturbation responses</a> (<i>Nat Methods</i> 2019) — <em>RES</em></li>
+        <li>Lotfollahi et al., <a href="https://doi.org/10.15252/msb.202211517">Predicting cellular responses to complex perturbations in high-throughput screens</a> (<i>Mol Syst Biol</i> 2023) — <em>PR</em></li>
+      </ul>
+
+      <h3>Statistics and effect size</h3>
+      <ul>
+        <li>Peidli et al., <a href="https://doi.org/10.1038/s41592-023-02144-y">scPerturb: harmonized single-cell perturbation data</a> (E-statistics; <i>Nat Methods</i> 2024) — <em>RES</em></li>
+        <li>Barry et al., <a href="https://doi.org/10.1186/s13059-021-02545-2">SCEPTRE improves calibration and sensitivity in single-cell CRISPR screen analysis</a> (<i>Genome Biol</i> 2021) — <em>PR</em></li>
+        <li>Barry et al., <a href="https://doi.org/10.1186/s13059-024-03254-2">Robust differential expression testing for single-cell CRISPR screens at low multiplicity of infection</a> (<i>Genome Biol</i> 2024) — <em>PR</em></li>
+        <li>Squair et al., <a href="https://doi.org/10.1038/s41467-021-25960-2">Confronting false discoveries in single-cell differential expression</a> (<i>Nat Commun</i> 2021) — <em>PR</em></li>
+        <li>Murphy &amp; Skene, <a href="https://doi.org/10.1038/s41467-022-35519-4">A balanced measure shows superior performance of pseudobulk methods in single-cell RNA-sequencing analysis</a> (<i>Nat Commun</i> 2022) — <em>PR</em></li>
+        <li>Skinnider et al., <a href="https://doi.org/10.1038/s41596-021-00561-x">Prioritization of cell types responsive to biological perturbations in single-cell data with Augur</a> (<i>Nat Protoc</i> 2021) — <em>RES</em></li>
+        <li>Yang et al., <a href="https://doi.org/10.1186/s13059-020-1928-4">scMAGeCK links genotypes with multiple phenotypes in single-cell CRISPR screens</a> (<i>Genome Biol</i> 2020) — <em>PR</em></li>
+        <li>Nadig et al., <a href="https://doi.org/10.1038/s41588-025-02169-3">Transcriptome-wide analysis of differential expression in perturbation atlases</a> (TRADE; <i>Nat Genet</i> 2025) — <em>PR</em></li>
+        <li>Kamm et al., <a href="https://doi.org/10.64898/2026.01.22.701179">Fishash: a contingency table approach to Perturb-seq guide assignment</a> (2026) — <em>PP</em></li>
+        <li>PerturbMatch, <a href="https://doi.org/10.64898/2026.07.10.737863">Joint analysis of multiply perturbed cells improves statistical power and cost efficiency in Perturb-seq</a> (2026) — <em>PP</em></li>
+        <li>GPerturb, <a href="https://doi.org/10.1038/s41467-025-61165-7">Gaussian process modelling of single-cell perturbation data</a> (<i>Nat Commun</i> 2025) — <em>PR</em></li>
+      </ul>
+
+      <h3>Benchmarks, critiques, and virtual cells</h3>
+      <ul>
+        <li>Ahlmann-Eltze, Huber &amp; Anders, <a href="https://doi.org/10.1038/s41592-025-02772-6">Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines</a> (<i>Nat Methods</i> 2025) — <em>PR</em></li>
+        <li>PertEval-scFM, <a href="https://doi.org/10.1101/2024.10.02.616248">Benchmarking single-cell foundation models for perturbation effect prediction</a> (2024) — <em>PP</em></li>
+        <li>Tiwari et al., <a href="https://doi.org/10.64898/2026.10.16.759604">Genetic perturbation prediction models fail out-of-distribution</a> (EL-PERTURB; 2026) — <em>PP</em></li>
+        <li>Li et al., <a href="https://doi.org/10.64898/2026.08.19.745729">A mechanism-annotated benchmark reveals limited fidelity to drug-response signatures in single-cell perturbation models</a> (scDrugPerturb-Bench; 2026) — <em>PP</em></li>
+        <li>Wu et al., <a href="https://doi.org/10.64898/2026.08.11.744106">Method choice, not biology, determines in silico perturbation results</a> (2026) — <em>PP</em></li>
+        <li>Nicol, Shivakumar &amp; Irizarry, <a href="https://doi.org/10.64898/2026.05.07.723486">Spurious correlation inflates performance in single-cell perturbation prediction</a> (2026) — <em>PP</em></li>
+        <li>Liang et al., <a href="https://doi.org/10.64898/2026.10.05.756906">A split-control criterion for few-shot adaptation in single-cell perturbation prediction</a> (2026) — <em>PP</em></li>
+        <li>ReconEval, <a href="https://doi.org/10.64898/2026.06.15.731445">Benchmarking gene expression reconstruction from single-cell latent representations</a> (2026) — <em>PP</em></li>
+        <li>CellOracle critique, <a href="https://doi.org/10.1101/2024.10.16.618746">Critical issues found in “Dissecting cell identity via network inference and in silico gene perturbation”</a> (2024) — <em>PP</em></li>
+        <li>Virtual Cell Challenge, <a href="https://doi.org/10.1016/j.cell.2025.06.008">Toward a Turing test for the virtual cell</a> (<i>Cell</i> 2025) — <em>PR</em></li>
+        <li>Virtual Cell Challenge 2026, <a href="https://doi.org/10.1016/j.cell.2026.08.004">Benchmarking zero-shot generalization across cellular contexts</a> (<i>Cell</i> 2026) — <em>PR</em></li>
+        <li>Tahoe-100M, <a href="https://doi.org/10.1101/2025.02.20.639398">A giga-scale single-cell perturbation atlas for context-dependent gene function and cellular modeling</a> (2025) — <em>PP</em></li>
+        <li>State, <a href="https://doi.org/10.1101/2025.06.26.661135">Predicting cellular responses to perturbation across diverse contexts with State</a> (2025) — <em>PP</em></li>
+      </ul>
+
+      <h3>Measurement artefacts and screening statistics</h3>
+      <ul>
+        <li>Zhang, Chung &amp; Oldenburg, <a href="https://doi.org/10.1177/108705719900400206">A simple statistical parameter for use in evaluation and validation of high throughput screening assays</a> (Z′, <i>J Biomol Screen</i> 1999) — <em>PR</em></li>
+        <li>Brideau et al., <a href="https://doi.org/10.1177/1087057103258285">Improved statistical methods for hit selection in high-throughput screening</a> (B-score; <i>J Biomol Screen</i> 2003) — <em>PR</em></li>
+        <li>Jackson et al., <a href="https://doi.org/10.1038/nbt831">Expression profiling reveals off-target gene regulation by RNAi</a> (<i>Nat Biotechnol</i> 2003) — <em>PR</em></li>
+        <li>Birmingham et al., <a href="https://doi.org/10.1038/nmeth854">3′ UTR seed matches, but not overall identity, are associated with RNAi off-targets</a> (<i>Nat Methods</i> 2006) — <em>PR</em></li>
+        <li>Echeverri et al., <a href="https://doi.org/10.1038/nmeth1006-777">Minimizing the risk of reporting false positives in large-scale RNAi screens</a> (<i>Nat Methods</i> 2006) — <em>PR</em></li>
+        <li>Birmingham et al., <a href="https://doi.org/10.1038/nmeth.1351">Statistical methods for analysis of high-throughput RNA interference screens</a> (<i>Nat Methods</i> 2009) — <em>PR</em></li>
+        <li>Hao et al., <a href="https://doi.org/10.1371/journal.pcbi.1003235">Limited agreement of independent RNAi screens for virus-required host genes owes more to false-negative than false-positive factors</a> (<i>PLoS Comput Biol</i> 2013) — <em>PR</em></li>
+        <li>RT-qPCR artefact, <a href="https://doi.org/10.1038/s41587-026-03291-1">A pervasive RT-qPCR artifact inflates RNA knockdown by RNA-targeting CRISPR</a> (<i>Nat Biotechnol</i> 2026) — <em>PR</em></li>
+        <li>Elowitz et al., <a href="https://doi.org/10.1126/science.1070919">Stochastic gene expression in a single cell</a> (<i>Science</i> 2002) — <em>PR</em></li>
+      </ul>
+
+      <h2 id="closing">Closing thoughts</h2>
+      <p>The question in the title has a boring answer that is also the correct one: <b>you tell an effect from noise by testing it against a null that shares everything except the thing you claim.</b> That is what a second guide is, what a second donor is, what a control-splitting procedure is, and what an orthogonal modality is. Everything else — the tests, the metrics, the models — is downstream of that idea.</p>
+
+      <p>What has changed since the last time this argument was made is that the failures are now documented rather than suspected. The RT-qPCR artefact is measured. The shared-control inflation is measured, and it reorders benchmark tables. The out-of-distribution gap is measured, with 20 models. The distribution of true effects is estimated, which tells us that most real effects are small and most reported effects are large. None of these papers says the field is wrong; together they say the field's <b>reporting format</b> is insufficient, because it has slots for the estimate and the p-value and none for the four nulls.</p>
+
+      <p>There is a positive version of this. If most on-target effects are ~45 genes and most confounds are thousands, then the right unit of discovery is not the gene but the <b>programme plus its specificity control</b>: a coordinated set of genes that moves together, in the same direction, with a second guide, in a second donor, and not under a generic stress panel. That claim is harder to make and much harder to fake. It is also, on the arithmetic here, the largest claim the data can actually support.</p>
+
+      <p><a href="/blog/">Return to the blog index →</a></p>
+    </article>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>© 2026 scAI Index · Independent analysis</span>
+      <span>Source-linked snapshot · protocol-specific metrics</span>
+    </div>
+  </footer>
+</body>
+</html>
